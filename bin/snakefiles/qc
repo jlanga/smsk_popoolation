@@ -1,0 +1,56 @@
+rule qc_sample_trimmomatic_pe:
+    """
+    Run trimmomatic on paired end mode to eliminate Illumina adaptors and 
+    remove low quality regions and reads.
+    Inputs _1 and _2 are piped through gzip/pigz.
+    Outputs _1 and _2 are piped to gzip/pigz (level 9).
+    Outputs _3 and _4 are compressed with the builtin compressor from 
+    Trimmomatic. Further on they are catted and compressed with gzip/pigz 
+    (level 9).
+    Note: The cut -f 1 -d " " is to remove additional fields in the FASTQ
+    header. It is done posterior to the trimming since the output comes 
+    slower than the input is read.
+    """
+    input:
+        forward = RAW + "{population}_1.fq.gz",
+        reverse = RAW + "{population}_2.fq.gz"
+    output:
+        forward    = protected(
+            QC + "{population}_1.fq.gz"
+        ),
+        reverse = protected(
+            QC + "{population}_2.fq.gz"
+        ),
+        unpaired = protected(
+            QC + "{population}_u.fq.gz"
+        )
+    params:
+        unpaired_1 = QC + "{population}_3.fq.gz",
+        unpaired_2 = QC + "{population}_4.fq.gz",
+        adaptor    = lambda wildcards: config["samples_pe"][wildcards.population]["adaptor"],
+        phred      = lambda wildcards: config["samples_pe"][wildcards.population]["phred"],
+        trimmomatic_params = config["trimmomatic_params"]
+    log:
+        QC + "{population}.trimmomatic_pe.log" 
+    benchmark:
+        QC + "{population}.trimmomatic_pe.json"
+    threads:
+        24
+    shell:
+        "trimmomatic PE "
+            "-threads {threads} "
+            "-{params.phred} "
+            "<(pigz --decompress --stdout {input.forward} ) "
+            "<(pigz --decompress --stdout {input.reverse} ) "
+            ">(cut --fields 1 --delimiter=\" \" | pigz --best > {output.forward} ) "
+            "{params.unpaired_1} "
+            ">(cut --fields 1 --delimiter=\" \" | pigz --best > {output.reverse} ) "
+            "{params.unpaired_2} "
+            "ILLUMINACLIP:{params.adaptor}:2:30:10 "
+            "{params.trimmomatic_params} "
+        "2> {log} ; "
+        "pigz --decompress --stdout {params.unpaired_1} {params.unpaired_2} "
+            "| cut --fields 1 --delimiter \" \" "
+            "| pigz --best > {output.unpaired} "
+        "2>> {log} ; "
+        "rm {params.unpaired_1} {params.unpaired_2}"

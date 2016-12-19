@@ -1,0 +1,73 @@
+rule raw_sample_pe:
+    """
+    Link the fastq.gz files from config.yaml to a folder.
+    """
+    input:
+        forward= lambda wildcards: config["samples_pe"][wildcards.population]["forward"],
+        reverse= lambda wildcards: config["samples_pe"][wildcards.population]["reverse"]
+    output:
+        forward= RAW + "{population}_1.fq.gz",
+        reverse= RAW + "{population}_2.fq.gz"
+    threads:
+        1
+    log:
+        RAW + "{population}_pe.log"
+    benchmark:
+        RAW + "{population}_pe.json"
+    shell:
+        "ln "
+            "--symbolic "
+            "$(readlink "
+                "--canonicalize "
+                "{input.forward}) "
+            "{output.forward} && "
+        "ln "
+            "--symbolic "
+            "$(readlink "
+                "--canonicalize "
+                "{input.reverse}) "
+            "{output.reverse} "
+        "2> {log}"
+
+
+
+rule raw_extract_genome:
+    """
+    Extract the fasta.gz on config.yaml into genome.fa
+    """
+    input:
+        fa_gz = config["reference"]["dna"]
+    output:
+        fa = RAW + "genome.fa"
+    threads:
+        1
+    log:
+        RAW + "genome.log"
+    benchmark:
+        RAW + "genome.json"
+    shell:
+        "pigz "
+            "--decompress "
+            "--stdout "
+            "{input.fa_gz} "
+        "> {output.fa} "
+        "2> {log}"
+
+
+
+rule raw_genome_fai:
+    """
+    Index FASTA reference with samtools index
+    """
+    input:
+        fa  = RAW + "genome.fa"
+    output:
+        fai = RAW + "genome.fa.fai"
+    threads:
+        1
+    log:
+        RAW + "genome_fai.log"
+    benchmark:
+        RAW + "genome_fai.json"
+    shell:
+        "samtools faidx {input.fa} 2> {log}"

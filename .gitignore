@@ -1,0 +1,5 @@
+.linuxbrew/
+.snakemake/
+bin/py3/
+results/*
+doc/*
