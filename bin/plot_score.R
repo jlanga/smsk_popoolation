@@ -4,29 +4,36 @@ require(ggplot2)
 
 color_palette <- c("darkblue", "orange")
 
-#filename <- "results/tajimad/plot/pop1.tsv"
+#filename <- "ibe_north.tsv"
 
 
 # Function to read the files with the Tajma D's calculations
 read_scores <- function(filename){
     
     data <- filename %>%
-    read_tsv(  # Read file and select the columns 
-        file = .,
-        col_names = c("chromosome", "position", "score"),
-        col_types = "cnn",
-        na = c("na")
-    ) %>%
-    mutate(  # Give alternating colors
-      color = chromosome %>%
-        as.factor() %>%
-        as.numeric() %% 2 %>%
-        color_palette[.]
-    )
+      read_tsv(  # Read file and select the columns 
+          file = .,
+          col_names = c("chromosome", "position", "score"),
+          col_types = "cnn",
+          na = c("na")
+      ) %>%
+      mutate(  # Convert chromosome to a factor
+        chromosome = factor(
+          chromosome, 
+          levels = chromosome %>% unique()
+        )
+      ) %>%
+      mutate(  # Give alternating numbers
+        color = chromosome %>%
+            as.numeric() %% 2 + 1
+      ) %>%
+      mutate( # Give a color
+        color = color_palette[color]
+      ) 
     
-    data <- as.data.frame(data)
+      data <- as.data.frame(data)
     
-    return(data)
+      return(data)
 }
 
 #Function to do all the plotting
@@ -37,10 +44,8 @@ plot_score <- function(data, fileout, hlines=NULL){
     )
         
     # Get the labels for the X axis (chromosomes)
-    plot_labels <- data %>% 
-      group_by(chromosome) %>%
-      summarise()
-    
+    plot_labels <- data$chromosome %>% unique()
+      
     # Compute the tick position
     ticks <- data %>%
         group_by(chromosome) %>%
