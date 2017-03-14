@@ -55,22 +55,25 @@ include: "bin/snakefiles/fst"
 
 rule all:
     input:
-        RAW + "genome.fa",
-        expand(
-            QC + "{population}_{end}.fq.gz",
-            population = POPULATIONS,
-            end = "1 2".split()
-        ),
-        expand(
-            MAP_FILT + "{population}/{chromosome}.bam",
-            population = POPULATIONS,
-            chromosome = CHROMOSOMES
-        ),
-        expand(
-            MPILEUP_SUB + "{population}/{chromosome}.mpileup.gz",
-            population = POPULATIONS,
-            chromosome = CHROMOSOMES
-        ),
+        # raw rules
+        #RAW + "genome.fa",
+        # trimming
+        #expand(
+        #    QC + "{population}_{end}.fq.gz",
+        #    population = POPULATIONS,
+        #    end = "1 2".split()
+        #),
+        # mapping
+        #expand(
+        #    MAP_FILT + "{population}/{chromosome}.bam",
+        #    population = POPULATIONS,
+        #    chromosome = CHROMOSOMES
+        #),
+        #expand(
+        #    MPILEUP_SUB + "{population}/{chromosome}.mpileup.gz",
+        #    population = POPULATIONS,
+        #    chromosome = CHROMOSOMES
+        #),
         expand(
             PLOT_D + "{population}.pdf",
             population = POPULATIONS
