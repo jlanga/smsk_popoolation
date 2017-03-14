@@ -1,27 +1,24 @@
-samples_pe:
-    ibe_basque:
-        forward: /home/share/raw_data/amel/Pool1_GCCAAT_L004_R1_001.fastq.gz
-        reverse: /home/share/raw_data/amel/Pool1_GCCAAT_L004_R2_001.fastq.gz
-        adaptor: data/adapters/TruSeq3-PE-2.fa
-        phred:   phred33
-    ibe_north:
-        forward: /home/share/raw_data/amel/Pool2_CTTGTA_L004_R1_001.fastq.gz
-        reverse: /home/share/raw_data/amel/Pool2_CTTGTA_L004_R2_001.fastq.gz
-        adaptor: data/adapters/TruSeq3-PE-2.fa
-        phred:   phred33
-    ibe_south:
-        forward: /home/share/raw_data/amel/Pool3_ACAGTG_L005_R1_001.fastq.gz
-        reverse: /home/share/raw_data/amel/Pool3_ACAGTG_L005_R2_001.fastq.gz
-        adaptor: data/adapters/TruSeq3-PE-2.fa
-        phred:   phred33
+samples_se:
+ 
 
+samples_pe:
+    pop1:
+        forward: data/reads/pop1_1.fastq.gz
+        reverse: data/reads/pop1_2.fastq.gz
+        adaptor: data/adapters/TruSeq3-PE-2.fa
+        phred:   phred33
+    pop2:
+        forward: data/reads/pop2_1.fastq.gz
+        reverse: data/reads/pop2_2.fastq.gz
+        adaptor: data/adapters/TruSeq3-PE-2.fa
+        phred:   phred33
+    
 reference:
-    dna: data/genome/Apis_mellifera.GCA_000002195.1.dna.toplevel.fa.gz
+    dna: data/genome/2R.chr.gz
 
 chromosomes:
-    #14 15 16
-    1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16
-    # 14 15 16
+    2R
+
 trimmomatic_params:
     "AVGQUAL:3 MINLEN:31 LEADING:19 TRAILING:19 MINLEN:31 SLIDINGWINDOW:4:5 LEADING:5 TRAILING:5 MINLEN:25 TOPHRED33"
 
@@ -37,32 +34,32 @@ popoolation_params:
     subsample:
         minqual:            20
         method:             withoutreplace
-        maxcoverage:        50
+        maxcoverage:        200
         targetcoverage:     10
     tajimad:
         mincount:           2
-        mincoverage:        8
-        maxcoverage:        11
+        mincoverage:        5
+        maxcoverage:        200
         mincoveredfraction: 0.5
-        poolsize:           50
-        stepsize:           10000
-        windowsize:         50000
+        poolsize:           500
+        stepsize:           1000
+        windowsize:         1000
     tajimapi:
         mincount:           2
-        mincoverage:        8
-        maxcoverage:        11
+        mincoverage:        5
+        maxcoverage:        200
         mincoveredfraction: 0.5
-        poolsize:           50
-        stepsize:           10000
-        windowsize:         50000
+        poolsize:           500
+        stepsize:           1000
+        windowsize:         1000
     theta:
         mincount:           2
-        mincoverage:        8
-        maxcoverage:        11
+        mincoverage:        5
+        maxcoverage:        200
         mincoveredfraction: 0.5
-        poolsize:           50
-        stepsize:           10000
-        windowsize:         50000
+        poolsize:           500
+        stepsize:           1000
+        windowsize:         1000
 
 popoolation2_params:
     mpileup2sync:
@@ -72,10 +69,10 @@ popoolation2_params:
         max_coverage:    50
         method:          withoutreplace
     fst_sliding:
-        window_size:          200000
-        step_size:            50000
-        min_covered_fraction: 0.5
-        min_coverage:         8
-        max_coverage:         11
-        pool_size:            50
-        min_count:            2
+        window_size:          1
+        step_size:            1
+        min_covered_fraction: 1.0
+        min_coverage:         4
+        max_coverage:         120
+        pool_size:            500
+        min_count:            3

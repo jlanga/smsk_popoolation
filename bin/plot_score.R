@@ -1,68 +1,66 @@
 #!/usr/bin/env Rscript
-require(data.table)
-require(dplyr)
+require(tidyverse)
 require(ggplot2)
 
-colors <- c("darkblue", "orange")
+color_palette <- c("darkblue", "orange")
+
+#filename <- "results/tajimad/plot/pop1.tsv"
+
 
 # Function to read the files with the Tajma D's calculations
 read_scores <- function(filename){
     
-    vs <- filename %>%
-    fread(  # Read file and select the columns 
-        input = .,
-        header = FALSE,
-        sep = "\t",
-        dec= ".",
-        na.strings = "na",
-        stringsAsFactors = TRUE,
-        select = c(1, 2, 3),
-        colClasses = c("character", "numeric", "numeric")
+    data <- filename %>%
+    read_tsv(  # Read file and select the columns 
+        file = .,
+        col_names = c("chromosome", "position", "score"),
+        col_types = "cnn",
+        na = c("na")
     ) %>%
-    select(  # Rename columns
-        chromosome = V1,
-        position = V2,
-        score = V3
-    ) %>%
-    mutate(  # Convert factor to string 
-        chromosome = as.character(chromosome)
-    ) %>% 
-    arrange(
-        chromosome, position
-    ) %>% 
-    mutate(  # Alternate zeros and ones for the color column
-         color = chromosome %>% as.numeric() %% 2
-    ) %>%
-    mutate(  # Assign the color
-         color = factor(
-             x = color,
-             labels =  c("darkblue", "orange")
-         )
+    mutate(  # Give alternating colors
+      color = chromosome %>%
+        as.factor() %>%
+        as.numeric() %% 2 %>%
+        color_palette[.]
     )
     
-    vs <- as.data.frame(vs)
+    data <- as.data.frame(data)
     
-    return(vs)
+    return(data)
 }
 
 #Function to do all the plotting
 plot_score <- function(data, fileout, hlines=NULL){
     
-    data$position <- rownames(data) %>% as.numeric
+    data <- data %>% mutate(
+      x_position  = row_number()
+    )
         
     # Get the labels for the X axis (chromosomes)
-    plot_labels <- levels(data$chromosome)
+    plot_labels <- data %>% 
+      group_by(chromosome) %>%
+      summarise()
     
     # Compute the tick position
     ticks <- data %>%
         group_by(chromosome) %>%
-        summarise(pos = mean(position)) # Compute the placing in the x axis of the tick
+        summarise(pos = mean(x_position)) # Compute the placing in the x axis of the tick
     
     
     # Generate the plot: x is the number of elements, y: tajima's D, as color use data$color
-    Score_plot <-  ggplot( data=data, aes(x= position, y=score), colour=color) +
+    Score_plot <-  ggplot(
+          data=data, 
+          aes(
+            x= x_position,
+            y= score,
+            color= color
+          )
+        ) +
         # X axis: title, use breaks and as labels the chromosome names
-        scale_x_continuous( "Genomic position" , breaks = ticks$pos , labels = plot_labels ) +
+        scale_x_continuous(
+          name = "Genomic position",
+          breaks = ticks$pos,
+          labels = plot_labels ) +
         # Y axis: title
         scale_y_continuous( "Score" ) +
         # Plot points with size 1.5, alpha 0.5 and coloured
