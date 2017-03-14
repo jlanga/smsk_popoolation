@@ -1,34 +1,39 @@
-rule raw_sample_pe:
+rule raw_make_links_pe_sample:
     """
-    Link the fastq.gz files from config.yaml to a folder.
+    Make a link next to the original file, with a prettier name than default.
     """
     input:
-        forward= lambda wildcards: config["samples_pe"][wildcards.population]["forward"],
-        reverse= lambda wildcards: config["samples_pe"][wildcards.population]["reverse"]
+        forward= lambda wildcards: config["samples_pe"][wildcards.sample]["forward"],
+        reverse= lambda wildcards: config["samples_pe"][wildcards.sample]["reverse"]
     output:
-        forward= RAW + "{population}_1.fq.gz",
-        reverse= RAW + "{population}_2.fq.gz"
-    threads:
-        1
+        forward= protected(RAW + "{sample}_1.fq.gz"),
+        reverse= protected(RAW + "{sample}_2.fq.gz")
     log:
-        RAW + "{population}_pe.log"
+        RAW + "make_links_pe_{sample}.log"
     benchmark:
-        RAW + "{population}_pe.json"
+        RAW + "make_links_pe_{sample}.json"
     shell:
-        "ln "
-            "--symbolic "
-            "$(readlink "
-                "--canonicalize "
-                "{input.forward}) "
-            "{output.forward} && "
-        "ln "
-            "--symbolic "
-            "$(readlink "
-                "--canonicalize "
-                "{input.reverse}) "
-            "{output.reverse} "
-        "2> {log}"
+        "ln -s $(readlink -f {input.forward}) {output.forward} 2> {log};"
+        "ln -s $(readlink -f {input.reverse}) {output.reverse} 2>> {log}"
 
+
+
+rule raw_make_links_se_sample:
+    """
+    Make a link next to the original file, with a prettier name than default.
+    """
+    input:
+        single= lambda wildcards: config["samples_se"][wildcards.sample]["single"],
+    output:
+        single= protected(RAW + "{sample}_se.fq.gz")
+    log:
+        RAW + "make_links_se_{sample}.log"
+    benchmark:
+        RAW + "make_links_se_{sample}.json"
+    shell:
+        """
+        ln -s $(readlink -f {input.single}) {output.single} 2>  {log}
+        """
 
 
 rule raw_extract_genome:

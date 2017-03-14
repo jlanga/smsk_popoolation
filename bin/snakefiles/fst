@@ -45,7 +45,7 @@ rule fst_plot:
             chromosome = CHROMOSOMES
         )
     output:
-        merged_tsv_gz = TABLE_FST + "all.tsv.gz",
+        merged_tsv_gz = PLOT_FST + "all.tsv.gz",
         z_pdfs = [
             PLOT_FST + str(i) + "_" + str(j) +"_z.pdf" 
             for i in range(1, len(POPULATIONS)) 

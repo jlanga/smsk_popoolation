@@ -6,7 +6,10 @@ configfile: "config.yaml"
 include: "bin/snakefiles/folders"
 
 # Other variables
-POPULATIONS  = config["samples_pe"]
+POPULATIONS_PE = config["samples_pe"] if config["samples_pe"] is not None else []
+POPULATIONS_SE = config["samples_se"] if config["samples_se"] is not None else []
+POPULATIONS = [x for x in POPULATIONS_PE] + [x for x in POPULATIONS_SE]
+PAIRS = ["pe_pe", "pe_se"]
 CHROMOSOMES  = config["chromosomes"].split()
 ENDS = "1 2 u".split()
 
@@ -37,6 +40,17 @@ def theta_files(wildcards):
                 for chromosome in CHROMOSOMES]
     return files
 
+include: "bin/snakefiles/raw"
+include: "bin/snakefiles/qc"
+include: "bin/snakefiles/map"
+include: "bin/snakefiles/mpileup"
+include: "bin/snakefiles/tajimad"
+include: "bin/snakefiles/tajimapi"
+include: "bin/snakefiles/theta"
+include: "bin/snakefiles/hp"
+include: "bin/snakefiles/sync"
+include: "bin/snakefiles/fst"
+
 
 
 rule all:
@@ -45,7 +59,7 @@ rule all:
         expand(
             QC + "{population}_{end}.fq.gz",
             population = POPULATIONS,
-            end = ENDS
+            end = "1 2".split()
         ),
         expand(
             MAP_FILT + "{population}/{chromosome}.bam",
@@ -88,17 +102,6 @@ rule clean:
     rm -rf data/mapping
     """
 
-
-include: "bin/snakefiles/raw"
-include: "bin/snakefiles/qc"
-include: "bin/snakefiles/map"
-include: "bin/snakefiles/mpileup"
-include: "bin/snakefiles/tajimad"
-include: "bin/snakefiles/tajimapi"
-include: "bin/snakefiles/theta"
-include: "bin/snakefiles/hp"
-include: "bin/snakefiles/sync"
-include: "bin/snakefiles/fst"
 
 
 

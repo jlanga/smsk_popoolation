@@ -10,6 +10,5 @@ python=3.5
 picard=2.7.1
 perl=5.22.0
 numpy=1.11.2
-r-dplyr=0.4.3
 r-ggplot2=2.2.0
-r-data.table
+r-tidyverse
