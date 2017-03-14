@@ -44,6 +44,10 @@ Follow the contents of the `.travis.yml` file:
     snakemake -j
     ```
 
+## Representation of the pipeline
+
+![smsk_popoolation pipeline](https://cdn.rawgit.com/jlanga/smsk_popoolation/master/rulegraph.svg)
+
 ## Bibliography
 
 - [A Quick Guide to Organizing Computational Biology Projects](http://journals.plos.org/ploscompbiol/article?id=10.1371/journal.pcbi.1000424)
