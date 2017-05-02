@@ -10,7 +10,7 @@ before_install:
   - export PATH="/home/travis/miniconda3/bin:$PATH"
 
 script:
-  - bash bin/install/conda_env.sh
-  - bash bin/install/from_tarball.sh
+  - bash src/install/conda_env.sh
+  - bash src/install/from_tarball.sh
   - source activate smsk_popoolation
   - snakemake -j 2

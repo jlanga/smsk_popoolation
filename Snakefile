@@ -1,9 +1,9 @@
 shell.prefix("set -euo pipefail;")
-configfile: "config.yaml"
+configfile: "src/config.yaml"
 
 
 # Folder variables
-include: "bin/snakefiles/folders"
+include: "src/snakefiles/folders.py"
 
 # Other variables
 POPULATIONS_PE = config["samples_pe"] if config["samples_pe"] is not None else []
@@ -40,16 +40,16 @@ def theta_files(wildcards):
                 for chromosome in CHROMOSOMES]
     return files
 
-include: "bin/snakefiles/raw"
-include: "bin/snakefiles/qc"
-include: "bin/snakefiles/map"
-include: "bin/snakefiles/mpileup"
-include: "bin/snakefiles/tajimad"
-include: "bin/snakefiles/tajimapi"
-include: "bin/snakefiles/theta"
-include: "bin/snakefiles/hp"
-include: "bin/snakefiles/sync"
-include: "bin/snakefiles/fst"
+include: "src/snakefiles/raw.py"
+include: "src/snakefiles/qc.py"
+include: "src/snakefiles/map.py"
+include: "src/snakefiles/mpileup.py"
+include: "src/snakefiles/tajimad.py"
+include: "src/snakefiles/tajimapi.py"
+include: "src/snakefiles/theta.py"
+include: "src/snakefiles/hp.py"
+include: "src/snakefiles/sync.py"
+include: "src/snakefiles/fst.py"
 
 
 
@@ -99,11 +99,8 @@ rule all:
 
 
 rule clean:
-    """
-    rm -rf data/fastq_raw
-    rm -rf data/fastq_trimmed
-    rm -rf data/mapping
-    """
+    shell:
+        "rm -rf results"
 
 
 
