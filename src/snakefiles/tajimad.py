@@ -1,28 +1,28 @@
-rule theta_table_population_chromosome:
+rule tajimad_table_population_chromosome:
     input:
         mpileup_gz = MPILEUP_SUB + "{population}/{chromosome}.mpileup.gz"
     output:
-        snps_gz = TABLE_T + "{population}/{chromosome}.snps.gz",
-        vs_gz = TABLE_T + "{population}/{chromosome}.tsv.gz"
+        snps_gz = TABLE_D + "{population}/{chromosome}.snps.gz",
+        vs_gz = TABLE_D + "{population}/{chromosome}.tsv.gz"
     params:
-        snps = TABLE_T + "{population}/{chromosome}.snps",
-        vs = TABLE_T + "{population}/{chromosome}.tsv",
-        mincount = config["popoolation_params"]["theta"]["mincount"],
-        mincoverage = config["popoolation_params"]["theta"]["mincoverage"],
-        maxcoverage = config["popoolation_params"]["theta"]["maxcoverage"],
-        mincoveredfraction = config["popoolation_params"]["theta"]["mincoveredfraction"],
-        poolsize = config["popoolation_params"]["theta"]["poolsize"],
-        stepsize = config["popoolation_params"]["theta"]["stepsize"],
-        windowsize = config["popoolation_params"]["theta"]["windowsize"],
+        snps = TABLE_D + "{population}/{chromosome}.snps",
+        vs = TABLE_D + "{population}/{chromosome}.tsv",
+        mincount = config["popoolation_params"]["tajimad"]["mincount"],
+        mincoverage = config["popoolation_params"]["tajimad"]["mincoverage"],
+        maxcoverage = config["popoolation_params"]["tajimad"]["maxcoverage"],
+        mincoveredfraction = config["popoolation_params"]["tajimad"]["mincoveredfraction"],
+        poolsize = config["popoolation_params"]["tajimad"]["poolsize"],
+        stepsize = config["popoolation_params"]["tajimad"]["stepsize"],
+        windowsize = config["popoolation_params"]["tajimad"]["windowsize"],
     threads:
         1
     log:
-        TABLE_T + "{population}/{chromosome}.log"
+        TABLE_D + "{population}/{chromosome}.log"
     benchmark:
-        TABLE_T + "{population}/{chromosome}.json"
+        TABLE_D + "{population}/{chromosome}.json"
     shell:
         "perl src/popoolation_1.2.2/Variance-sliding.pl "
-            "--measure theta "
+            "--measure D "
             "--fastq-type sanger "
             "--min-count {params.mincount} "
             "--min-coverage {params.mincoverage} "
@@ -40,36 +40,36 @@ rule theta_table_population_chromosome:
         
 
 
-rule theta_plot_population:
+rule tajimad_plot_population:
     input:
         tsvs =expand(
-            TABLE_T + "{population}/{chromosome}.tsv.gz",
+            TABLE_D + "{population}/{chromosome}.tsv.gz",
             population = "{population}",
             chromosome = CHROMOSOMES
         )
     output:
-        merged_tsv_gz = PLOT_T + "{population}.tsv.gz", 
-        z_pdf = PLOT_T + "{population}_z.pdf",
-        pdf = PLOT_T + "{population}.pdf"
+        merged_tsv_gz = PLOT_D + "{population}.tsv.gz", 
+        z_pdf = PLOT_D + "{population}_z.pdf",
+        pdf = PLOT_D + "{population}.pdf"
     params:
-        merged_tsv = PLOT_T + "{population}.tsv"
+        merged_tsv = PLOT_D + "{population}.tsv"
     threads:
         1
     log:
-        PLOT_T + "{population}.log"
+        PLOT_D + "{population}.log"
     benchmark:
-        PLOT_T + "{population}.json"
+        PLOT_D + "{population}.json"
     shell:
         "pigz --decompress --stdout {input.tsvs} "
-            "| bash bin/variance_sliding_to_genomic_score.sh "
+            "| bash src/variance_sliding_to_genomic_score.sh "
         "> {params.merged_tsv} "
         "2> {log} ; "
-        "Rscript bin/plot_score.R "
+        "Rscript src/plot_score.R "
             "none "
             "{params.merged_tsv} "
             "{output.pdf} "
         "2>> {log} ; "
-        "Rscript bin/plot_score.R "
+        "Rscript src/plot_score.R "
             "z "
             "{params.merged_tsv} "
             "{output.z_pdf} "
