@@ -1,24 +1,30 @@
 rule hp_table_population_chromosome:
+    """
+    Build the hp table for a population in a chromosome.
+    """
     input:
         snps_gz =  TABLE_D + "{population}/{chromosome}.snps.gz"
     output:
         hp_gz = TABLE_HP + "{population}/{chromosome}.tsv.gz"
     params:
-        
+
     log:
         TABLE_HP + "{population}/{chromosome}.log"
     benchmark:
         TABLE_HP + "{population}/{chromosome}.json"
     shell:
         "(pigz --decompress --stdout {input.snps_gz} "
-            "| python3 src/snps_to_hp.py "
-            "| pigz --best "
+        "| python3 src/snps_to_hp.py "
+        "| pigz --best "
         "> {output.hp_gz}) "
         "2> {log}"
 
 
 
 rule hp_plot_population:
+    """
+    Plot the genome-wide H_p distribution of a population
+    """
     input:
         tsvs =expand(
             TABLE_HP + "{population}/{chromosome}.tsv.gz",
@@ -26,7 +32,7 @@ rule hp_plot_population:
             chromosome = CHROMOSOMES
         )
     output:
-        merged_tsv_gz = PLOT_HP + "{population}.tsv.gz", 
+        merged_tsv_gz = PLOT_HP + "{population}.tsv.gz",
         z_pdf = PLOT_HP + "{population}_z.pdf",
         pdf = PLOT_HP + "{population}.pdf"
     params:
@@ -40,7 +46,7 @@ rule hp_plot_population:
     shell:
         "pigz "
             "--decompress "
-            "--stdout " 
+            "--stdout "
             "{input.tsvs} "
         "> {params.merged_tsv} "
         "2> {log} ; "

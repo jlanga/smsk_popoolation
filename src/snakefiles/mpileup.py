@@ -1,16 +1,15 @@
 rule mpileup_population_chromosome:
+    """
+    Compute the mpileup and compress it
+    """
     input:
         cram = MAP_FILT + "{population}/{chromosome}.cram",
         fa  = RAW + "genome.fa",
         fai = RAW + "genome.fa.fai"
     output:
         mpileup_gz = MPILEUP_RAW + "{population}/{chromosome}.mpileup.gz"
-    threads:
-        1
-    log:
-        MPILEUP_RAW + "{population}/{chromosome}.log"
-    benchmark:
-        MPILEUP_RAW + "{population}/{chromosome}.json"
+    log: MPILEUP_RAW + "{population}/{chromosome}.log"
+    benchmark: MPILEUP_RAW + "{population}/{chromosome}.json"
     shell:
         "(samtools mpileup "
             "--no-BAQ "
@@ -26,7 +25,7 @@ rule mpileup_population_chromosome:
 
 rule mpileup_filter_population_chromosome_gtf:
     """
-    Get a GTF with the indels present
+    Get a GTF with the indels present.
     """
     input:
         mpileup_gz = MPILEUP_RAW + "{population}/{chromosome}.mpileup.gz"
@@ -34,15 +33,11 @@ rule mpileup_filter_population_chromosome_gtf:
         gtf = temp(
             MPILEUP_FILT + "{population}/{chromosome}.gtf"
         )
-    threads:
-        1
     params:
         indel_window = config["popoolation_params"]["find_indels"]["indel_window"],
         min_count    = config["popoolation_params"]["find_indels"]["min_count"]
-    log:
-        MPILEUP_FILT + "{population}/{chromosome}.gtf.log"
-    benchmark:
-        MPILEUP_FILT + "{population}/{chromosome}.gtf.json"
+    log: MPILEUP_FILT + "{population}/{chromosome}.gtf.log"
+    benchmark: MPILEUP_FILT + "{population}/{chromosome}.gtf.json"
     shell:
         "perl src/popoolation_1.2.2/basic-pipeline/identify-genomic-indel-regions.pl "
             "--input <(pigz --decompress --stdout {input.mpileup_gz}) "
@@ -55,7 +50,8 @@ rule mpileup_filter_population_chromosome_gtf:
 
 rule mpileup_filter_population_chromosome_mpileup:
     """
-    Filter indels from an mpileup given a GTF files with their coordinates
+    Filter indels from an mpileup given a GTF files with their coordinates.
+    Compress results.
     """
     input:
         mpileup_gz = MPILEUP_RAW + "{population}/{chromosome}.mpileup.gz",
@@ -66,12 +62,8 @@ rule mpileup_filter_population_chromosome_mpileup:
         )
     params:
         mpileup = MPILEUP_FILT + "{population}/{chromosome}.mpileup"
-    threads:
-        1
-    log:
-        MPILEUP_FILT + "{population}/{chromosome}.mpileup.log"
-    benchmark:
-        MPILEUP_FILT + "{population}/{chromosome}.mpileup.json"
+    log: MPILEUP_FILT + "{population}/{chromosome}.mpileup.log"
+    benchmark: MPILEUP_FILT + "{population}/{chromosome}.mpileup.json"
     shell:
         "perl src/popoolation_1.2.2/basic-pipeline/filter-pileup-by-gtf.pl "
             "--input <(pigz --decompress --stdout {input.mpileup_gz} ) "
@@ -83,6 +75,9 @@ rule mpileup_filter_population_chromosome_mpileup:
 
 
 rule mpileup_subsample_population_chromosome:
+    """
+    Perform the subsampling step. Compress results.
+    """
     input:
         mpileup_gz = MPILEUP_FILT + "{population}/{chromosome}.mpileup.gz"
     output:
@@ -93,12 +88,8 @@ rule mpileup_subsample_population_chromosome:
         method         = config["popoolation_params"]["subsample"]["method"],
         maxcoverage    = config["popoolation_params"]["subsample"]["maxcoverage"],
         targetcoverage = config["popoolation_params"]["subsample"]["targetcoverage"]
-    threads:
-        1
-    log:
-        MPILEUP_SUB + "{population}/{chromosome}.log"
-    benchmark:
-        MPILEUP_SUB + "{population}/{chromosome}.json"
+    log: MPILEUP_SUB + "{population}/{chromosome}.log"
+    benchmark: MPILEUP_SUB + "{population}/{chromosome}.json"
     shell:
         "perl src/popoolation_1.2.2/basic-pipeline/subsample-pileup.pl "
             "--min-qual {params.minqual} "

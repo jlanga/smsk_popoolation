@@ -22,40 +22,32 @@ rule qc_trimmomatic_pe:
     output:
         forward     = temp(QC + "{sample}_1.fq.gz"),
         reverse     = temp(QC + "{sample}_2.fq.gz"),
-        unpaired    = temp(QC + "{sample}.final.pe_se.fq.gz")
+        forward_unp = temp(QC + "{sample}_3.fq.gz"),
+        reverse_unp = temp(QC + "{sample}_4.fq.gz")
     params:
-        unpaired_1  = QC + "{sample}_3.fq.gz",
-        unpaired_2  = QC + "{sample}_4.fq.gz",
         adaptor     = lambda wildcards: config["samples_pe"][wildcards.sample]["adaptor"],
         phred       = lambda wildcards: config["samples_pe"][wildcards.sample]["phred"],
         trimmomatic_params = config["trimmomatic_params"]
-    log:
-        QC + "trimmomatic_pe_{sample}.log"
-    benchmark:
-        QC + "trimmomatic_pe_{sample}.json"
-    threads:
-        24 # I've been able to work with pigz and 24 trimmomatic threads.
+    log: QC + "trimmomatic_pe_{sample}.log"
+    benchmark: QC + "trimmomatic_pe_{sample}.json"
+    threads: 24
     shell:
-        """
-        trimmomatic PE \
-            -threads {threads} \
-            -{params.phred} \
-            <(pigz -dc {input.forward} ) \
-            <(pigz -dc {input.reverse} ) \
-            >(cut -f 1 -d " " | pigz -1 > {output.forward} ) \
-            {params.unpaired_1} \
-            >(cut -f 1 -d " " | pigz -1 > {output.reverse} ) \
-            {params.unpaired_2} \
-            ILLUMINACLIP:{params.adaptor}:2:30:10 \
-            {params.trimmomatic_params} \
-        2> {log}
-
-        zcat {params.unpaired_1} {params.unpaired_2} |
-        cut -f 1 -d " " |
-        pigz -9 > {output.unpaired}
-
-        rm {params.unpaired_1} {params.unpaired_2}
-        """
+        "trimmomatic PE "
+            "-threads {threads} "
+            "-{params.phred} "
+            "<(pigz --decompress --stdout {input.forward}) "
+            "<(pigz --decompress --stdout {input.reverse}) "
+            ">(cut --fields 1 --delimiter \" \" "
+                "| pigz --fast > {output.forward}) "
+            ">(cut --fields 1 --delimiter \" \" "
+                "| pigz --fast > {output.forward_unp}) "
+            ">(cut --fields 1 --delimiter \" \" "
+                "| pigz --fast > {output.reverse}) "
+            ">(cut --fields 1 --delimiter \" \" "
+                "| pigz --fast > {output.reverse_unp}) "
+            "ILLUMINACLIP:{params.adaptor}:2:30:10 "
+            "{params.trimmomatic_params} "
+        "2> {log}"
 
 
 
@@ -78,20 +70,16 @@ rule qc_trimmomatic_se:
         adaptor = lambda wildcards: config["samples_se"][wildcards.sample]["adaptor"],
         phred = lambda wildcards: config["samples_se"][wildcards.sample]["phred"],
         trimmomatic_params = config["trimmomatic_params"]
-    log:
-        QC + "trimmomatic_se_{sample}.log"
-    benchmark:
-        QC + "trimmomatic_se_{sample}.json"
-    threads:
-        8
+    log: QC + "trimmomatic_se_{sample}.log"
+    benchmark: QC + "trimmomatic_se_{sample}.json"
+    threads: 8
     shell:
-        """
-        trimmomatic SE \
-            -threads {threads} \
-            -{params.phred} \
-            <(pigz -dc {input.single}) \
-            >(cut -f 1 -d " " | pigz -1 > {output.single}) \
-            ILLUMINACLIP:{params.adaptor}:2:30:10 \
-            {params.trimmomatic_params} \
-        2> {log}
-        """
+        "trimmomatic SE "
+            "-threads {threads} "
+            "-{params.phred} "
+            "<(pigz --decompress --stdout {input.single}) "
+            ">(cut --fields 1 --delimiter \" \" "
+                "| pigz --fast > {output.single}) "
+            "ILLUMINACLIP:{params.adaptor}:2:30:10 "
+            "{params.trimmomatic_params} "
+        "2> {log}"

@@ -1,4 +1,7 @@
 rule theta_table_population_chromosome:
+    """
+    Get the Theta distribution.
+    """
     input:
         mpileup_gz = MPILEUP_SUB + "{population}/{chromosome}.mpileup.gz"
     output:
@@ -14,12 +17,8 @@ rule theta_table_population_chromosome:
         poolsize = config["popoolation_params"]["theta"]["poolsize"],
         stepsize = config["popoolation_params"]["theta"]["stepsize"],
         windowsize = config["popoolation_params"]["theta"]["windowsize"],
-    threads:
-        1
-    log:
-        TABLE_T + "{population}/{chromosome}.log"
-    benchmark:
-        TABLE_T + "{population}/{chromosome}.json"
+    log: TABLE_T + "{population}/{chromosome}.log"
+    benchmark: TABLE_T + "{population}/{chromosome}.json"
     shell:
         "perl src/popoolation_1.2.2/Variance-sliding.pl "
             "--measure theta "
@@ -37,7 +36,7 @@ rule theta_table_population_chromosome:
         "2> {log} 1>&2 ; "
         "pigz --best {params.snps} 2>> {log} ; "
         "pigz --best {params.vs} 2>> {log}"
-        
+
 
 
 rule theta_plot_population:
@@ -48,17 +47,13 @@ rule theta_plot_population:
             chromosome = CHROMOSOMES
         )
     output:
-        merged_tsv_gz = PLOT_T + "{population}.tsv.gz", 
+        merged_tsv_gz = PLOT_T + "{population}.tsv.gz",
         z_pdf = PLOT_T + "{population}_z.pdf",
         pdf = PLOT_T + "{population}.pdf"
     params:
         merged_tsv = PLOT_T + "{population}.tsv"
-    threads:
-        1
-    log:
-        PLOT_T + "{population}.log"
-    benchmark:
-        PLOT_T + "{population}.json"
+    log: PLOT_T + "{population}.log"
+    benchmark: PLOT_T + "{population}.json"
     shell:
         "pigz --decompress --stdout {input.tsvs} "
             "| bash src/variance_sliding_to_genomic_score.sh "
