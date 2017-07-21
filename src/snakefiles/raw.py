@@ -57,22 +57,3 @@ rule raw_extract_genome:
             "{input.fa_gz} "
         "> {output.fa} "
         "2> {log}"
-
-
-
-rule raw_genome_fai:
-    """
-    Index FASTA reference with samtools index
-    """
-    input:
-        fa  = RAW + "genome.fa"
-    output:
-        fai = RAW + "genome.fa.fai"
-    threads:
-        1
-    log:
-        RAW + "genome_fai.log"
-    benchmark:
-        RAW + "genome_fai.json"
-    shell:
-        "samtools faidx {input.fa} 2> {log}"

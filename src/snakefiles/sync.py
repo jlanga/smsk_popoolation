@@ -13,14 +13,8 @@ rule sync_mpileup_chromosome:
         fai = RAW + "genome.fa.fai"
     output:
         mpileup_gz = SYNC_MPILEUP + "{chromosome}.mpileup.gz"
-    threads:
-        1
-    params:
-
-    log:
-        SYNC_MPILEUP + "{chromosome}.log"
-    benchmark:
-        SYNC_MPILEUP + "{chromosome}.json"
+    log: SYNC_MPILEUP + "{chromosome}.log"
+    benchmark: SYNC_MPILEUP + "{chromosome}.json"
     shell:
         "(samtools mpileup "
             "--no-BAQ "
@@ -34,6 +28,9 @@ rule sync_mpileup_chromosome:
 
 
 rule sync_mpileup2sync_chromosome:
+    """
+    Convert an mpileup file into a sync file.
+    """
     input:
         mpileup_gz = SYNC_MPILEUP + "{chromosome}.mpileup.gz"
     output:
@@ -42,8 +39,7 @@ rule sync_mpileup2sync_chromosome:
         mpileup = SYNC_MPILEUP + "{chromosome}.mpileup",
         sync = SYNC_RAW + "{chromosome}.sync",
         min_qual = config["popoolation2_params"]["mpileup2sync"]["min_qual"],
-    threads:
-        8
+    threads: 8
     log:
         SYNC_RAW + "{chromosome}.log"
     benchmark:
@@ -63,6 +59,9 @@ rule sync_mpileup2sync_chromosome:
 
 
 rule sync_subsample_chromosome:
+    """
+    Subsample a sync file.
+    """
     input:
         sync_gz = SYNC_RAW + "{chromosome}.sync.gz"
     output:

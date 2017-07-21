@@ -1,4 +1,7 @@
 rule fst_sliding_chromosome:
+    """
+    Compute sliding F_STs in one chromosome
+    """
     input:
         sync_gz = SYNC_SUB + "{chromosome}.sync.gz"
     output:
@@ -13,12 +16,8 @@ rule fst_sliding_chromosome:
         max_coverage = config["popoolation2_params"]["fst_sliding"]["max_coverage"],
         pool_size = config["popoolation2_params"]["fst_sliding"]["pool_size"],
         min_count = config["popoolation2_params"]["fst_sliding"]["min_count"]
-    threads:
-        1
-    log:
-        TABLE_FST + "{chromosome}.log"
-    benchmark:
-        TABLE_FST + "{chromosome}.json"
+    log: TABLE_FST + "{chromosome}.log"
+    benchmark: TABLE_FST + "{chromosome}.json"
     shell:
         "pigz --decompress --stdout {input.sync_gz} > {params.sync} 2> {log} ; "
         "perl src/popoolation2_1201/fst-sliding.pl "
@@ -34,11 +33,13 @@ rule fst_sliding_chromosome:
             "--pool-size {params.pool_size} "
         "2>> {log} ; "
         "pigz --best {params.tsv} 2>> {log}"
- 
 
 
 
-rule fst_plot:
+rule fst_plot:  # TODO: the nested double for makes it impossible to understand
+    """
+    Plot pairwise F_ST distributions over a genome
+    """
     input:
         tsvs_gz = expand(
             TABLE_FST + "{chromosome}.tsv.gz",
@@ -47,19 +48,19 @@ rule fst_plot:
     output:
         merged_tsv_gz = PLOT_FST + "all.tsv.gz",
         z_pdfs = [
-            PLOT_FST + str(i) + "_" + str(j) +"_z.pdf" 
-            for i in range(1, len(POPULATIONS)) 
+            PLOT_FST + str(i) + "_" + str(j) +"_z.pdf"
+            for i in range(1, len(POPULATIONS))
             for j in range(i+1, len(POPULATIONS)+1)
         ],
-        pdfs = [ 
-            PLOT_FST + str(i) + "_" + str(j) +".pdf" 
+        pdfs = [
+            PLOT_FST + str(i) + "_" + str(j) +".pdf"
             for i in range(1, len(POPULATIONS))
             for j in range(i+1, len(POPULATIONS)+1)
         ]
     params:
         plot_fst = PLOT_FST,
         merged_tsv = PLOT_FST + "all.tsv",
-        n_pop = len(POPULATIONS) 
+        n_pop = len(POPULATIONS)
     threads:
         1
     log:
