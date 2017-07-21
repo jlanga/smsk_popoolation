@@ -22,7 +22,7 @@ rule qc_trimmomatic_pe:
     output:
         forward     = temp(QC + "{sample}_1.fq.gz"),
         reverse     = temp(QC + "{sample}_2.fq.gz"),
-        unpaired    = protected(QC + "{sample}.final.pe_se.fq.gz")
+        unpaired    = temp(QC + "{sample}.final.pe_se.fq.gz")
     params:
         unpaired_1  = QC + "{sample}_3.fq.gz",
         unpaired_2  = QC + "{sample}_4.fq.gz",
@@ -73,7 +73,7 @@ rule qc_trimmomatic_se:
     input:
         single = RAW + "{sample}_se.fq.gz",
     output:
-        single = protected(QC + "{sample}.final.se.fq.gz")
+        single = temp(QC + "{sample}.final.se.fq.gz")
     params:
         adaptor = lambda wildcards: config["samples_se"][wildcards.sample]["adaptor"],
         phred = lambda wildcards: config["samples_se"][wildcards.sample]["phred"],
