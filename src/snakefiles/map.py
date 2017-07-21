@@ -111,7 +111,6 @@ rule map_filter_population_chromosome:  # TODO: java memory, uncompressed bam
     """
     input:
         bam = MAP_SPLIT + "{population}/{library}/{chromosome}.bam",
-        # crai = MAP_RAW + "{population}.cram.crai",
         reference = RAW + "genome.fa"
     output:
         cram = temp(
@@ -175,12 +174,6 @@ rule map_merge_libraries:
     """
     input:
         crams = get_library_files_from_sample,
-        # crams = expand(
-        #     MAP_FILT + "{population}/{library}/{chromosome}.cram",
-        #     population = "{population}",
-        #     library = get_library_files_from_sample,
-        #     chromosome = "{chromosome}"
-        # ),
         reference = RAW + "genome.fa"
     output:
         cram = MAP_FILT + "{population}/{chromosome}.cram"

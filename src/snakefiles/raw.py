@@ -1,6 +1,6 @@
 rule raw_make_links_pe_sample:
     """
-    Make a link next to the original file, with a prettier name than default.
+    Make a link to the original file, with a prettier name than default.
     """
     input:
         forward= lambda wildcards: config["samples_pe"][wildcards.sample][wildcards.library]["forward"],
@@ -8,26 +8,22 @@ rule raw_make_links_pe_sample:
     output:
         forward= RAW + "{sample}/{library}_1.fq.gz",
         reverse= RAW + "{sample}/{library}_2.fq.gz"
-    log: RAW + "{sample}/{library}/make_links_pe.log"
-    benchmark: RAW + "{sample}/{library}/make_links_pe.json"
     shell:
-        "ln -s $(readlink -f {input.forward}) {output.forward} 2> {log};"
-        "ln -s $(readlink -f {input.reverse}) {output.reverse} 2>> {log}"
+        "ln --symbolic $(readlink --canonicalize {input.forward}) {output.forward}; "
+        "ln --symbolic $(readlink --canonicalize {input.reverse}) {output.reverse}"
 
 
 
 rule raw_make_links_se_sample:
     """
-    Make a link next to the original file, with a prettier name than default.
+    Make a link to the original file, with a prettier name than default.
     """
     input:
         single= lambda wildcards: config["samples_se"][wildcards.sample][wildcards.library]["single"],
     output:
         single= RAW + "{sample}/{library}_se.fq.gz"
-    log: RAW + "{sample}/{library}/make_links_se.log"
-    benchmark: RAW + "{sample}_{library}/make_links_se.json"
     shell:
-        "ln -s $(readlink -f {input.single}) {output.single} 2> {log}"
+        "ln --symbolic $(readlink --canonicalize {input.single}) {output.single}"
 
 
 rule raw_extract_genome:
