@@ -1,6 +1,6 @@
 rule mpileup_population_chromosome:
     input:
-        bam = MAP_FILT + "{population}/{chromosome}.bam",
+        cram = MAP_FILT + "{population}/{chromosome}.cram",
         fa  = RAW + "genome.fa",
         fai = RAW + "genome.fa.fai"
     output:
@@ -16,7 +16,7 @@ rule mpileup_population_chromosome:
             "-B "
             "-Q 0 "
             "-f {input.fa} "
-            "{input.bam} "
+            "{input.cram} "
             "| pigz "
                 "--best ) "
         "> {output.mpileup_gz} "
@@ -110,4 +110,3 @@ rule mpileup_subsample_population_chromosome:
             "--output {params.mpileup} "
         "2> {log} 1>&2 ; "
         "pigz --best {params.mpileup} 2>> {log}"
-        
