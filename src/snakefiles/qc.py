@@ -42,9 +42,9 @@ rule qc_trimmomatic_pe:
             -{params.phred} \
             <(pigz -dc {input.forward} ) \
             <(pigz -dc {input.reverse} ) \
-            >(cut -f 1 -d " " | pigz -9 > {output.forward} ) \
+            >(cut -f 1 -d " " | pigz -1 > {output.forward} ) \
             {params.unpaired_1} \
-            >(cut -f 1 -d " " | pigz -9 > {output.reverse} ) \
+            >(cut -f 1 -d " " | pigz -1 > {output.reverse} ) \
             {params.unpaired_2} \
             ILLUMINACLIP:{params.adaptor}:2:30:10 \
             {params.trimmomatic_params} \
@@ -90,7 +90,7 @@ rule qc_trimmomatic_se:
             -threads {threads} \
             -{params.phred} \
             <(pigz -dc {input.single}) \
-            >(cut -f 1 -d " " | pigz -9 > {output.single}) \
+            >(cut -f 1 -d " " | pigz -1 > {output.single}) \
             ILLUMINACLIP:{params.adaptor}:2:30:10 \
             {params.trimmomatic_params} \
         2> {log}
