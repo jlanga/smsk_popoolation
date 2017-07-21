@@ -23,13 +23,13 @@ rule sync_mpileup_chromosome:
         SYNC_MPILEUP + "{chromosome}.json"
     shell:
         "(samtools mpileup "
-            "-B "
-            "-Q 0 "
+            "--no-BAQ "
+            "--min-BQ 0 "
             "-f {input.fa} "
             "{input.crams} "
-            "| pigz --best ) "
+        "| pigz --best "
         "> {output.mpileup_gz} "
-        "2> {log}"
+        ") 2> {log}"
 
 
 

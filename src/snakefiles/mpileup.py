@@ -13,14 +13,14 @@ rule mpileup_population_chromosome:
         MPILEUP_RAW + "{population}/{chromosome}.json"
     shell:
         "(samtools mpileup "
-            "-B "
-            "-Q 0 "
-            "-f {input.fa} "
+            "--no-BAQ "
+            "--min-BQ 0 "
+            "--fasta-ref {input.fa} "
             "{input.cram} "
-            "| pigz "
-                "--best ) "
+        "| pigz "
+            "--best "
         "> {output.mpileup_gz} "
-        "2> {log}"
+        ") 2> {log}"
 
 
 
@@ -45,7 +45,7 @@ rule mpileup_filter_population_chromosome_gtf:
         MPILEUP_FILT + "{population}/{chromosome}.gtf.json"
     shell:
         "perl src/popoolation_1.2.2/basic-pipeline/identify-genomic-indel-regions.pl "
-            "--input <( pigz --decompress --stdout {input.mpileup_gz} ) "
+            "--input <(pigz --decompress --stdout {input.mpileup_gz}) "
             "--output {output.gtf} "
             "--indel-window {params.indel_window} "
             "--min-count {params.min_count} "
