@@ -10,11 +10,6 @@ rule qc_trimmomatic_pe:
     Note: The cut -f 1 -d " " is to remove additional fields in the FASTQ
     header. It is done posterior to the trimming since the output comes
     slower than the input is read.
-    Number of threads used:
-        4 for trimmomatic
-        2 for gzip inputs
-        2 for gzip outputs
-        Total: 8
     """
     input:
         forward = RAW + "{sample}_1.fq.gz",
@@ -30,7 +25,7 @@ rule qc_trimmomatic_pe:
         trimmomatic_params = config["trimmomatic_params"]
     log: QC + "trimmomatic_pe_{sample}.log"
     benchmark: QC + "trimmomatic_pe_{sample}.json"
-    threads: 24
+    threads: 8
     shell:
         "trimmomatic PE "
             "-threads {threads} "
@@ -55,12 +50,8 @@ rule qc_trimmomatic_se:
     """
     Run trimmomatic on single end mode to eliminate Illumina adaptors and
         remove low quality regions and reads.
-    Input is piped through gzip/pigz.
-    Output is piped to gzip.
-    Threads used:
-        4 for trimmomatic
-        1 for gzip input
-        1 for gzip output
+    Input is piped through pigz.
+    Output is piped to pigz.
     """
     input:
         single = RAW + "{sample}_se.fq.gz",
