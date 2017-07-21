@@ -60,18 +60,13 @@ rule map_population_bowtie2:
             "-x {input.index} "
             "-1 {input.forward} "
             "-2 {input.reverse} "
-        "| picard SortSam "
-            "INPUT=/dev/stdin "
-            "OUTPUT=/dev/stdout "
-            "COMPRESSION_LEVEL=0 "
-            "VALIDATION_STRINGENCY=SILENT "
-            "SORT_ORDER=coordinate "
-        "| samtools view "
-            "-@ {threads} "
-            "-T {input.reference} "
-            "-C "
+        "| samtools sort "
+            "-l 9 "
             "-o {output.cram} "
-            "/dev/stdin"
+            "--reference {input.reference} "
+            "--output-fmt CRAM "
+            "-@ {threads} "
+            "/dev/stdin "
         ") 2> {log}"
 
 
@@ -82,7 +77,7 @@ rule map_split_population_chromosome_split:  # USE BAM bc it markduplicates need
     temporary.
 
     Note: the following step is picard MarkDuplicates, and needs a proper file
-    since it makes two passes over it
+    since it makes two passes.
     """
     input:
         cram = MAP_RAW + "{population}.cram",
@@ -134,13 +129,14 @@ rule map_filter_population_chromosome:  # TODO: java memory
     benchmark:
         MAP_FILT + "{population}/{chromosome}.json"
     threads:
-        4 # Too much ram usage
+        24 # Too much ram usage
     shell:
         "(picard -Xmx4g MarkDuplicates "
             "INPUT={input.bam} "
             "OUTPUT=/dev/stdout "
             "METRICS_FILE={output.dupstats} "
             "ASSUME_SORTED=true "
+            "ASSUME_SORT_ORDER=SortOrder "
             "VALIDATION_STRINGENCY=SILENT "
             "COMPRESSION_LEVEL=0 "
             "REMOVE_DUPLICATES=true "
@@ -152,15 +148,11 @@ rule map_filter_population_chromosome:  # TODO: java memory
             "-F 0x0008 "
             "-u "
             "- "
-        "| picard SortSam "
-            "INPUT=/dev/stdin "
-            "OUTPUT=/dev/stdout "
-            "VALIDATION_STRINGENCY=SILENT "
-            "SORT_ORDER=coordinate "
-            "COMPRESSION_LEVEL=0 "
-        "| samtools view "
-            "-C "
-            "-T {input.reference} "
+        "| samtools sort "
+            "-l 9 "
             "-o {output.cram} "
+            "--reference {input.reference} "
+            "--output-fmt CRAM "
+            "-@ {threads} "
             "/dev/stdin "
         ") 2> {log}"
