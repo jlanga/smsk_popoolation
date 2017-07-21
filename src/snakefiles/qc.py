@@ -23,8 +23,8 @@ rule qc_trimmomatic_pe:
         adaptor     = lambda wildcards: config["samples_pe"][wildcards.sample][wildcards.library]["adaptor"],
         phred       = lambda wildcards: config["samples_pe"][wildcards.sample][wildcards.library]["phred"],
         trimmomatic_params = config["trimmomatic_params"]
-    log: QC + "{sample}/{library}/trimmomatic_pe.log"
-    benchmark: QC + "{sample}/{library}/trimmomatic_pe.json"
+    log: QC + "{sample}/{library}.trimmomatic_pe.log"
+    benchmark: QC + "{sample}/{library}.trimmomatic_pe.json"
     threads: 4
     shell:
         "trimmomatic PE "
@@ -61,8 +61,8 @@ rule qc_trimmomatic_se:
         adaptor = lambda wildcards: config["samples_se"][wildcards.sample][wildcards.library]["adaptor"],
         phred = lambda wildcards: config["samples_se"][wildcards.sample][wildcards.library]["phred"],
         trimmomatic_params = config["trimmomatic_params"]
-    log: QC + "{sample}/{library}/trimmomatic_se.log"
-    benchmark: QC + "{sample}/{library}/trimmomatic_se.json"
+    log: QC + "{sample}/{library}.trimmomatic_se.log"
+    benchmark: QC + "{sample}/{library}.trimmomatic_se.json"
     threads: 8
     shell:
         "trimmomatic SE "
