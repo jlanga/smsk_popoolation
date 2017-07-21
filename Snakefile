@@ -17,7 +17,7 @@ ENDS = "1 2 u".split()
 # Wildcards functions
 def priority_by_chromosome(wildcards):
     priority = 50 - int(wildcards.chromosome) + 1
-    return str(priority) 
+    return str(priority)
 
 
 
@@ -40,6 +40,7 @@ def theta_files(wildcards):
                 for chromosome in CHROMOSOMES]
     return files
 
+include: "src/snakefiles/generic.py"
 include: "src/snakefiles/raw.py"
 include: "src/snakefiles/qc.py"
 include: "src/snakefiles/map.py"
@@ -90,22 +91,14 @@ rule all:
             PLOT_HP + "{population}.pdf",
             population = POPULATIONS
         ),
-        [ 
-            PLOT_FST + str(i) + "_" + str(j) +".pdf" 
+        [
+            PLOT_FST + str(i) + "_" + str(j) +".pdf"
             for i in range(1, len(POPULATIONS))
             for j in range(i+1, len(POPULATIONS)+1)
         ]
-        
+
 
 
 rule clean:
     shell:
-        "rm -rf results"
-
-
-
-
-
-
-
-    
+        "rm -r results"
