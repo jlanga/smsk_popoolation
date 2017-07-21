@@ -6,8 +6,8 @@ rule raw_make_links_pe_sample:
         forward= lambda wildcards: config["samples_pe"][wildcards.sample][wildcards.library]["forward"],
         reverse= lambda wildcards: config["samples_pe"][wildcards.sample][wildcards.library]["reverse"]
     output:
-        forward= protected(RAW + "{sample}/{library}_1.fq.gz"),
-        reverse= protected(RAW + "{sample}/{library}_2.fq.gz")
+        forward= RAW + "{sample}/{library}_1.fq.gz",
+        reverse= RAW + "{sample}/{library}_2.fq.gz"
     log: RAW + "{sample}/{library}/make_links_pe.log"
     benchmark: RAW + "{sample}/{library}/make_links_pe.json"
     shell:
@@ -23,7 +23,7 @@ rule raw_make_links_se_sample:
     input:
         single= lambda wildcards: config["samples_se"][wildcards.sample][wildcards.library]["single"],
     output:
-        single= protected(RAW + "{sample}/{library}_se.fq.gz")
+        single= RAW + "{sample}/{library}_se.fq.gz"
     log: RAW + "{sample}/{library}/make_links_se.log"
     benchmark: RAW + "{sample}_{library}/make_links_se.json"
     shell:
