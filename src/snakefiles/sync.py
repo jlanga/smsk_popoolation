@@ -1,5 +1,5 @@
 def files_for_sync_mpileup_chromosome(wildcards):
-    files = [MAP_FILT + population + "/" + wildcards.chromosome + ".bam"
+    files = [MAP_FILT + population + "/" + wildcards.chromosome + ".cram"
         for population in POPULATIONS]
     return sorted(files)
 
@@ -8,7 +8,7 @@ rule sync_mpileup_chromosome:
     Create a mpileup file with all populations and just one chromosome
     """
     input:
-        bams = files_for_sync_mpileup_chromosome,
+        crams = files_for_sync_mpileup_chromosome,
         fa  = RAW + "genome.fa",
         fai = RAW + "genome.fa.fai"
     output:
@@ -16,7 +16,7 @@ rule sync_mpileup_chromosome:
     threads:
         1
     params:
-        
+
     log:
         SYNC_MPILEUP + "{chromosome}.log"
     benchmark:
@@ -26,7 +26,7 @@ rule sync_mpileup_chromosome:
             "-B "
             "-Q 0 "
             "-f {input.fa} "
-            "{input.bams} "
+            "{input.crams} "
             "| pigz --best ) "
         "> {output.mpileup_gz} "
         "2> {log}"
@@ -41,7 +41,7 @@ rule sync_mpileup2sync_chromosome:
     params:
         mpileup = SYNC_MPILEUP + "{chromosome}.mpileup",
         sync = SYNC_RAW + "{chromosome}.sync",
-        min_qual = config["popoolation2_params"]["mpileup2sync"]["min_qual"],    
+        min_qual = config["popoolation2_params"]["mpileup2sync"]["min_qual"],
     threads:
         8
     log:
@@ -70,7 +70,7 @@ rule sync_subsample_chromosome:
             SYNC_SUB + "{chromosome}.sync.gz"
         )
     params:
-        sync_in = SYNC_SUB + "{chromosome}.sync.old", 
+        sync_in = SYNC_SUB + "{chromosome}.sync.old",
         sync_out = SYNC_SUB + "{chromosome}.sync",
         target_coverage = config["popoolation2_params"]["subsample_synchronized"]["target_coverage"],
         max_coverage =  config["popoolation2_params"]["subsample_synchronized"]["max_coverage"],

@@ -1,5 +1,5 @@
 samples_se:
- 
+
 
 samples_pe:
     pop1:
@@ -12,7 +12,7 @@ samples_pe:
         reverse: data/reads/pop2_2.fastq.gz
         adaptor: data/adapters/TruSeq3-PE-2.fa
         phred:   phred33
-    
+
 reference:
     dna: data/genome/2R.chr.gz
 
@@ -23,7 +23,7 @@ trimmomatic_params:
     "AVGQUAL:3 MINLEN:31 LEADING:19 TRAILING:19 MINLEN:31 SLIDINGWINDOW:4:5 LEADING:5 TRAILING:5 MINLEN:25 TOPHRED33"
 
 bowtie2_params:
-    "--no-unal"
+    "" #"--no-unal"
 
 picard_sortsam_params:
 
