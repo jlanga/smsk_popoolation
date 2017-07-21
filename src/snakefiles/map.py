@@ -24,13 +24,18 @@ rule map_genome_bowtie2_index:
 
 
 rule map_population_bowtie2:
+    """
+    Map population with bowtie2, sort with picard, compress to cram with
+    samtools.
+    """
     input:
         forward = QC + "{population}_1.fq.gz",
         reverse = QC + "{population}_2.fq.gz",
-        index = MAP_RAW + "genome"
+        index = MAP_RAW + "genome",
+        reference = RAW + "genome.fa"
     output:
-        bam = protected(
-            MAP_RAW + "{population}.bam"
+        cram = protected(
+            MAP_RAW + "{population}.cram"
         )
     params:
         bowtie2_params = config["bowtie2_params"],
@@ -45,8 +50,6 @@ rule map_population_bowtie2:
     benchmark:
         MAP_RAW + "{population}.bowtie2.json"
     shell:
-        "fifo_aux=$(mktemp --dry-run) ; "
-        "mkfifo $fifo_aux ; "
         "(bowtie2 "
             "--rg-id {params.sq_id} "
             "--rg {params.sq_library} "
@@ -57,40 +60,34 @@ rule map_population_bowtie2:
             "-x {input.index} "
             "-1 {input.forward} "
             "-2 {input.reverse} "
-            "> $fifo_aux "
-            "| picard SortSam "
-                "INPUT=$fifo_aux "
-                "OUTPUT={output.bam} "
-                "COMPRESSION_LEVEL=9 "
-                "VALIDATION_STRINGENCY=SILENT "
-                "SORT_ORDER=coordinate ) "
-        "2> {log}"
+        "| picard SortSam "
+            "INPUT=/dev/stdin "
+            "OUTPUT=/dev/stdout "
+            "COMPRESSION_LEVEL=0 "
+            "VALIDATION_STRINGENCY=SILENT "
+            "SORT_ORDER=coordinate "
+        "| samtools view "
+            "-@ {threads} "
+            "-T {input.reference} "
+            "-C "
+            "-o {output.cram} "
+            "/dev/stdin"
+        ") 2> {log}"
 
 
 
-rule map_population_bai:
-    input:
-        bam = MAP_RAW + "{population}.bam"
-    output:
-        bai = MAP_RAW + "{population}.bam.bai"
-    threads:
-        1
-    log:
-        MAP_RAW + "{population}.bai.log"
-    benchmark:
-        MAP_RAW + "{population}.bai.json"
-    shell:
-        "samtools index {input.bam} 2> {log}"
-
-
-
-rule map_split_population_chromosome_split:
+rule map_split_population_chromosome_split:  # USE BAM bc it markduplicates needs a file
     """
-    We use uncompressed bam to accelerate the output. The result of this rule is temporary
+    We use uncompressed bam to accelerate the output. The result of this rule is
+    temporary.
+
+    Note: the following step is picard MarkDuplicates, and needs a proper file
+    since it makes two passes over it
     """
     input:
-        bam = MAP_RAW + "{population}.bam",
-        bai = MAP_RAW + "{population}.bam.bai"
+        cram = MAP_RAW + "{population}.cram",
+        crai = MAP_RAW + "{population}.cram.crai",
+        reference = RAW + "genome.fa"
     output:
         bam = temp(
             MAP_SPLIT + "{population}/{chromosome}.bam"
@@ -106,19 +103,28 @@ rule map_split_population_chromosome_split:
     shell:
         "samtools view "
             "-u "
-            "{input.bam} "
+            "-T {input.reference} "
+            "-o {output.bam} "
+            "{input.cram} "
             "{params.chromosome} "
-        "> {output.bam} "
         "2> {log}"
 
 
 
-rule map_filter_population_chromosome:
+rule map_filter_population_chromosome:  # TODO: java memory
+    """
+    Remove duplicates from CRAM and filter out sequences.
+
+    samtools view | MarkDuplicates | samtools view -f -F | SortSam | \
+    samtools view
+    """
     input:
         bam = MAP_SPLIT + "{population}/{chromosome}.bam",
+        # crai = MAP_RAW + "{population}.cram.crai",
+        reference = RAW + "genome.fa"
     output:
-        bam = protected(
-            MAP_FILT + "{population}/{chromosome}.bam"
+        cram = protected(
+            MAP_FILT + "{population}/{chromosome}.cram"
         ),
         dupstats = MAP_FILT + "{population}/{chromosome}.dupstats"
     params:
@@ -130,30 +136,31 @@ rule map_filter_population_chromosome:
     threads:
         4 # Too much ram usage
     shell:
-        "fifo_aux1=$(mktemp --dry-run) ; mkfifo $fifo_aux1 ; "
-        "fifo_aux2=$(mktemp --dry-run) ; mkfifo $fifo_aux2 ; "
-        "( picard -Xmx4g MarkDuplicates "
+        "(picard -Xmx4g MarkDuplicates "
             "INPUT={input.bam} "
-            "OUTPUT=$fifo_aux1 "
+            "OUTPUT=/dev/stdout "
             "METRICS_FILE={output.dupstats} "
             "ASSUME_SORTED=true "
             "VALIDATION_STRINGENCY=SILENT "
             "COMPRESSION_LEVEL=0 "
             "REMOVE_DUPLICATES=true "
             "QUIET=false "
-            "| samtools view "
-                "-q 20 "
-                "-f 0x0002 "
-                "-F 0x0004 "
-                "-F 0x0008 "
-                "-u "
-                "$fifo_aux1 "
-                "> $fifo_aux2 "
-            "| picard SortSam "
-                "INPUT=$fifo_aux2 "
-                "OUTPUT={output.bam} "
-                "VALIDATION_STRINGENCY=SILENT "
-                "SORT_ORDER=coordinate "
-                "COMPRESSION_LEVEL=9 ) "
-        "2> {log} ; "
-        "rm $fifo_aux1 $fifo_aux2"    
+        "| samtools view "
+            "-q 20 "
+            "-f 0x0002 "
+            "-F 0x0004 "
+            "-F 0x0008 "
+            "-u "
+            "- "
+        "| picard SortSam "
+            "INPUT=/dev/stdin "
+            "OUTPUT=/dev/stdout "
+            "VALIDATION_STRINGENCY=SILENT "
+            "SORT_ORDER=coordinate "
+            "COMPRESSION_LEVEL=0 "
+        "| samtools view "
+            "-C "
+            "-T {input.reference} "
+            "-o {output.cram} "
+            "/dev/stdin "
+        ") 2> {log}"
