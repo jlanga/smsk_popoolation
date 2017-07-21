@@ -110,7 +110,7 @@ rule map_filter_population_chromosome:  # TODO: java memory
     """
     Remove duplicates from CRAM and filter out sequences.
 
-    samtools view | MarkDuplicates | samtools view -f -F | SortSam | \
+    samtools view | MarkDuplicates | samtools view -f -F | SortSam
     samtools view
     """
     input:
@@ -135,8 +135,7 @@ rule map_filter_population_chromosome:  # TODO: java memory
             "INPUT={input.bam} "
             "OUTPUT=/dev/stdout "
             "METRICS_FILE={output.dupstats} "
-            "ASSUME_SORTED=true "
-            "ASSUME_SORT_ORDER=SortOrder "
+            "ASSUME_SORT_ORDER=coordinate "
             "VALIDATION_STRINGENCY=SILENT "
             "COMPRESSION_LEVEL=0 "
             "REMOVE_DUPLICATES=true "
