@@ -25,7 +25,7 @@ rule qc_trimmomatic_pe:
         trimmomatic_params = config["trimmomatic_params"]
     log: QC + "{sample}/{library}/trimmomatic_pe.log"
     benchmark: QC + "{sample}/{library}/trimmomatic_pe.json"
-    threads: 8
+    threads: 4
     shell:
         "trimmomatic PE "
             "-threads {threads} "
