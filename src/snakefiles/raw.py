@@ -6,8 +6,8 @@ rule raw_make_links_pe_sample:
         forward= lambda wildcards: config["samples_pe"][wildcards.sample]["forward"],
         reverse= lambda wildcards: config["samples_pe"][wildcards.sample]["reverse"]
     output:
-        forward= protected(RAW + "{sample}_1.fq.gz"),
-        reverse= protected(RAW + "{sample}_2.fq.gz")
+        forward= RAW + "{sample}_1.fq.gz",
+        reverse= RAW + "{sample}_2.fq.gz"
     log:
         RAW + "make_links_pe_{sample}.log"
     benchmark:
@@ -25,7 +25,7 @@ rule raw_make_links_se_sample:
     input:
         single= lambda wildcards: config["samples_se"][wildcards.sample]["single"],
     output:
-        single= protected(RAW + "{sample}_se.fq.gz")
+        single= RAW + "{sample}_se.fq.gz"
     log:
         RAW + "make_links_se_{sample}.log"
     benchmark:
@@ -57,22 +57,3 @@ rule raw_extract_genome:
             "{input.fa_gz} "
         "> {output.fa} "
         "2> {log}"
-
-
-
-rule raw_genome_fai:
-    """
-    Index FASTA reference with samtools index
-    """
-    input:
-        fa  = RAW + "genome.fa"
-    output:
-        fai = RAW + "genome.fa.fai"
-    threads:
-        1
-    log:
-        RAW + "genome_fai.log"
-    benchmark:
-        RAW + "genome_fai.json"
-    shell:
-        "samtools faidx {input.fa} 2> {log}"
