@@ -25,25 +25,25 @@ rule map_population_bowtie2:
     samtools.
     """
     input:
-        forward = QC + "{population}_1.fq.gz",
-        reverse = QC + "{population}_2.fq.gz",
-        unp_forward = QC + "{population}_3.fq.gz",
-        unp_reverse = QC + "{population}_4.fq.gz",
+        forward = QC + "{population}/{library}_1.fq.gz",
+        reverse = QC + "{population}/{library}_2.fq.gz",
+        unp_forward = QC + "{population}/{library}_3.fq.gz",
+        unp_reverse = QC + "{population}/{library}_4.fq.gz",
         index = MAP_RAW + "genome",
         reference = RAW + "genome.fa"
     output:
         cram = protected(
-            MAP_RAW + "{population}.cram"
+            MAP_RAW + "{population}/{library}.cram"
         )
     params:
         bowtie2_params = config["bowtie2_params"],
-        sq_id = "{population}",
-        sq_library = "LB:truseq_{population}",
+        sq_id = "{population}_{library}",
+        sq_library = "LB:truseq_{library}",
         sq_platform = "PL:Illumina",
         sq_sample = "SM:{population}",
     threads: 24
-    log: MAP_RAW + "{population}.bowtie2.log"
-    benchmark: MAP_RAW + "{population}.bowtie2.json"
+    log: MAP_RAW + "{population}/{library}.bowtie2.log"
+    benchmark: MAP_RAW + "{population}/{library}.bowtie2.json"
     shell:
         "(bowtie2 "
             "--rg-id {params.sq_id} "
@@ -76,29 +76,31 @@ rule map_split_population_chromosome_split:  # USE BAM bc it markduplicates need
     since it makes two passes.
     """
     input:
-        cram = MAP_RAW + "{population}.cram",
-        crai = MAP_RAW + "{population}.cram.crai",
+        cram = MAP_RAW + "{population}/{library}.cram",
+        crai = MAP_RAW + "{population}/{library}.cram.crai",
         reference = RAW + "genome.fa"
     output:
         bam = temp(
-            MAP_SPLIT + "{population}/{chromosome}.bam"
+            MAP_SPLIT + "{population}/{library}/{chromosome}.bam"
         )
+    threads: 4
     params:
         chromosome = "{chromosome}"
-    log: MAP_SPLIT + "{population}/{chromosome}.log"
-    benchmark: MAP_SPLIT + "{population}/{chromosome}.json"
+    log: MAP_SPLIT + "{population}/{library}/{chromosome}.log"
+    benchmark: MAP_SPLIT + "{population}/{library}/{chromosome}.json"
     shell:
         "samtools view "
             "-u "
             "-T {input.reference} "
             "-o {output.bam} "
+            "-@ {threads} "
             "{input.cram} "
             "{params.chromosome} "
         "2> {log}"
 
 
 
-rule map_filter_population_chromosome:  # TODO: java memory
+rule map_filter_population_chromosome:  # TODO: java memory, uncompressed bam
     """
     Remove duplicates from CRAM and filter out sequences.
 
@@ -108,18 +110,18 @@ rule map_filter_population_chromosome:  # TODO: java memory
     Pairs with something unpaired will disappear.
     """
     input:
-        bam = MAP_SPLIT + "{population}/{chromosome}.bam",
+        bam = MAP_SPLIT + "{population}/{library}/{chromosome}.bam",
         # crai = MAP_RAW + "{population}.cram.crai",
         reference = RAW + "genome.fa"
     output:
-        cram = protected(
-            MAP_FILT + "{population}/{chromosome}.cram"
+        cram = temp(
+            MAP_FILT + "{population}/{library}/{chromosome}.cram"
         ),
-        dupstats = MAP_FILT + "{population}/{chromosome}.dupstats"
+        dupstats = MAP_FILT + "{population}/{library}/{chromosome}.dupstats"
     params:
         chromosome = "{chromosome}"
-    log: MAP_FILT + "{population}/{chromosome}.log"
-    benchmark: MAP_FILT + "{population}/{chromosome}.json"
+    log: MAP_FILT + "{population}/{library}/{chromosome}.log"
+    benchmark: MAP_FILT + "{population}/{library}/{chromosome}.json"
     threads: 24
     shell:
         "(picard -Xmx4g MarkDuplicates "
@@ -146,3 +148,51 @@ rule map_filter_population_chromosome:  # TODO: java memory
             "-@ {threads} "
             "/dev/stdin "
         ") 2> {log}"
+
+
+def get_library_files_from_sample(wildcards):
+    """ TODO: needs improvement/simplification
+    Return the list of libraries corresponding to a population and chromosome.
+    """
+    files = [
+        MAP_FILT + \
+        wildcards.population + "/" + \
+        library + "/" + \
+        wildcards.chromosome + ".cram" \
+        for library in config["samples_pe"][wildcards.population]
+    ]
+    return files
+
+# def get_library_files_from_sample(wildcards):
+#     samples = [MAP_FILT + wildcards.population + "/" + chromosome + ".tsv.gz"
+#                 for chromosome in CHROMOSOMES]
+#     return files
+
+
+rule map_merge_libraries:
+    """
+    Merge multiple libraries from the same sample.
+    """
+    input:
+        crams = get_library_files_from_sample,
+        # crams = expand(
+        #     MAP_FILT + "{population}/{library}/{chromosome}.cram",
+        #     population = "{population}",
+        #     library = get_library_files_from_sample,
+        #     chromosome = "{chromosome}"
+        # ),
+        reference = RAW + "genome.fa"
+    output:
+        cram = MAP_FILT + "{population}/{chromosome}.cram"
+    threads: 24
+    log: MAP_FILT + "{population}/{chromosome}.log"
+    benchmark: MAP_FILT + "{population}/{chromosome}.json"
+    shell:
+        "samtools merge "
+            "-l 9 "
+            "--output-fmt CRAM "
+            "--reference {input.reference} "
+            "-@ {threads} "
+            "{output.cram} "
+            "{input.crams} "
+        "2> {log}"

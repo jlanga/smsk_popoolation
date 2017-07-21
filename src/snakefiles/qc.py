@@ -12,19 +12,19 @@ rule qc_trimmomatic_pe:
     slower than the input is read.
     """
     input:
-        forward = RAW + "{sample}_1.fq.gz",
-        reverse = RAW + "{sample}_2.fq.gz"
+        forward = RAW + "{sample}/{library}_1.fq.gz",
+        reverse = RAW + "{sample}/{library}_2.fq.gz"
     output:
-        forward     = temp(QC + "{sample}_1.fq.gz"),
-        reverse     = temp(QC + "{sample}_2.fq.gz"),
-        forward_unp = temp(QC + "{sample}_3.fq.gz"),
-        reverse_unp = temp(QC + "{sample}_4.fq.gz")
+        forward     = temp(QC + "{sample}/{library}_1.fq.gz"),
+        reverse     = temp(QC + "{sample}/{library}_2.fq.gz"),
+        forward_unp = temp(QC + "{sample}/{library}_3.fq.gz"),
+        reverse_unp = temp(QC + "{sample}/{library}_4.fq.gz")
     params:
-        adaptor     = lambda wildcards: config["samples_pe"][wildcards.sample]["adaptor"],
-        phred       = lambda wildcards: config["samples_pe"][wildcards.sample]["phred"],
+        adaptor     = lambda wildcards: config["samples_pe"][wildcards.sample][wildcards.library]["adaptor"],
+        phred       = lambda wildcards: config["samples_pe"][wildcards.sample][wildcards.library]["phred"],
         trimmomatic_params = config["trimmomatic_params"]
-    log: QC + "trimmomatic_pe_{sample}.log"
-    benchmark: QC + "trimmomatic_pe_{sample}.json"
+    log: QC + "{sample}/{library}/trimmomatic_pe.log"
+    benchmark: QC + "{sample}/{library}/trimmomatic_pe.json"
     threads: 8
     shell:
         "trimmomatic PE "
@@ -54,15 +54,15 @@ rule qc_trimmomatic_se:
     Output is piped to pigz.
     """
     input:
-        single = RAW + "{sample}_se.fq.gz",
+        single = RAW + "{sample}/{library}_se.fq.gz",
     output:
-        single = temp(QC + "{sample}.final.se.fq.gz")
+        single = temp(QC + "{sample}/{library}_se.fq.gz")
     params:
-        adaptor = lambda wildcards: config["samples_se"][wildcards.sample]["adaptor"],
-        phred = lambda wildcards: config["samples_se"][wildcards.sample]["phred"],
+        adaptor = lambda wildcards: config["samples_se"][wildcards.sample][wildcards.library]["adaptor"],
+        phred = lambda wildcards: config["samples_se"][wildcards.sample][wildcards.library]["phred"],
         trimmomatic_params = config["trimmomatic_params"]
-    log: QC + "trimmomatic_se_{sample}.log"
-    benchmark: QC + "trimmomatic_se_{sample}.json"
+    log: QC + "{sample}/{library}/trimmomatic_se.log"
+    benchmark: QC + "{sample}/{library}/trimmomatic_se.json"
     threads: 8
     shell:
         "trimmomatic SE "
