@@ -3,17 +3,13 @@ rule hp_table_population_chromosome:
     Build the hp table for a population in a chromosome.
     """
     input:
-        snps_gz =  TABLE_D + "{population}/{chromosome}.snps.gz"
+        snps_gz =  PLOT_D + "{population}.snps.gz"
     output:
-        hp_gz = TABLE_HP + "{population}/{chromosome}.tsv.gz"
-    params:
-
-    log:
-        TABLE_HP + "{population}/{chromosome}.log"
-    benchmark:
-        TABLE_HP + "{population}/{chromosome}.json"
+        hp_gz = protected(TABLE_HP + "{population}.tsv.gz")
+    log: TABLE_HP + "{population}.log"
+    benchmark: TABLE_HP + "{population}.json"
     shell:
-        "(pigz --decompress --stdout {input.snps_gz} "
+        "(gzip --decompress --stdout {input.snps_gz} "
         "| python3 src/snps_to_hp.py "
         "| pigz --best "
         "> {output.hp_gz}) "
@@ -26,41 +22,22 @@ rule hp_plot_population:
     Plot the genome-wide H_p distribution of a population
     """
     input:
-        tsvs =expand(
-            TABLE_HP + "{population}/{chromosome}.tsv.gz",
-            population = "{population}",
-            chromosome = CHROMOSOMES
-        )
+        hp_gz = TABLE_HP + "{population}.tsv.gz"
     output:
-        merged_tsv_gz = PLOT_HP + "{population}.tsv.gz",
         z_pdf = PLOT_HP + "{population}_z.pdf",
         pdf = PLOT_HP + "{population}.pdf"
-    params:
-        merged_tsv = PLOT_HP + "{population}.tsv"
     threads:
         1
-    log:
-        PLOT_HP + "{population}.log"
-    benchmark:
-        PLOT_HP + "{population}.json"
+    log: PLOT_HP + "{population}.log"
+    benchmark: PLOT_HP + "{population}.json"
     shell:
-        "pigz "
-            "--decompress "
-            "--stdout "
-            "{input.tsvs} "
-        "> {params.merged_tsv} "
-        "2> {log} ; "
         "Rscript src/plot_score.R "
             "none "
-            "{params.merged_tsv} "
+            "{input.hp_gz} "
             "{output.pdf} "
         "2>> {log} ; "
         "Rscript src/plot_score.R "
             "z "
-            "{params.merged_tsv} "
+            "{input.hp_gz} "
             "{output.z_pdf} "
-        "2>> {log} ; "
-        "pigz "
-            "--best "
-            "{params.merged_tsv} "
         "2>> {log}"

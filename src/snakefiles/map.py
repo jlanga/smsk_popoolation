@@ -1,6 +1,6 @@
 rule map_genome_bowtie2_index:  # TODO: make it a generic rule. maybe
     """
-    Index with bowtie
+    Index with bowtie2
     """
     input:
         fa = RAW + "genome.fa"
@@ -83,7 +83,7 @@ rule map_split_population_chromosome_split:  # USE BAM bc it markduplicates need
         bam = temp(
             MAP_SPLIT + "{population}/{library}/{chromosome}.bam"
         )
-    threads: 4
+    threads: 1
     params:
         chromosome = "{chromosome}"
     log: MAP_SPLIT + "{population}/{library}/{chromosome}.log"
@@ -140,7 +140,7 @@ rule map_filter_population_chromosome:  # TODO: java memory, uncompressed bam
             "-u "
             "- "
         "| samtools sort "
-            "-l 9 "
+            "-l 1 "
             "-o {output.cram} "
             "--reference {input.reference} "
             "--output-fmt CRAM "
@@ -173,7 +173,7 @@ rule map_merge_libraries:
         reference = RAW + "genome.fa"
     output:
         cram = MAP_FILT + "{population}/{chromosome}.cram"
-    threads: 24
+    threads: 4
     log: MAP_FILT + "{population}/{chromosome}.log"
     benchmark: MAP_FILT + "{population}/{chromosome}.json"
     shell:

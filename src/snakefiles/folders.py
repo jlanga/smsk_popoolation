@@ -21,13 +21,13 @@ SYNC_SUB = "results/sync/subsampled/"
 ## Tables
 TABLE_D = "results/tajimad/tables/"
 TABLE_PI = "results/tajimapi/tables/"
-TABLE_T = "results/theta/tables/"
+TABLE_THETA = "results/theta/tables/"
 TABLE_HP = "results/hp/tables/"
 TABLE_FST = "results/fst/tables/"
 
 ## Plots
 PLOT_D = "results/tajimad/plot/"
 PLOT_PI = "results/tajimapi/plot/"
-PLOT_T = "results/theta/plot/"
+PLOT_THETA = "results/theta/plot/"
 PLOT_HP = "results/hp/plot/"
 PLOT_FST = "results/fst/plot/"
