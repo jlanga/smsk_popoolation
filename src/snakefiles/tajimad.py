@@ -43,7 +43,7 @@ rule tajimad_merge_vs:
         )
     output: protected(PLOT_D + "{population}.tsv.gz")
     threads: 8
-    shell: "pigz --best --keep --processes {threads} {input} > {output}"
+    shell: "pigz --best --keep --stdout --processes {threads} {input} > {output}"
 
 
 rule tajimad_merge_snps:
@@ -55,7 +55,7 @@ rule tajimad_merge_snps:
         )
     output: protected(PLOT_D + "{population}.snps.gz")
     threads: 8
-    shell:  "pigz --best --keep --processes {threads} {input} > {output}"
+    shell: "pigz --best --keep --stdout --processes {threads} {input} > {output}"
 
 
 
@@ -64,7 +64,7 @@ rule tajimad_plot_population:
     Plot a genome-wide Tajima's D distribution
     """
     input:
-        tsv = PLOT_D + "{population}.tsv.gz"
+        tsv_gz = PLOT_D + "{population}.tsv.gz"
     output:
         z_pdf = protected(PLOT_D + "{population}_z.pdf"),
         pdf = protected(PLOT_D + "{population}.pdf")
@@ -75,11 +75,11 @@ rule tajimad_plot_population:
     shell:
         "Rscript src/plot_score.R "
             "none "
-            "{input.tsv} "
+            "{input.tsv_gz} "
             "{output.pdf} "
         "2>> {log} ; "
         "Rscript src/plot_score.R "
             "z "
-            "{input.tsv} "
+            "{input.tsv_gz} "
             "{output.z_pdf} "
         "2>> {log}"

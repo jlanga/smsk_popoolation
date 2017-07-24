@@ -5,11 +5,9 @@ rule tajimapi_table_population_chromosome:
     input:
         mpileup_gz = MPILEUP_SUB + "{population}/{chromosome}.mpileup.gz"
     output:
-        snps_gz = TABLE_PI + "{population}/{chromosome}.snps.gz",
-        vs_gz = TABLE_PI + "{population}/{chromosome}.tsv.gz"
+        snps = temp(TABLE_PI + "{population}/{chromosome}.snps"),
+        vs = temp(TABLE_PI + "{population}/{chromosome}.tsv"),
     params:
-        snps = TABLE_PI + "{population}/{chromosome}.snps",
-        vs = TABLE_PI + "{population}/{chromosome}.tsv",
         mincount = config["popoolation_params"]["tajimapi"]["mincount"],
         mincoverage = config["popoolation_params"]["tajimapi"]["mincoverage"],
         maxcoverage = config["popoolation_params"]["tajimapi"]["maxcoverage"],
@@ -21,7 +19,7 @@ rule tajimapi_table_population_chromosome:
     benchmark: TABLE_PI + "{population}/{chromosome}.json"
     shell:
         "perl src/popoolation_1.2.2/Variance-sliding.pl "
-            "--measure pi "
+            "--measure D "
             "--fastq-type sanger "
             "--min-count {params.mincount} "
             "--min-coverage {params.mincoverage} "
@@ -30,46 +28,64 @@ rule tajimapi_table_population_chromosome:
             "--pool-size {params.poolsize} "
             "--window-size {params.windowsize} "
             "--step-size {params.stepsize} "
-            "--input <(pigz --decompress --stdout {input.mpileup_gz}) "
-            "--output {params.vs} "
-            "--snp-output {params.snps} "
-        "2> {log} 1>&2 ; "
-        "pigz --best {params.snps} 2>> {log} ; "
-        "pigz --best {params.vs} 2>> {log}"
+            "--input <(gzip --decompress --stdout {input.mpileup_gz}) "
+            "--output {output.vs} "
+            "--snp-output {output.snps} "
+        "2> {log} 1>&2"
+
+
+rule tajimapi_merge_vs:
+    """
+    Merge all tsvs into a single tsv.gz
+    """
+    input:
+        expand(
+            TABLE_PI + "{population}/{chromosome}.tsv",
+            chromosome = CHROMOSOMES,
+            population = ["{population}"]
+        )
+    output: protected(PLOT_PI + "{population}.tsv.gz")
+    threads: 8
+    shell: "pigz --best --keep --stdout --processes {threads} {input} > {output}"
+
+
+rule tajimapi_merge_snps:
+    """
+    Merge all snps into a single snps.tsv
+    """
+    input:
+        expand(
+            TABLE_PI + "{population}/{chromosome}.snps",
+            chromosome = CHROMOSOMES,
+            population = ["{population}"]
+        )
+    output: protected(PLOT_PI + "{population}.snps.gz")
+    threads: 8
+    shell: "pigz --best --keep --stdout --processes {threads} {input} > {output}"
 
 
 
 rule tajimapi_plot_population:
     """
-    Plot the genome-wide Tajima's Pi distribution.
+    Plot a genome-wide Tajima's Pi distribution
     """
     input:
-        tsvs = expand(
-            TABLE_PI + "{population}/{chromosome}.tsv.gz",
-            population = "{population}",
-            chromosome = CHROMOSOMES
-        )
+        tsv_gz = PLOT_PI + "{population}.tsv.gz"
     output:
-        merged_tsv_gz = PLOT_PI + "{population}.tsv.gz",
-        z_pdf = PLOT_PI + "{population}_z.pdf",
-        pdf = PLOT_PI + "{population}.pdf"
+        z_pdf = protected(PLOT_PI + "{population}_z.pdf"),
+        pdf = protected(PLOT_PI + "{population}.pdf")
     params:
         merged_tsv = PLOT_PI + "{population}.tsv"
     log: PLOT_PI + "{population}.log"
     benchmark: PLOT_PI + "{population}.json"
     shell:
-        "pigz --decompress --stdout {input.tsvs} "
-            "| bash src/variance_sliding_to_genomic_score.sh "
-        "> {params.merged_tsv} "
-        "2> {log} ; "
         "Rscript src/plot_score.R "
             "none "
-            "{params.merged_tsv} "
+            "{input.tsv_gz} "
             "{output.pdf} "
         "2>> {log} ; "
         "Rscript src/plot_score.R "
             "z "
-            "{params.merged_tsv} "
+            "{input.tsv_gz} "
             "{output.z_pdf} "
-        "2>> {log} ; "
-        "pigz --best {params.merged_tsv} 2>> {log}"
+        "2>> {log}"
