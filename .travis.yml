@@ -13,4 +13,4 @@ script:
   - bash src/install/conda_env.sh
   - bash src/install/from_tarball.sh
   - source activate smsk_popoolation
-  - snakemake -j 1
+  - snakemake -j 2

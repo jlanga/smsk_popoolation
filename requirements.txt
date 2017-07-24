@@ -3,7 +3,7 @@
 snakemake
 pyyaml
 bowtie2=2.2.6
-samtools=0.1.19
+samtools=1.5.0
 trimmomatic=0.35
 graphviz=2.38.0
 python=3.5
