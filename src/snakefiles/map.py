@@ -121,7 +121,7 @@ rule map_filter_population_chromosome:  # TODO: java memory, uncompressed bam
         chromosome = "{chromosome}"
     log: MAP_FILT + "{population}/{library}/{chromosome}.log"
     benchmark: MAP_FILT + "{population}/{library}/{chromosome}.json"
-    threads: 24
+    threads: 4
     shell:
         "(picard -Xmx4g MarkDuplicates "
             "INPUT={input.bam} "
@@ -162,10 +162,6 @@ def get_library_files_from_sample(wildcards):
     ]
     return files
 
-# def get_library_files_from_sample(wildcards):
-#     samples = [MAP_FILT + wildcards.population + "/" + chromosome + ".tsv.gz"
-#                 for chromosome in CHROMOSOMES]
-#     return files
 
 
 rule map_merge_libraries:

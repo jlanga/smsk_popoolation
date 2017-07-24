@@ -21,32 +21,3 @@ rule index_fa:
     input: "{filename}.fa"
     output: "{filename}.fa.fai"
     shell: "samtools faidx {input}"
-
-rule decompress_mpileup:
-    """Decompress temporarily a .mpileup.gz"""
-    input: "{filename}.mpileup.gz"
-    output: temp("{filename}.mpileup")
-    shell: "pigz --decompress --keep {input}"
-
-rule decompress_tsv:
-    """Decompress temporarily a .tsv"""
-    input: "{filename}.tsv.gz"
-    output: temp("{filename}.tsv")
-    shell: "pigz --decompress --keep {input}"
-
-rule decompress_sync:
-    """Decompress temporarily a .sync"""
-    input: "{filename}.sync.gz"
-    output: "{filename}.sync"
-    shell: "pigz --decompress --keep {input}"
-
-# rule join_compressed_tsvs:
-#     """Join multiple tsvs into one, and compress it"""
-#     input: expand(
-#         "{prefix}/{chromosome}.tsv.gz",
-#         chromosome = CHROMOSOMES
-#     )
-#     output: "{prefix}.tsv.gz"
-#     shell:
-#         "pigz --decompress --stdout {input} "
-#         "| pigz --best > {output}"
