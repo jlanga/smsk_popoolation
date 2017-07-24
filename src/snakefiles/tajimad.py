@@ -5,11 +5,9 @@ rule tajimad_table_population_chromosome:
     input:
         mpileup_gz = MPILEUP_SUB + "{population}/{chromosome}.mpileup.gz"
     output:
-        snps_gz = TABLE_D + "{population}/{chromosome}.snps.gz",
-        vs_gz = TABLE_D + "{population}/{chromosome}.tsv.gz"
+        snps = temp(TABLE_D + "{population}/{chromosome}.snps"),
+        vs = temp(TABLE_D + "{population}/{chromosome}.tsv"),
     params:
-        snps = TABLE_D + "{population}/{chromosome}.snps",
-        vs = TABLE_D + "{population}/{chromosome}.tsv",
         mincount = config["popoolation_params"]["tajimad"]["mincount"],
         mincoverage = config["popoolation_params"]["tajimad"]["mincoverage"],
         maxcoverage = config["popoolation_params"]["tajimad"]["maxcoverage"],
@@ -30,12 +28,34 @@ rule tajimad_table_population_chromosome:
             "--pool-size {params.poolsize} "
             "--window-size {params.windowsize} "
             "--step-size {params.stepsize} "
-            "--input <(pigz --decompress --stdout {input.mpileup_gz}) "
-            "--output {params.vs} "
-            "--snp-output {params.snps} "
-        "2> {log} 1>&2 ; "
-        "pigz --best {params.snps} 2>> {log} ; "
-        "pigz --best {params.vs} 2>> {log}"
+            "--input <(gzip --decompress --stdout {input.mpileup_gz}) "
+            "--output {output.vs} "
+            "--snp-output {output.snps} "
+        "2> {log} 1>&2"
+
+
+rule tajimad_merge_vs:
+    input:
+        expand(
+            TABLE_D + "{population}/{chromosome}.tsv",
+            chromosome = CHROMOSOMES,
+            population = ["{population}"]
+        )
+    output: protected(PLOT_D + "{population}.tsv.gz")
+    threads: 8
+    shell: "pigz --best --keep --processes {threads} {input} > {output}"
+
+
+rule tajimad_merge_snps:
+    input:
+        expand(
+            TABLE_D + "{population}/{chromosome}.snps",
+            chromosome = CHROMOSOMES,
+            population = ["{population}"]
+        )
+    output: protected(PLOT_D + "{population}.snps.gz")
+    threads: 8
+    shell:  "pigz --best --keep --processes {threads} {input} > {output}"
 
 
 
@@ -44,32 +64,22 @@ rule tajimad_plot_population:
     Plot a genome-wide Tajima's D distribution
     """
     input:
-        tsvs =expand(
-            TABLE_D + "{population}/{chromosome}.tsv.gz",
-            population = "{population}",
-            chromosome = CHROMOSOMES
-        )
+        tsv = PLOT_D + "{population}.tsv.gz"
     output:
-        merged_tsv_gz = PLOT_D + "{population}.tsv.gz",
-        z_pdf = PLOT_D + "{population}_z.pdf",
-        pdf = PLOT_D + "{population}.pdf"
+        z_pdf = protected(PLOT_D + "{population}_z.pdf"),
+        pdf = protected(PLOT_D + "{population}.pdf")
     params:
         merged_tsv = PLOT_D + "{population}.tsv"
     log: PLOT_D + "{population}.log"
     benchmark: PLOT_D + "{population}.json"
     shell:
-        "pigz --decompress --stdout {input.tsvs} "
-            "| bash src/variance_sliding_to_genomic_score.sh "
-        "> {params.merged_tsv} "
-        "2> {log} ; "
         "Rscript src/plot_score.R "
             "none "
-            "{params.merged_tsv} "
+            "{input.tsv} "
             "{output.pdf} "
         "2>> {log} ; "
         "Rscript src/plot_score.R "
             "z "
-            "{params.merged_tsv} "
+            "{input.tsv} "
             "{output.z_pdf} "
-        "2>> {log} ; "
-        "pigz --best {params.merged_tsv} 2>> {log}"
+        "2>> {log}"

@@ -57,28 +57,34 @@ rule mpileup_filter_population_chromosome_mpileup:
         mpileup_gz = MPILEUP_RAW + "{population}/{chromosome}.mpileup.gz",
         gtf = MPILEUP_FILT + "{population}/{chromosome}.gtf"
     output:
-        mpileup = temp(
+        mpileup_fifo = temp(
             MPILEUP_FILT + "{population}/{chromosome}.mpileup"
+        ),
+        mpileup_gz = temp(
+            MPILEUP_FILT + "{population}/{chromosome}.mpileup.gz"
         )
     log: MPILEUP_FILT + "{population}/{chromosome}.mpileup.log"
     benchmark: MPILEUP_FILT + "{population}/{chromosome}.mpileup.json"
     shell:
+        "mkfifo {output.mpileup_fifo}; "
+        "(cat {output.mpileup_fifo} | gzip --fast > {output.mpileup_gz} &);"
         "perl src/popoolation_1.2.2/basic-pipeline/filter-pileup-by-gtf.pl "
-            "--input <(gzip --decompress --stdout {input.mpileup_gz} ) "
+            "--input <(gzip --decompress --stdout {input.mpileup_gz}) "
             "--gtf {input.gtf} "
-            "--output {output.mpileup} "
+            "--output {output.mpileup_fifo} "
         "2> {log} 1>&2"
 
 
 
 rule mpileup_subsample_population_chromosome:
     """
-    Perform the subsampling step. Compress results.
+    Perform the subsampling step. Compress results as they are generated through
+    a FIFO.
     """
     input:
-        mpileup = MPILEUP_FILT + "{population}/{chromosome}.mpileup"
+        mpileup = MPILEUP_FILT + "{population}/{chromosome}.mpileup.gz"
     output:
-        mpileup = temp(
+        mpileup_fifo = temp(
             MPILEUP_SUB + "{population}/{chromosome}.mpileup"
         ),
         mpileup_gz = protected(
@@ -92,13 +98,14 @@ rule mpileup_subsample_population_chromosome:
     log: MPILEUP_SUB + "{population}/{chromosome}.log"
     benchmark: MPILEUP_SUB + "{population}/{chromosome}.json"
     shell:
+        "mkfifo {output.mpileup_fifo}; "
+        "(cat {output.mpileup_fifo} | gzip --best > {output.mpileup_gz} &); "
         "perl src/popoolation_1.2.2/basic-pipeline/subsample-pileup.pl "
             "--min-qual {params.minqual} "
             "--method {params.method} "
             "--max-coverage {params.maxcoverage} "
             "--fastq-type sanger "
             "--target-coverage {params.targetcoverage} "
-            "--input {input.mpileup} "
-            "--output {output.mpileup} "
+            "--input <(gzip -dc {input.mpileup}) "
+            "--output {output.mpileup_fifo} "
         "2> {log} 1>&2 ; "
-        "gzip --best --keep {output.mpileup} 2>> {log}"
