@@ -10,13 +10,14 @@ rule mpileup_population_chromosome:
         mpileup_gz = MPILEUP_RAW + "{population}/{chromosome}.mpileup.gz"
     log: MPILEUP_RAW + "{population}/{chromosome}.log"
     benchmark: MPILEUP_RAW + "{population}/{chromosome}.json"
+    threads: 2  # mpileup and gzip work at the same pace
     shell:
         "(samtools mpileup "
             "--no-BAQ "
             "--min-BQ 0 "
             "--fasta-ref {input.fa} "
             "{input.cram} "
-        "| pigz "
+        "| gzip "
             "--best "
         "> {output.mpileup_gz} "
         ") 2> {log}"

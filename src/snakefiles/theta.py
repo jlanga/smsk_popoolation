@@ -1,6 +1,6 @@
 rule theta_table_population_chromosome:
     """
-    Get the sliding Theta values.
+    Get the sliding Tajima's D values.
     """
     input:
         mpileup_gz = MPILEUP_SUB + "{population}/{chromosome}.mpileup.gz"
@@ -8,13 +8,13 @@ rule theta_table_population_chromosome:
         snps = temp(TABLE_THETA + "{population}/{chromosome}.snps"),
         vs = temp(TABLE_THETA + "{population}/{chromosome}.tsv"),
     params:
-        mincount = config["popoolation_params"]["theta"]["mincount"],
-        mincoverage = config["popoolation_params"]["theta"]["mincoverage"],
-        maxcoverage = config["popoolation_params"]["theta"]["maxcoverage"],
-        mincoveredfraction = config["popoolation_params"]["theta"]["mincoveredfraction"],
-        poolsize = config["popoolation_params"]["theta"]["poolsize"],
-        stepsize = config["popoolation_params"]["theta"]["stepsize"],
-        windowsize = config["popoolation_params"]["theta"]["windowsize"],
+        mincount = config["popoolation_params"]["tajimad"]["mincount"],
+        mincoverage = config["popoolation_params"]["tajimad"]["mincoverage"],
+        maxcoverage = config["popoolation_params"]["tajimad"]["maxcoverage"],
+        mincoveredfraction = config["popoolation_params"]["tajimad"]["mincoveredfraction"],
+        poolsize = config["popoolation_params"]["tajimad"]["poolsize"],
+        stepsize = config["popoolation_params"]["tajimad"]["stepsize"],
+        windowsize = config["popoolation_params"]["tajimad"]["windowsize"],
     log: TABLE_THETA + "{population}/{chromosome}.log"
     benchmark: TABLE_THETA + "{population}/{chromosome}.json"
     shell:
@@ -36,7 +36,7 @@ rule theta_table_population_chromosome:
 
 rule theta_merge_vs:
     """
-    Merge all tsvs into a single tsv.gz
+    Merge theta results and take the genomic score
     """
     input:
         expand(
@@ -45,14 +45,16 @@ rule theta_merge_vs:
             population = ["{population}"]
         )
     output: protected(PLOT_THETA + "{population}.tsv.gz")
+    log: PLOT_THETA + "merge_vs.log"
+    benchmark: PLOT_THETA + "merge_vs.json"
     threads: 8
-    shell: "pigz --best --keep --stdout --processes {threads} {input} > {output}"
+    shell:
+        "(bash src/variance_sliding_to_genomic_score.sh {input} "
+        "| pigz --best --processes {threads} > {output}) "
+        "2> {log}"
 
 
 rule theta_merge_snps:
-    """
-    Merge all snps into a single snps.tsv
-    """
     input:
         expand(
             TABLE_THETA + "{population}/{chromosome}.snps",
@@ -67,7 +69,7 @@ rule theta_merge_snps:
 
 rule theta_plot_population:
     """
-    Plot a genome-wide Theta's distribution
+    Plot a genome-wide Tajima's D distribution
     """
     input:
         tsv_gz = PLOT_THETA + "{population}.tsv.gz"
@@ -80,12 +82,11 @@ rule theta_plot_population:
     benchmark: PLOT_THETA + "{population}.json"
     shell:
         "Rscript src/plot_score.R "
-            "none "
-            "{input.tsv_gz} "
-            "{output.pdf} "
+            "--input {input.tsv_gz} "
+            "--output {output.pdf} "
         "2>> {log} ; "
         "Rscript src/plot_score.R "
-            "z "
-            "{input.tsv_gz} "
-            "{output.z_pdf} "
+            "--normalize "
+            "--input {input.tsv_gz} "
+            "--output {output.z_pdf} "
         "2>> {log}"

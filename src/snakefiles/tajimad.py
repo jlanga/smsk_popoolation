@@ -42,8 +42,13 @@ rule tajimad_merge_vs:
             population = ["{population}"]
         )
     output: protected(PLOT_D + "{population}.tsv.gz")
+    log: PLOT_D + "merge_vs.log"
+    benchmark: PLOT_D + "merge_vs.json"
     threads: 8
-    shell: "pigz --best --keep --stdout --processes {threads} {input} > {output}"
+    shell:
+        "(bash src/variance_sliding_to_genomic_score.sh {input} "
+        "| pigz --best --processes {threads} > {output}) "
+        "2> {log}"
 
 
 rule tajimad_merge_snps:
@@ -74,12 +79,11 @@ rule tajimad_plot_population:
     benchmark: PLOT_D + "{population}.json"
     shell:
         "Rscript src/plot_score.R "
-            "none "
-            "{input.tsv_gz} "
-            "{output.pdf} "
+            "--input {input.tsv_gz} "
+            "--output {output.pdf} "
         "2>> {log} ; "
         "Rscript src/plot_score.R "
-            "z "
-            "{input.tsv_gz} "
-            "{output.z_pdf} "
+            "--normalize "
+            "--input {input.tsv_gz} "
+            "--output {output.z_pdf} "
         "2>> {log}"

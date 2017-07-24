@@ -118,12 +118,12 @@ rule map_filter_population_chromosome:  # TODO: java memory, uncompressed bam
         ),
         dupstats = MAP_FILT + "{population}/{library}/{chromosome}.dupstats"
     params:
-        chromosome = "{chromosome}"
+        memory= config["picard_sortsam_params"]["memory"]
     log: MAP_FILT + "{population}/{library}/{chromosome}.log"
     benchmark: MAP_FILT + "{population}/{library}/{chromosome}.json"
     threads: 4
     shell:
-        "(picard -Xmx4g MarkDuplicates "
+        "(picard -Xmx{params.memory} MarkDuplicates "
             "INPUT={input.bam} "
             "OUTPUT=/dev/stdout "
             "METRICS_FILE={output.dupstats} "
