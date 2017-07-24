@@ -40,7 +40,7 @@ rule mpileup_filter_population_chromosome_gtf:
     benchmark: MPILEUP_FILT + "{population}/{chromosome}.gtf.json"
     shell:
         "perl src/popoolation_1.2.2/basic-pipeline/identify-genomic-indel-regions.pl "
-            "--input <(pigz --decompress --stdout {input.mpileup_gz}) "
+            "--input <(gzip --decompress --stdout {input.mpileup_gz}) "
             "--output {output.gtf} "
             "--indel-window {params.indel_window} "
             "--min-count {params.min_count} "
@@ -57,20 +57,17 @@ rule mpileup_filter_population_chromosome_mpileup:
         mpileup_gz = MPILEUP_RAW + "{population}/{chromosome}.mpileup.gz",
         gtf = MPILEUP_FILT + "{population}/{chromosome}.gtf"
     output:
-        mpileup_gz = temp(
-            MPILEUP_FILT + "{population}/{chromosome}.mpileup.gz"
+        mpileup = temp(
+            MPILEUP_FILT + "{population}/{chromosome}.mpileup"
         )
-    params:
-        mpileup = MPILEUP_FILT + "{population}/{chromosome}.mpileup"
     log: MPILEUP_FILT + "{population}/{chromosome}.mpileup.log"
     benchmark: MPILEUP_FILT + "{population}/{chromosome}.mpileup.json"
     shell:
         "perl src/popoolation_1.2.2/basic-pipeline/filter-pileup-by-gtf.pl "
-            "--input <(pigz --decompress --stdout {input.mpileup_gz} ) "
+            "--input <(gzip --decompress --stdout {input.mpileup_gz} ) "
             "--gtf {input.gtf} "
-            "--output {params.mpileup} "
-        "2> {log} 1>&2 ; "
-        "pigz --best {params.mpileup} 2>> {log}"
+            "--output {output.mpileup} "
+        "2> {log} 1>&2"
 
 
 
@@ -79,11 +76,15 @@ rule mpileup_subsample_population_chromosome:
     Perform the subsampling step. Compress results.
     """
     input:
-        mpileup_gz = MPILEUP_FILT + "{population}/{chromosome}.mpileup.gz"
+        mpileup = MPILEUP_FILT + "{population}/{chromosome}.mpileup"
     output:
-        mpileup_gz = MPILEUP_SUB + "{population}/{chromosome}.mpileup.gz"
+        mpileup = temp(
+            MPILEUP_SUB + "{population}/{chromosome}.mpileup"
+        ),
+        mpileup_gz = protected(
+            MPILEUP_SUB + "{population}/{chromosome}.mpileup.gz"
+        )
     params:
-        mpileup        = MPILEUP_SUB + "{population}/{chromosome}.mpileup",
         minqual        = config["popoolation_params"]["subsample"]["minqual"],
         method         = config["popoolation_params"]["subsample"]["method"],
         maxcoverage    = config["popoolation_params"]["subsample"]["maxcoverage"],
@@ -97,7 +98,7 @@ rule mpileup_subsample_population_chromosome:
             "--max-coverage {params.maxcoverage} "
             "--fastq-type sanger "
             "--target-coverage {params.targetcoverage} "
-            "--input <(pigz --decompress --stdout {input.mpileup_gz}) "
-            "--output {params.mpileup} "
+            "--input {input.mpileup} "
+            "--output {output.mpileup} "
         "2> {log} 1>&2 ; "
-        "pigz --best {params.mpileup} 2>> {log}"
+        "gzip --best --keep {output.mpileup} 2>> {log}"
