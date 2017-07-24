@@ -15,21 +15,55 @@ rule sync_mpileup_chromosome:
         mpileup_gz = SYNC_MPILEUP + "{chromosome}.mpileup.gz"
     log: SYNC_MPILEUP + "{chromosome}.log"
     benchmark: SYNC_MPILEUP + "{chromosome}.json"
+    threads: 2  # Not very throughput
     shell:
         "(samtools mpileup "
             "--no-BAQ "
             "--min-BQ 0 "
             "-f {input.fa} "
             "{input.crams} "
-        "| pigz --best "
+        "| gzip --best "
         "> {output.mpileup_gz} "
         ") 2> {log}"
+
+
+
+# rule sync_mpileup2sync_chromosome:
+#     """
+#     Convert an mpileup file into a sync file.
+#     """
+#     input:
+#         mpileup_gz = SYNC_MPILEUP + "{chromosome}.mpileup.gz"
+#     output:
+#         sync_gz = SYNC_RAW + "{chromosome}.sync.gz"
+#     params:
+#         mpileup = SYNC_MPILEUP + "{chromosome}.mpileup",
+#         sync = SYNC_RAW + "{chromosome}.sync",
+#         min_qual = config["popoolation2_params"]["mpileup2sync"]["min_qual"],
+#     threads: 8
+#     log:
+#         SYNC_RAW + "{chromosome}.log"
+#     benchmark:
+#         SYNC_RAW + "{chromosome}.json"
+#     shell:
+#         #"pigz --decompress --stdout {input.mpileup_gz} > {params.mpileup} 2> {log} ; "
+#         "(java -jar src/popoolation2_1201/mpileup2sync.jar "
+#             "--input <(gzip -dc {input.mpileup_gz}) "
+#             "--output {params.sync} "
+#             "--fastq-type sanger "
+#             "--min-qual {params.min_qual} "
+#             "--threads {threads} || true ) "
+#         "2>> {log} ; "
+#         "rm {params.mpileup} ; "
+#         "pigz --best {params.sync} 2>> {log}"
 
 
 
 rule sync_mpileup2sync_chromosome:
     """
     Convert an mpileup file into a sync file.
+
+    Note: mpileup2sync returns error always: that is why there is a || true.
     """
     input:
         mpileup_gz = SYNC_MPILEUP + "{chromosome}.mpileup.gz"
@@ -45,17 +79,16 @@ rule sync_mpileup2sync_chromosome:
     benchmark:
         SYNC_RAW + "{chromosome}.json"
     shell:
-        "pigz --decompress --stdout {input.mpileup_gz} > {params.mpileup} 2> {log} ; "
+        #"pigz --decompress --stdout {input.mpileup_gz} > {params.mpileup} 2> {log} ; "
         "(java -jar src/popoolation2_1201/mpileup2sync.jar "
-            "--input {params.mpileup} "
-            "--output {params.sync} "
+            "--input <(gzip -dc {input.mpileup_gz}) "
+            "--output >(pigz --best > {output.sync_gz}) "
             "--fastq-type sanger "
             "--min-qual {params.min_qual} "
-            "--threads {threads} || true ) "
-        "2>> {log} ; "
-        "rm {params.mpileup} ; "
-        "pigz --best {params.sync} 2>> {log}"
-
+            "--threads {threads} "
+        "2> {log} || true)"
+        #"rm {params.mpileup} ; "
+        #"pigz --best {params.sync} 2>> {log}"
 
 
 rule sync_subsample_chromosome:
