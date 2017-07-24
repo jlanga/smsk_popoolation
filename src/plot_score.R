@@ -1,10 +1,37 @@
 #!/usr/bin/env Rscript
-require(tidyverse)
-require(ggplot2)
+require(argparse)
 
 color_palette <- c("darkblue", "orange")
 
-#filename <- "ibe_north.tsv"
+parser <- ArgumentParser()
+
+parser$add_argument(
+    "-i", "--input",
+    metavar="FILE",
+    type="character",
+    help="Input file, with the form CHROMOSOME TAB POSITION TAB SCORE"
+)
+
+parser$add_argument(
+    "-o", "--output",
+    metavar="FILE",
+    type="character",
+    help="Output file. Format will be inferred from extension."
+)
+
+parser$add_argument(
+    "-n", "--normalize",
+    action="store_true",
+    help="Perform normalization of values (value - mean)/std_dev",
+    default=FALSE
+)
+
+args <- parser$parse_args()
+
+
+require(tidyverse)
+require(ggplot2)
+
 
 
 # Function to read the files with the Tajma D's calculations
@@ -66,7 +93,7 @@ plot_score <- function(data, fileout, hlines=NULL){
           name = "Genomic position",
           breaks = ticks$pos,
           labels = plot_labels ) +
-        # Y axis: title
+        # Y axis: title23 args <- parser$parse_args()
         scale_y_continuous( "Score" ) +
         # Plot points with size 1.5, alpha 0.5 and coloured
         geom_point( aes( alpha = 0.5 , colour = color ) , size = 1.5, na.rm = TRUE ) +
@@ -90,28 +117,22 @@ plot_score <- function(data, fileout, hlines=NULL){
 
 
 
-args <- commandArgs(trailingOnly = TRUE)
+#args <- commandArgs(trailingOnly = TRUE)
 
-action  <- args[1]
-filein  <- args[2]
-fileout <- args[3]
-
-if(length(args) != 3){
-    stop("Incorrect number of files. Maybe missing action")
-}
+filein  <- args$input
+fileout <- args$output
+normalize <- args$normalize
 
 data <- read_scores(filein)
 
-if( action == "z"){
+if( normalize ){
     data %>%
         mutate(
             score = (score - mean(score, na.rm= TRUE)) / sd(score, na.rm = TRUE)
         ) %>%
-    plot_score( . , fileout )
-}else if(action == "none"){
-    plot_score( data , fileout )
+    plot_score(., fileout)
 }else{
-    stop("Incorrect action")
+    plot_score(data, fileout)
 }
 
 

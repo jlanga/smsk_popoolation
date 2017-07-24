@@ -1,6 +1,6 @@
 rule tajimapi_table_population_chromosome:
     """
-    Get the sliding Tajima's Pi values.
+    Get the sliding Tajima's D values.
     """
     input:
         mpileup_gz = MPILEUP_SUB + "{population}/{chromosome}.mpileup.gz"
@@ -8,13 +8,13 @@ rule tajimapi_table_population_chromosome:
         snps = temp(TABLE_PI + "{population}/{chromosome}.snps"),
         vs = temp(TABLE_PI + "{population}/{chromosome}.tsv"),
     params:
-        mincount = config["popoolation_params"]["tajimapi"]["mincount"],
-        mincoverage = config["popoolation_params"]["tajimapi"]["mincoverage"],
-        maxcoverage = config["popoolation_params"]["tajimapi"]["maxcoverage"],
-        mincoveredfraction = config["popoolation_params"]["tajimapi"]["mincoveredfraction"],
-        poolsize = config["popoolation_params"]["tajimapi"]["poolsize"],
-        stepsize = config["popoolation_params"]["tajimapi"]["stepsize"],
-        windowsize = config["popoolation_params"]["tajimapi"]["windowsize"],
+        mincount = config["popoolation_params"]["tajimad"]["mincount"],
+        mincoverage = config["popoolation_params"]["tajimad"]["mincoverage"],
+        maxcoverage = config["popoolation_params"]["tajimad"]["maxcoverage"],
+        mincoveredfraction = config["popoolation_params"]["tajimad"]["mincoveredfraction"],
+        poolsize = config["popoolation_params"]["tajimad"]["poolsize"],
+        stepsize = config["popoolation_params"]["tajimad"]["stepsize"],
+        windowsize = config["popoolation_params"]["tajimad"]["windowsize"],
     log: TABLE_PI + "{population}/{chromosome}.log"
     benchmark: TABLE_PI + "{population}/{chromosome}.json"
     shell:
@@ -35,9 +35,6 @@ rule tajimapi_table_population_chromosome:
 
 
 rule tajimapi_merge_vs:
-    """
-    Merge all tsvs into a single tsv.gz
-    """
     input:
         expand(
             TABLE_PI + "{population}/{chromosome}.tsv",
@@ -45,14 +42,16 @@ rule tajimapi_merge_vs:
             population = ["{population}"]
         )
     output: protected(PLOT_PI + "{population}.tsv.gz")
+    log: PLOT_PI + "merge_vs.log"
+    benchmark: PLOT_PI + "merge_vs.json"
     threads: 8
-    shell: "pigz --best --keep --stdout --processes {threads} {input} > {output}"
+    shell:
+        "(bash src/variance_sliding_to_genomic_score.sh {input} "
+        "| pigz --best --processes {threads} > {output}) "
+        "2> {log}"
 
 
 rule tajimapi_merge_snps:
-    """
-    Merge all snps into a single snps.tsv
-    """
     input:
         expand(
             TABLE_PI + "{population}/{chromosome}.snps",
@@ -67,7 +66,7 @@ rule tajimapi_merge_snps:
 
 rule tajimapi_plot_population:
     """
-    Plot a genome-wide Tajima's Pi distribution
+    Plot a genome-wide Tajima's D distribution
     """
     input:
         tsv_gz = PLOT_PI + "{population}.tsv.gz"
@@ -80,12 +79,11 @@ rule tajimapi_plot_population:
     benchmark: PLOT_PI + "{population}.json"
     shell:
         "Rscript src/plot_score.R "
-            "none "
-            "{input.tsv_gz} "
-            "{output.pdf} "
+            "--input {input.tsv_gz} "
+            "--output {output.pdf} "
         "2>> {log} ; "
         "Rscript src/plot_score.R "
-            "z "
-            "{input.tsv_gz} "
-            "{output.z_pdf} "
+            "--normalize "
+            "--input {input.tsv_gz} "
+            "--output {output.z_pdf} "
         "2>> {log}"

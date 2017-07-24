@@ -28,6 +28,7 @@ bowtie2_params:
     "" #"--no-unal"
 
 picard_sortsam_params:
+    memory: 4g
 
 popoolation_params:
     find_indels:
