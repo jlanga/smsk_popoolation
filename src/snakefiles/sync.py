@@ -70,16 +70,11 @@ rule sync_mpileup2sync_chromosome:
     output:
         sync_gz = SYNC_RAW + "{chromosome}.sync.gz"
     params:
-        mpileup = SYNC_MPILEUP + "{chromosome}.mpileup",
-        sync = SYNC_RAW + "{chromosome}.sync",
         min_qual = config["popoolation2_params"]["mpileup2sync"]["min_qual"],
     threads: 8
-    log:
-        SYNC_RAW + "{chromosome}.log"
-    benchmark:
-        SYNC_RAW + "{chromosome}.json"
+    log: SYNC_RAW + "{chromosome}.log"
+    benchmark: SYNC_RAW + "{chromosome}.json"
     shell:
-        #"pigz --decompress --stdout {input.mpileup_gz} > {params.mpileup} 2> {log} ; "
         "(java -jar src/popoolation2_1201/mpileup2sync.jar "
             "--input <(gzip -dc {input.mpileup_gz}) "
             "--output >(pigz --best > {output.sync_gz}) "
@@ -87,8 +82,7 @@ rule sync_mpileup2sync_chromosome:
             "--min-qual {params.min_qual} "
             "--threads {threads} "
         "2> {log} || true)"
-        #"rm {params.mpileup} ; "
-        #"pigz --best {params.sync} 2>> {log}"
+
 
 
 rule sync_subsample_chromosome:
