@@ -1,4 +1,7 @@
 def files_for_sync_mpileup_chromosome(wildcards):
+    """
+    Return files cram files associated to current chromosome.
+    """
     files = [MAP_FILT + population + "/" + wildcards.chromosome + ".cram"
         for population in POPULATIONS]
     return sorted(files)
@@ -9,7 +12,7 @@ rule sync_mpileup2sync_chromosome:
     """
     Call SNPs with samtools mpileup and convert to sync.
 
-    Note: mpileup2sync returns error always: that is why there is a || true.
+    Note: mpileup2sync returns error always and that is why there is a || true.
     """
     input:
         crams = files_for_sync_mpileup_chromosome,
@@ -19,7 +22,6 @@ rule sync_mpileup2sync_chromosome:
         sync = temp(SYNC_RAW + "{chromosome}.sync")  # TEMP!
     params:
         min_qual = config["popoolation2_params"]["mpileup2sync"]["min_qual"],
-        max_memory = "1G"
     threads: 2 # One for samtools and remainder for java
     log: SYNC_RAW + "{chromosome}.log"
     benchmark: SYNC_RAW + "{chromosome}.json"
@@ -29,7 +31,7 @@ rule sync_mpileup2sync_chromosome:
             "--min-BQ 0 "
             "-f {input.fa} "
             "{input.crams}"
-        "| java -Xmx 1G -jar src/popoolation2_1201/mpileup2sync.jar "
+        "| java -Xmx1G -jar src/popoolation2_1201/mpileup2sync.jar "
             "--input /dev/stdin "
             "--output {output.sync} "
             "--fastq-type sanger "
