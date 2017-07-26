@@ -19,7 +19,8 @@ rule sync_mpileup2sync_chromosome:
         sync = temp(SYNC_RAW + "{chromosome}.sync")  # TEMP!
     params:
         min_qual = config["popoolation2_params"]["mpileup2sync"]["min_qual"],
-    threads: 4  # High RAM usage, ~ 2-4Gb per process
+        max_memory = "1G"
+    threads: 2 # One for samtools and remainder for java
     log: SYNC_RAW + "{chromosome}.log"
     benchmark: SYNC_RAW + "{chromosome}.json"
     shell:
@@ -28,13 +29,14 @@ rule sync_mpileup2sync_chromosome:
             "--min-BQ 0 "
             "-f {input.fa} "
             "{input.crams}"
-        "| java -jar src/popoolation2_1201/mpileup2sync.jar "
+        "| java -Xmx 1G -jar src/popoolation2_1201/mpileup2sync.jar "
             "--input /dev/stdin "
             "--output {output.sync} "
             "--fastq-type sanger "
             "--min-qual {params.min_qual} "
             "--threads {threads} "
-        ") 2> {log} 1>&2"
+        "|| true) "
+        "2> {log} 1>&2"
 
 
 
