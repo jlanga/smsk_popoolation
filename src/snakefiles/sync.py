@@ -19,7 +19,7 @@ rule sync_mpileup2sync_chromosome:
         sync = temp(SYNC_RAW + "{chromosome}.sync")  # TEMP!
     params:
         min_qual = config["popoolation2_params"]["mpileup2sync"]["min_qual"],
-    threads: 1
+    threads: 4  # High RAM usage, ~ 2-4Gb per process
     log: SYNC_RAW + "{chromosome}.log"
     benchmark: SYNC_RAW + "{chromosome}.json"
     shell:
@@ -34,7 +34,7 @@ rule sync_mpileup2sync_chromosome:
             "--fastq-type sanger "
             "--min-qual {params.min_qual} "
             "--threads {threads} "
-        "|| true) 2> {log} 1>&2"
+        ") 2> {log} 1>&2"
 
 
 
