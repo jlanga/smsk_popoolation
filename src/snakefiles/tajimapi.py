@@ -35,6 +35,9 @@ rule tajimapi_table_population_chromosome:
 
 
 rule tajimapi_merge_vs:
+    """
+    Merge per chromosome Variance Sliding results into a single file.
+    """
     input:
         expand(
             TABLE_PI + "{population}/{chromosome}.tsv",
@@ -52,6 +55,9 @@ rule tajimapi_merge_vs:
 
 
 rule tajimapi_merge_snps:
+    """
+    Merge per chromosome results into a single file.
+    """
     input:
         expand(
             TABLE_PI + "{population}/{chromosome}.snps",

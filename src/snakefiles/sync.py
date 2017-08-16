@@ -12,7 +12,7 @@ rule sync_mpileup2sync_chromosome:
     """
     Call SNPs with samtools mpileup and convert to sync.
 
-    Note: mpileup2sync returns error always and that is why there is a || true.
+    Note: mpileup2sync returns error always, and that is why there is a || true.
     """
     input:
         crams = files_for_sync_mpileup_chromosome,
