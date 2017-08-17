@@ -13,6 +13,7 @@ rule mpileup_population_chromosome:
     threads: 2  # mpileup and gzip work at the same pace
     shell:
         "(samtools mpileup "
+            "-a "
             "--no-BAQ "
             "--min-BQ 0 "
             "--fasta-ref {input.fa} "
