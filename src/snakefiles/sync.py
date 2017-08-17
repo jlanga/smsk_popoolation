@@ -1,10 +1,10 @@
-def files_for_sync_mpileup_chromosome(wildcards):
-    """
-    Return files cram files associated to current chromosome.
-    """
-    files = [MAP_FILT + population + "/" + wildcards.chromosome + ".cram"
-        for population in POPULATIONS]
-    return sorted(files)
+# def files_for_sync_chromosome(wildcards):
+#     """
+#     Return files mpileup files associated to current chromosome.
+#     """
+#     files = [MPILEUP_RAW + population + "/" + wildcards.chromosome + ".cram"
+#         for population in POPULATIONS]
+#     return sorted(files)
 
 
 
@@ -12,25 +12,35 @@ rule sync_mpileup2sync_chromosome:
     """
     Call SNPs with samtools mpileup and convert to sync.
 
-    Note: mpileup2sync returns error always, and that is why there is a || true.
+    - mpileup2sync returns error always, and that is why there is a || true.
+    - the eval thing... It could be improved someway
     """
     input:
-        crams = files_for_sync_mpileup_chromosome,
+        mpileups = expand(
+            MPILEUP_RAW + "{population}/{chromosome}.mpileup.gz",
+            population=POPULATIONS,
+            chromosome="{chromosome}"
+        ),
         fa  = RAW + "genome.fa",
         fai = RAW + "genome.fa.fai",
     output:
         sync = temp(SYNC_RAW + "{chromosome}.sync")  # TEMP!
     params:
         min_qual = config["popoolation2_params"]["mpileup2sync"]["min_qual"],
-    threads: 2 # One for samtools and remainder for java
+        mpileups_comma = "{" + ",".join(
+            expand(
+                MPILEUP_RAW + "{population}/{chromosome}.mpileup.gz",
+                population=POPULATIONS,
+                chromosome="{chromosome}"
+            )
+        ) + "}"
+    threads: 1
     log: SYNC_RAW + "{chromosome}.log"
     benchmark: SYNC_RAW + "{chromosome}.json"
     shell:
-        "(samtools mpileup "
-            "--no-BAQ "
-            "--min-BQ 0 "
-            "-f {input.fa} "
-            "{input.crams}"
+        "(eval "
+            "paste <(gzip -dc {input.mpileups[0]} | cut -f 1-3) "
+            "'<(gzip -dc '{params.mpileups_comma}' | cut -f 4-6 )' "
         "| java -Xmx1G -jar src/popoolation2_1201/mpileup2sync.jar "
             "--input /dev/stdin "
             "--output {output.sync} "
