@@ -113,7 +113,7 @@ rule map_filter_population_chromosome:  # TODO: java memory, uncompressed bam
         bam = MAP_SPLIT + "{population}/{library}/{chromosome}.bam",
         reference = RAW + "genome.fa"
     output:
-        cram = temp(
+        cram = protected(
             MAP_FILT + "{population}/{library}/{chromosome}.cram"
         ),
         dupstats = MAP_FILT + "{population}/{library}/{chromosome}.dupstats"
@@ -140,48 +140,10 @@ rule map_filter_population_chromosome:  # TODO: java memory, uncompressed bam
             "-u "
             "- "
         "| samtools sort "
-            "-l 1 "
+            "-l 9 "
             "-o {output.cram} "
             "--reference {input.reference} "
             "--output-fmt CRAM "
             "-@ {threads} "
             "/dev/stdin "
         ") 2> {log}"
-
-
-def get_library_files_from_sample(wildcards):
-    """ TODO: needs improvement/simplification
-    Return the list of libraries corresponding to a population and chromosome.
-    """
-    files = [
-        MAP_FILT + \
-        wildcards.population + "/" + \
-        library + "/" + \
-        wildcards.chromosome + ".cram" \
-        for library in config["samples_pe"][wildcards.population]
-    ]
-    return files
-
-
-
-rule map_merge_libraries:
-    """
-    Merge multiple libraries from the same sample.
-    """
-    input:
-        crams = get_library_files_from_sample,
-        reference = RAW + "genome.fa"
-    output:
-        cram = MAP_FILT + "{population}/{chromosome}.cram"
-    threads: 4
-    log: MAP_FILT + "{population}/{chromosome}.log"
-    benchmark: MAP_FILT + "{population}/{chromosome}.json"
-    shell:
-        "samtools merge "
-            "-l 9 "
-            "--output-fmt CRAM "
-            "--reference {input.reference} "
-            "-@ {threads} "
-            "{output.cram} "
-            "{input.crams} "
-        "2> {log}"
