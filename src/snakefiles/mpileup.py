@@ -1,22 +1,42 @@
+def get_library_files_from_sample(wildcards):
+    """ TODO: needs improvement/simplification
+    Return the list of libraries corresponding to a population and chromosome.
+    """
+    files = [
+        MAP_FILT + \
+        wildcards.population + "/" + \
+        library + "/" + \
+        wildcards.chromosome + ".cram" \
+        for library in config["samples_pe"][wildcards.population]
+    ]
+    return files
+
+
 rule mpileup_population_chromosome:
     """
     Compute the mpileup and compress it
     """
     input:
-        cram = MAP_FILT + "{population}/{chromosome}.cram",
+        cram = get_library_files_from_sample,
         fa  = RAW + "genome.fa",
         fai = RAW + "genome.fa.fai"
     output:
         mpileup_gz = MPILEUP_RAW + "{population}/{chromosome}.mpileup.gz"
     log: MPILEUP_RAW + "{population}/{chromosome}.log"
     benchmark: MPILEUP_RAW + "{population}/{chromosome}.json"
-    threads: 2  # mpileup and gzip work at the same pace
+    threads: 1  # mpileup and gzip work at the same pace
     shell:
-        "(samtools mpileup "
+        "(samtools merge "
+            "-u "
+            "--reference {input.fa} "
+            "- "
+            "{input.cram} "
+        "| samtools mpileup "
+            "-a "
             "--no-BAQ "
             "--min-BQ 0 "
             "--fasta-ref {input.fa} "
-            "{input.cram} "
+            "- "
         "| gzip "
             "--best "
         "> {output.mpileup_gz} "
