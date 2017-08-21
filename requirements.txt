@@ -13,3 +13,4 @@ numpy=1.11.2
 pigz
 r-ggplot2=2.2.0
 r-tidyverse
+r-argparse

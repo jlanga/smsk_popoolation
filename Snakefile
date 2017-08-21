@@ -84,7 +84,7 @@ rule all:
             population = POPULATIONS
         ),
         expand(
-            PLOT_T + "{population}.pdf",
+            PLOT_THETA + "{population}.pdf",
             population = POPULATIONS
         ),
         expand(
@@ -101,4 +101,4 @@ rule all:
 
 rule clean:
     shell:
-        "rm -r results"
+        "rm -r results/"

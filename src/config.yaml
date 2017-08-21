@@ -3,15 +3,22 @@ samples_se:
 
 samples_pe:
     pop1:
-        forward: data/reads/pop1_1.fastq.gz
-        reverse: data/reads/pop1_2.fastq.gz
-        adaptor: data/adapters/TruSeq3-PE-2.fa
-        phred:   phred33
+        lib1:
+            forward: data/reads/pop1_1.fastq.gz
+            reverse: data/reads/pop1_2.fastq.gz
+            adaptor: data/adapters/TruSeq3-PE-2.fa
+            phred:   phred33
+        # lib2:
+        #     forward: data/reads/pop1_1.fastq.gz
+        #     reverse: data/reads/pop1_2.fastq.gz
+        #     adaptor: data/adapters/TruSeq3-PE-2.fa
+        #     phred:   phred33
     pop2:
-        forward: data/reads/pop2_1.fastq.gz
-        reverse: data/reads/pop2_2.fastq.gz
-        adaptor: data/adapters/TruSeq3-PE-2.fa
-        phred:   phred33
+        lib1:
+            forward: data/reads/pop2_1.fastq.gz
+            reverse: data/reads/pop2_2.fastq.gz
+            adaptor: data/adapters/TruSeq3-PE-2.fa
+            phred:   phred33
 
 reference:
     dna: data/genome/2R.chr.gz
@@ -25,7 +32,8 @@ trimmomatic_params:
 bowtie2_params:
     "" #"--no-unal"
 
-picard_sortsam_params:
+picard_markduplicates_params:
+    memory: 1g
 
 popoolation_params:
     find_indels:

@@ -1,12 +1,13 @@
 rule tajimad_table_population_chromosome:
+    """
+    Get the sliding Tajima's D values.
+    """
     input:
         mpileup_gz = MPILEUP_SUB + "{population}/{chromosome}.mpileup.gz"
     output:
-        snps_gz = TABLE_D + "{population}/{chromosome}.snps.gz",
-        vs_gz = TABLE_D + "{population}/{chromosome}.tsv.gz"
+        snps = temp(TABLE_D + "{population}/{chromosome}.snps"),
+        vs = temp(TABLE_D + "{population}/{chromosome}.tsv"),
     params:
-        snps = TABLE_D + "{population}/{chromosome}.snps",
-        vs = TABLE_D + "{population}/{chromosome}.tsv",
         mincount = config["popoolation_params"]["tajimad"]["mincount"],
         mincoverage = config["popoolation_params"]["tajimad"]["mincoverage"],
         maxcoverage = config["popoolation_params"]["tajimad"]["maxcoverage"],
@@ -14,12 +15,8 @@ rule tajimad_table_population_chromosome:
         poolsize = config["popoolation_params"]["tajimad"]["poolsize"],
         stepsize = config["popoolation_params"]["tajimad"]["stepsize"],
         windowsize = config["popoolation_params"]["tajimad"]["windowsize"],
-    threads:
-        1
-    log:
-        TABLE_D + "{population}/{chromosome}.log"
-    benchmark:
-        TABLE_D + "{population}/{chromosome}.json"
+    log: TABLE_D + "{population}/{chromosome}.log"
+    benchmark: TABLE_D + "{population}/{chromosome}.json"
     shell:
         "perl src/popoolation_1.2.2/Variance-sliding.pl "
             "--measure D "
@@ -31,47 +28,62 @@ rule tajimad_table_population_chromosome:
             "--pool-size {params.poolsize} "
             "--window-size {params.windowsize} "
             "--step-size {params.stepsize} "
-            "--input <(pigz --decompress --stdout {input.mpileup_gz}) "
-            "--output {params.vs} "
-            "--snp-output {params.snps} "
-        "2> {log} 1>&2 ; "
-        "pigz --best {params.snps} 2>> {log} ; "
-        "pigz --best {params.vs} 2>> {log}"
-        
+            "--input <(gzip --decompress --stdout {input.mpileup_gz}) "
+            "--output {output.vs} "
+            "--snp-output {output.snps} "
+        "2> {log} 1>&2"
+
+
+rule tajimad_merge_vs:
+    input:
+        expand(
+            TABLE_D + "{population}/{chromosome}.tsv",
+            chromosome = CHROMOSOMES,
+            population = ["{population}"]
+        )
+    output: protected(PLOT_D + "{population}.tsv.gz")
+    log: PLOT_D + "merge_vs.log"
+    benchmark: PLOT_D + "merge_vs.json"
+    threads: 8
+    shell:
+        "(bash src/variance_sliding_to_genomic_score.sh {input} "
+        "| pigz --best --processes {threads} > {output}) "
+        "2> {log}"
+
+
+rule tajimad_merge_snps:
+    input:
+        expand(
+            TABLE_D + "{population}/{chromosome}.snps",
+            chromosome = CHROMOSOMES,
+            population = ["{population}"]
+        )
+    output: protected(PLOT_D + "{population}.snps.gz")
+    threads: 8
+    shell: "pigz --best --keep --stdout --processes {threads} {input} > {output}"
+
 
 
 rule tajimad_plot_population:
+    """
+    Plot a genome-wide Tajima's D distribution
+    """
     input:
-        tsvs =expand(
-            TABLE_D + "{population}/{chromosome}.tsv.gz",
-            population = "{population}",
-            chromosome = CHROMOSOMES
-        )
+        tsv_gz = PLOT_D + "{population}.tsv.gz"
     output:
-        merged_tsv_gz = PLOT_D + "{population}.tsv.gz", 
-        z_pdf = PLOT_D + "{population}_z.pdf",
-        pdf = PLOT_D + "{population}.pdf"
+        z_pdf = protected(PLOT_D + "{population}_z.pdf"),
+        pdf = protected(PLOT_D + "{population}.pdf")
     params:
         merged_tsv = PLOT_D + "{population}.tsv"
-    threads:
-        1
-    log:
-        PLOT_D + "{population}.log"
-    benchmark:
-        PLOT_D + "{population}.json"
+    log: PLOT_D + "{population}.log"
+    benchmark: PLOT_D + "{population}.json"
     shell:
-        "pigz --decompress --stdout {input.tsvs} "
-            "| bash src/variance_sliding_to_genomic_score.sh "
-        "> {params.merged_tsv} "
-        "2> {log} ; "
         "Rscript src/plot_score.R "
-            "none "
-            "{params.merged_tsv} "
-            "{output.pdf} "
+            "--input {input.tsv_gz} "
+            "--output {output.pdf} "
         "2>> {log} ; "
         "Rscript src/plot_score.R "
-            "z "
-            "{params.merged_tsv} "
-            "{output.z_pdf} "
-        "2>> {log} ; "
-        "pigz --best {params.merged_tsv} 2>> {log}"
+            "--normalize "
+            "--input {input.tsv_gz} "
+            "--output {output.z_pdf} "
+        "2>> {log}"
