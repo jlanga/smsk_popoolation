@@ -17,9 +17,13 @@ before_install:
   - bash .travis/travis_before_install.sh
   - export PATH="/home/travis/miniconda3/bin:$PATH"
 
+install:
+  - bash src/install/conda_env.sh
+  - bash src/install/from_tarball.sh
+
 script:
   - source activate smsk_popoolation
-  - travis_wait 50 snakemake -j 2
+  - travis_wait 50 snakemake --timestamp -j
 
 after_failure:
   - find -name "*.log" -printf "%T@\t%p\n" | sort -n | cut -f 2 | head -20 | xargs tail -vn +1
