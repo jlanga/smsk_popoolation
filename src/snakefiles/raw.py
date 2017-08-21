@@ -6,7 +6,6 @@ rule raw_make_links_pe_sample:
         forward= lambda wildcards: config["samples_pe"][wildcards.sample][wildcards.library]["forward"],
         reverse= lambda wildcards: config["samples_pe"][wildcards.sample][wildcards.library]["reverse"]
     output:
-
         forward= RAW + "{sample}/{library}_1.fq.gz",
         reverse= RAW + "{sample}/{library}_2.fq.gz"
     shell:
