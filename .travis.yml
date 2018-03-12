@@ -18,12 +18,16 @@ before_install:
   - export PATH="/home/travis/miniconda3/bin:$PATH"
 
 install:
-  - bash src/install/conda_env.sh
-  - bash src/install/from_tarball.sh
+    - export PATH="/home/travis/miniconda3/bin:$PATH"
+    - conda config --add channels defaults
+    - conda config --add channels conda-forge
+    - conda config --add channels bioconda
+    - conda install -c bioconda snakmake
+    - bash src/install/from_tarball.sh
 
 script:
-  - source activate smsk_popoolation
-  - travis_wait 50 snakemake --timestamp --use-conda -j
+    - export PATH="/home/travis/miniconda3/bin:$PATH"
+    - travis_wait 50 snakemake --timestamp --use-conda -j
 
 after_failure:
-  - find -name "*.log" -printf "%T@\t%p\n" | sort -n | cut -f 2 | head -20 | xargs tail -vn +1
+    - find -name "*.log" -printf "%T@\t%p\n" | sort -n | cut -f 2 | head -20 | xargs tail -vn +1
