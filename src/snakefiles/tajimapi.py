@@ -12,7 +12,7 @@ rule tajimapi_popoolation:
         mincoverage = config["popoolation_params"]["tajimad"]["mincoverage"],
         maxcoverage = config["popoolation_params"]["tajimad"]["maxcoverage"],
         mincoveredfraction = config["popoolation_params"]["tajimad"]["mincoveredfraction"],
-        poolsize = config["popoolation_params"]["tajimad"]["poolsize"],
+        poolsize = lambda wildcards: config["pool_sizes"][wildcards.population],
         stepsize = config["popoolation_params"]["tajimad"]["stepsize"],
         windowsize = config["popoolation_params"]["tajimad"]["windowsize"],
     log: TABLE_PI + "{population}/{chromosome}.log"

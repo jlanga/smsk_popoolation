@@ -21,7 +21,9 @@ rule fst_sliding_chromosome:
         min_covered_fraction = config["popoolation2_params"]["fst_sliding"]["min_covered_fraction"],
         min_coverage = config["popoolation2_params"]["fst_sliding"]["min_coverage"],
         max_coverage = config["popoolation2_params"]["fst_sliding"]["max_coverage"],
-        pool_size = config["popoolation2_params"]["fst_sliding"]["pool_size"],
+        pool_size = ":".join(
+            [config["pool_sizes"][population] for population in POPULATIONS]
+        ),
         min_count = config["popoolation2_params"]["fst_sliding"]["min_count"]
     log: TABLE_FST + "{chromosome}.log"
     benchmark: TABLE_FST + "{chromosome}.json"
