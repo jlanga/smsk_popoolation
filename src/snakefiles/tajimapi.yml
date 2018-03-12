@@ -1,0 +1,11 @@
+channels:
+    - bioconda
+    - conda-forge
+    - defaults
+dependencies:
+    - perl=5.22.0
+    - pigz
+    - r-ggplot2=2.2.0=r3.3.2_0
+    - r-tidyverse=1.1.1=r3.3.2_0
+    - r-argparse=1.0.1=py36r3.3.2_0
+    - readline=6.2

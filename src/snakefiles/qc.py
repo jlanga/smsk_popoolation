@@ -1,15 +1,15 @@
 rule qc_trimmomatic_pe:
-    """
-    Run trimmomatic on paired end mode to eliminate Illumina adaptors and
-    remove low quality regions and reads.
+    """Run trimmomatic on paired end mode
+
+    to eliminate Illumina adaptors andremove low quality regions and reads.
+
     Inputs _1 and _2 are piped through gzip/pigz.
     Outputs _1 and _2 are piped to gzip/pigz (level 9).
-    Outputs _3 and _4 are compressed with the builtin compressor from
-    Trimmomatic. Further on they are catted and compressed with gzip/pigz
-    (level 9).
-    Note: The cut -f 1 -d " " is to remove additional fields in the FASTQ
-    header. It is done posterior to the trimming since the output comes
-    slower than the input is read.
+    Outputs _3 and _4 are compressed with the builtin compressor from Trimmomatic.
+
+    Further on they are catted and compressed with gzip/pigz (level 9).
+    Note: The cut -f 1 -d " " is to remove additional fields in the FASTQ header. It is done
+    posterior to the trimming since the output comes slower than the input is read.
     """
     input:
         forward = RAW + "{sample}/{library}_1.fq.gz",
@@ -26,6 +26,7 @@ rule qc_trimmomatic_pe:
     log: QC + "{sample}/{library}.trimmomatic_pe.log"
     benchmark: QC + "{sample}/{library}.trimmomatic_pe.json"
     threads: 4
+    conda: "qc.yml"
     shell:
         "trimmomatic PE "
             "-threads {threads} "
@@ -47,11 +48,10 @@ rule qc_trimmomatic_pe:
 
 
 rule qc_trimmomatic_se:
-    """
-    Run trimmomatic on single end mode to eliminate Illumina adaptors and
-        remove low quality regions and reads.
-    Input is piped through pigz.
-    Output is piped to pigz.
+    """Run trimmomatic on single end mode
+    to eliminate Illumina adaptors and remove low quality regions and reads.
+    Input is piped through gzip.
+    Output is piped to gzip.
     """
     input:
         single = RAW + "{sample}/{library}_se.fq.gz",
@@ -63,7 +63,8 @@ rule qc_trimmomatic_se:
         trimmomatic_params = config["trimmomatic_params"]
     log: QC + "{sample}/{library}.trimmomatic_se.log"
     benchmark: QC + "{sample}/{library}.trimmomatic_se.json"
-    threads: 8
+    threads: 2
+    conda: "qc.yml"
     shell:
         "trimmomatic SE "
             "-threads {threads} "

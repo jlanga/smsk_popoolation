@@ -1,4 +1,4 @@
-rule tajimapi_table_population_chromosome:
+rule tajimapi_popoolation:
     """
     Get the sliding Tajima's D values.
     """
@@ -17,6 +17,7 @@ rule tajimapi_table_population_chromosome:
         windowsize = config["popoolation_params"]["tajimad"]["windowsize"],
     log: TABLE_PI + "{population}/{chromosome}.log"
     benchmark: TABLE_PI + "{population}/{chromosome}.json"
+    conda: "tajimapi.yml"
     shell:
         "perl src/popoolation_1.2.2/Variance-sliding.pl "
             "--measure D "
@@ -48,6 +49,7 @@ rule tajimapi_merge_vs:
     log: PLOT_PI + "merge_vs.log"
     benchmark: PLOT_PI + "merge_vs.json"
     threads: 8
+    conda: "tajimapi.yml"
     shell:
         "(bash src/variance_sliding_to_genomic_score.sh {input} "
         "| pigz --best --processes {threads} > {output}) "
@@ -66,11 +68,12 @@ rule tajimapi_merge_snps:
         )
     output: protected(PLOT_PI + "{population}.snps.gz")
     threads: 8
+    conda: "tajimapi.yml"
     shell: "pigz --best --keep --stdout --processes {threads} {input} > {output}"
 
 
 
-rule tajimapi_plot_population:
+rule tajimapi_plot:
     """
     Plot a genome-wide Tajima's D distribution
     """
@@ -83,6 +86,7 @@ rule tajimapi_plot_population:
         merged_tsv = PLOT_PI + "{population}.tsv"
     log: PLOT_PI + "{population}.log"
     benchmark: PLOT_PI + "{population}.json"
+    conda: "tajimapi.yml"
     shell:
         "Rscript src/plot_score.R "
             "--input {input.tsv_gz} "

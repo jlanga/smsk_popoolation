@@ -1,7 +1,5 @@
 rule raw_make_links_pe_sample:
-    """
-    Make a link to the original file, with a prettier name than default.
-    """
+    """Make a link to the original file, with a prettier name than default"""
     input:
         forward= lambda wildcards: config["samples_pe"][wildcards.sample][wildcards.library]["forward"],
         reverse= lambda wildcards: config["samples_pe"][wildcards.sample][wildcards.library]["reverse"]
@@ -15,9 +13,7 @@ rule raw_make_links_pe_sample:
 
 
 rule raw_make_links_se_sample:
-    """
-    Make a link to the original file, with a prettier name than default.
-    """
+    """Make a link to the original file, with a prettier name than default"""
     input:
         single= lambda wildcards: config["samples_se"][wildcards.sample][wildcards.library]["single"],
     output:
@@ -27,9 +23,7 @@ rule raw_make_links_se_sample:
 
 
 rule raw_extract_genome:
-    """
-    Extract the fasta.gz on config.yaml into genome.fa
-    """
+    """Extract the fasta.gz on config.yaml into genome.fa"""
     input:
         fa_gz = config["reference"]["dna"]
     output:
@@ -37,7 +31,7 @@ rule raw_extract_genome:
     log: RAW + "genome.log"
     benchmark: RAW + "genome.json"
     shell:
-        "pigz "
+        "gzip "
             "--decompress "
             "--stdout "
             "{input.fa_gz} "

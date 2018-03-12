@@ -8,6 +8,7 @@ rule hp_table_population_chromosome:
         hp_gz = protected(TABLE_HP + "{population}.tsv.gz")
     log: TABLE_HP + "{population}.log"
     benchmark: TABLE_HP + "{population}.json"
+    conda: "hp.yml"
     shell:
         "(gzip --decompress --stdout {input.snps_gz} "
         "| python3 src/snps_to_hp.py "
@@ -30,6 +31,7 @@ rule hp_plot_population:
         1
     log: PLOT_HP + "{population}.log"
     benchmark: PLOT_HP + "{population}.json"
+    conda: "hp.yml"
     shell:
         "Rscript src/plot_score.R "
             "--input {input.hp_gz} "

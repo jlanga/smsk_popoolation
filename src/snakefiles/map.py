@@ -1,7 +1,5 @@
-rule map_genome_bowtie2_index:  # TODO: make it a generic rule. maybe
-    """
-    Index with bowtie2
-    """
+rule map_bowtie2_index:
+    """Index with bowtie2"""
     input:
         fa = RAW + "genome.fa"
     output:
@@ -14,16 +12,14 @@ rule map_genome_bowtie2_index:  # TODO: make it a generic rule. maybe
         )
     log: MAP_RAW + "genome.bowtie2_index.log"
     benchmark: MAP_RAW + "genome.bowtie2_index.json"
+    conda: "map.yml"
     shell:
         "bowtie2-build {input.fa} {output.mock} > {log} 2>&1"
 
 
 
-rule map_population_bowtie2:
-    """
-    Map population with bowtie2, sort with picard, compress to cram with
-    samtools.
-    """
+rule map_bowtie2_map:
+    """Map population with bowtie2, sort with picard, compress to cram with samtools"""
     input:
         forward = QC + "{population}/{library}_1.fq.gz",
         reverse = QC + "{population}/{library}_2.fq.gz",
@@ -44,6 +40,7 @@ rule map_population_bowtie2:
     threads: 24
     log: MAP_RAW + "{population}/{library}.bowtie2.log"
     benchmark: MAP_RAW + "{population}/{library}.bowtie2.json"
+    conda: "map.yml"
     shell:
         "(bowtie2 "
             "--rg-id {params.sq_id} "
@@ -67,8 +64,9 @@ rule map_population_bowtie2:
 
 
 
-rule map_split_population_chromosome_split:  # USE BAM bc it markduplicates needs a file
-    """
+rule map_split:  # USE BAM bc it markduplicates needs a file
+    """Extract chromosome in cram
+
     We use uncompressed bam to accelerate the output. The result of this rule is
     temporary.
 
@@ -88,6 +86,7 @@ rule map_split_population_chromosome_split:  # USE BAM bc it markduplicates need
         chromosome = "{chromosome}"
     log: MAP_SPLIT + "{population}/{library}/{chromosome}.log"
     benchmark: MAP_SPLIT + "{population}/{library}/{chromosome}.json"
+    conda: "map.yml"
     shell:
         "samtools view "
             "-u "
@@ -100,9 +99,8 @@ rule map_split_population_chromosome_split:  # USE BAM bc it markduplicates need
 
 
 
-rule map_filter_population_chromosome:  # TODO: java memory, uncompressed bam
-    """
-    Remove duplicates from CRAM and filter out sequences.
+rule map_filter:  # TODO: java memory, uncompressed bam
+    """Remove duplicates from CRAM and filter out sequences.
 
     samtools view | MarkDuplicates | samtools view -f -F | SortSam
     samtools view
@@ -122,6 +120,7 @@ rule map_filter_population_chromosome:  # TODO: java memory, uncompressed bam
     log: MAP_FILT + "{population}/{library}/{chromosome}.log"
     benchmark: MAP_FILT + "{population}/{library}/{chromosome}.json"
     threads: 1
+    conda: "map.yml"
     shell:
         "(picard -Xmx{params.memory} MarkDuplicates "
             "INPUT={input.bam} "

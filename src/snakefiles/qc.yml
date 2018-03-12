@@ -1,0 +1,7 @@
+channels:
+    - bioconda
+    - conda-forge
+    - defaults
+dependencies:
+    - trimmomatic=0.35
+    # - gzip  # gzip should be installed

@@ -1,4 +1,4 @@
-rule theta_table_population_chromosome:
+rule theta_popoolation:
     """
     Get the sliding Tajima's D values.
     """
@@ -17,6 +17,7 @@ rule theta_table_population_chromosome:
         windowsize = config["popoolation_params"]["tajimad"]["windowsize"],
     log: TABLE_THETA + "{population}/{chromosome}.log"
     benchmark: TABLE_THETA + "{population}/{chromosome}.json"
+    conda: "theta.yml"
     shell:
         "perl src/popoolation_1.2.2/Variance-sliding.pl "
             "--measure D "
@@ -48,6 +49,7 @@ rule theta_merge_vs:
     log: PLOT_THETA + "merge_vs.log"
     benchmark: PLOT_THETA + "merge_vs.json"
     threads: 8
+    conda: "theta.yml"
     shell:
         "(bash src/variance_sliding_to_genomic_score.sh {input} "
         "| pigz --best --processes {threads} > {output}) "
@@ -63,11 +65,12 @@ rule theta_merge_snps:
         )
     output: protected(PLOT_THETA + "{population}.snps.gz")
     threads: 8
+    conda: "theta.yml"
     shell: "pigz --best --keep --stdout --processes {threads} {input} > {output}"
 
 
 
-rule theta_plot_population:
+rule theta_plot:
     """
     Plot a genome-wide Tajima's D distribution
     """
@@ -80,6 +83,7 @@ rule theta_plot_population:
         merged_tsv = PLOT_THETA + "{population}.tsv"
     log: PLOT_THETA + "{population}.log"
     benchmark: PLOT_THETA + "{population}.json"
+    conda: "theta.yml"
     shell:
         "Rscript src/plot_score.R "
             "--input {input.tsv_gz} "

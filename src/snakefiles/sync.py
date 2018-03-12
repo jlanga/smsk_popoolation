@@ -37,6 +37,7 @@ rule sync_mpileup2sync_chromosome:
     threads: 1
     log: SYNC_RAW + "{chromosome}.log"
     benchmark: SYNC_RAW + "{chromosome}.json"
+    conda: "sync.yml"
     shell:
         "(eval "
             "paste <(gzip -dc {input.mpileups[0]} | cut -f 1-3) "
@@ -73,6 +74,7 @@ rule sync_subsample_chromosome:
         method =  config["popoolation2_params"]["subsample_synchronized"]["method"]
     log: SYNC_SUB + "{chromosome}.log"
     benchmark: SYNC_SUB + "{chromosome}.json"
+    conda: "sync.yml"
     shell:
         "perl src/popoolation2_1201/subsample-synchronized.pl "
             "--input {input.sync} "

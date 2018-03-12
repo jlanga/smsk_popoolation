@@ -25,6 +25,7 @@ rule fst_sliding_chromosome:
         min_count = config["popoolation2_params"]["fst_sliding"]["min_count"]
     log: TABLE_FST + "{chromosome}.log"
     benchmark: TABLE_FST + "{chromosome}.json"
+    conda: "fst.yml"
     shell:
         "perl src/popoolation2_1201/fst-sliding.pl "
             "--window-size {params.window_size} "
@@ -55,6 +56,7 @@ rule fst_merge:
     log: TABLE_FST + "merge.log"
     benchmark: TABLE_FST + "merge.json"
     threads: 24
+    conda: "fst.yml"
     shell:
         "pigz --best --stdout {input} > {output}"
 
@@ -87,6 +89,7 @@ rule fst_plot:  # TODO: the nested double for makes it impossible to understand
         PLOT_FST + "plot.log"
     benchmark:
         PLOT_FST + "plot.json"
+    conda: "fst.yml"
     shell:
         "for i in `seq 1 {params.n_pop}`; do "
             "for j in `seq $(($i + 1)) {params.n_pop}`; do "
