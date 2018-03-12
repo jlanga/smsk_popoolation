@@ -10,8 +10,8 @@ addons:
 
 cache:
     directories:
-            - $HOME/data/download/
-            - $HOME/miniconda3/
+        - $HOME/data/download/
+        - $HOME/miniconda3/
 
 before_install:
   - bash .travis/travis_before_install.sh
@@ -22,7 +22,7 @@ install:
     - conda config --add channels defaults
     - conda config --add channels conda-forge
     - conda config --add channels bioconda
-    - conda install -c bioconda snakmake
+    - conda install -c bioconda snakemake
     - bash src/install/from_tarball.sh
 
 script:
