@@ -23,7 +23,7 @@ install:
 
 script:
   - source activate smsk_popoolation
-  - travis_wait 50 snakemake --timestamp -j
+  - travis_wait 50 snakemake --timestamp --use-conda -j
 
 after_failure:
   - find -name "*.log" -printf "%T@\t%p\n" | sort -n | cut -f 2 | head -20 | xargs tail -vn +1
