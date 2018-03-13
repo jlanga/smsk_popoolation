@@ -1,5 +1,5 @@
-rule map_bowtie2_index:
-    """Index with bowtie2"""
+rule map_bwa_index:
+    """Index with bwa"""
     input:
         fa = RAW + "genome.fa"
     output:
@@ -7,19 +7,19 @@ rule map_bowtie2_index:
             MAP_RAW + "genome"
         ),
         buckets = expand(
-            MAP_RAW + "genome.{suffix}.bt2",
-            suffix = "1 2 3 4 rev.1 rev.2".split()
+            MAP_RAW + "genome.{suffix}",
+            suffix = "amb ann bwt pac sa".split()
         )
-    log: MAP_RAW + "genome.bowtie2_index.log"
-    benchmark: MAP_RAW + "genome.bowtie2_index.json"
+    log: MAP_RAW + "genome.bwa_index.log"
+    benchmark: MAP_RAW + "genome.bwa_index.json"
     conda: "map.yml"
     shell:
-        "bowtie2-build {input.fa} {output.mock} > {log} 2>&1"
+        "bwa index -p {output.mock} {input.fa} > {log} 2>&1"
 
 
 
-rule map_bowtie2_map:
-    """Map population with bowtie2, sort with picard, compress to cram with samtools"""
+rule map_bwa_map:
+    """Map population with bowtie2, sort with samtools, compress to cram"""
     input:
         forward = QC + "{population}/{library}_1.fq.gz",
         reverse = QC + "{population}/{library}_2.fq.gz",
@@ -32,27 +32,24 @@ rule map_bowtie2_map:
             MAP_RAW + "{population}/{library}.cram"
         )
     params:
-        bowtie2_params = config["bowtie2_params"],
+        bowtie2_params = config["bwa_params"],
         sq_id = "{population}_{library}",
         sq_library = "LB:truseq_{library}",
         sq_platform = "PL:Illumina",
         sq_sample = "SM:{population}",
     threads: 24
-    log: MAP_RAW + "{population}/{library}.bowtie2.log"
-    benchmark: MAP_RAW + "{population}/{library}.bowtie2.json"
+    log: MAP_RAW + "{population}/{library}.bwa_mem.log"
+    benchmark: MAP_RAW + "{population}/{library}.bwa_mem.json"
     conda: "map.yml"
     shell:
-        "(bowtie2 "
-            "--rg-id {params.sq_id} "
-            "--rg {params.sq_library} "
-            "--rg {params.sq_platform} "
-            "--rg {params.sq_sample} "
-            "--threads {threads} "
+        "(bwa mem "
+            "-M "
+            "-R '@RG\tID:{params.sq_id}\t{params.sq_library}\t{params.sq_platform}\t{params.sq_sample}' "
+            "-t {threads} "
             "{params.bowtie2_params} "
-            "-x {input.index} "
-            "-1 {input.forward} "
-            "-2 {input.reverse} "
-            "-U {input.unp_forward},{input.unp_reverse} "
+            "{input.index} "
+            "{input.forward} "
+            "{input.reverse} "
         "| samtools sort "
             "-l 9 "
             "-o {output.cram} "

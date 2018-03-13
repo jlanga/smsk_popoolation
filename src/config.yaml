@@ -34,8 +34,8 @@ chromosomes:
 trimmomatic_params:
     "AVGQUAL:3 MINLEN:31 LEADING:19 TRAILING:19 MINLEN:31 SLIDINGWINDOW:4:5 LEADING:5 TRAILING:5 MINLEN:25 TOPHRED33"
 
-bowtie2_params:
-    "" #"--no-unal"
+bwa_params:
+    ""
 
 picard_markduplicates_params:
     memory: 1g
