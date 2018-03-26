@@ -23,7 +23,8 @@ rule sync_mpileup2sync_chromosome:
                 population=POPULATIONS,
                 chromosome="{chromosome}"
             )
-        ) + "}"
+        ) + "}",
+        memory = config["popoolation2_params"]["mpileup2sync"]["memory"]
     threads: 1
     log: SYNC_RAW + "{chromosome}.log"
     benchmark: SYNC_RAW + "{chromosome}.json"
