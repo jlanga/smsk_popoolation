@@ -51,19 +51,21 @@ include: "src/snakefiles/theta.py"
 include: "src/snakefiles/hp.py"
 include: "src/snakefiles/sync.py"
 include: "src/snakefiles/fst.py"
-
+include: "src/snakefiles/reports.py"
 
 
 rule all:
     input:
+        rules.qc.input,
+        rules.map.input,
         # raw rules
-        #RAW + "genome.fa",
+        # RAW + "genome.fa",
         # trimming
-        #expand(
-        #    QC + "{population}_{end}.fq.gz",
+        # expand(
+        #    QC + "{population}.{library}_{end}.fq.gz",
         #    population = POPULATIONS,
         #    end = "1 2".split()
-        #),
+        # ),
         # mapping
         #expand(
         #    MAP_FILT + "{population}/{chromosome}.bam",
@@ -95,7 +97,8 @@ rule all:
             PLOT_FST + str(i) + "_" + str(j) +".pdf"
             for i in range(1, len(POPULATIONS))
             for j in range(i+1, len(POPULATIONS)+1)
-        ]
+        ],
+        rules.reports.input
 
 
 
