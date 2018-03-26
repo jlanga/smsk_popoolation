@@ -10,8 +10,8 @@ POPULATIONS_PE = config["samples_pe"] if config["samples_pe"] is not None else [
 POPULATIONS_SE = config["samples_se"] if config["samples_se"] is not None else []
 POPULATIONS = [x for x in POPULATIONS_PE] + [x for x in POPULATIONS_SE]
 PAIRS = ["pe_pe", "pe_se"]
-CHROMOSOMES  = config["chromosomes"].split()
-ENDS = "1 2 u".split()
+CHROMOSOMES  = config["chromosomes"].split(" ")
+ENDS = "1 2 u".split(" ")
 
 
 # Wildcards functions
