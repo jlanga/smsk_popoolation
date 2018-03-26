@@ -3,10 +3,10 @@ rule theta_popoolation:
     Get the sliding Tajima's D values.
     """
     input:
-        mpileup_gz = MPILEUP_SUB + "{population}/{chromosome}.mpileup.gz"
+        mpileup_gz = MPILEUP_SUB + "{population}/{population}.{chromosome}.mpileup.gz"
     output:
-        snps = temp(TABLE_THETA + "{population}/{chromosome}.snps"),
-        vs = temp(TABLE_THETA + "{population}/{chromosome}.tsv"),
+        snps = temp(TABLE_THETA + "{population}/{population}.{chromosome}.snps"),
+        vs = temp(TABLE_THETA + "{population}/{population}.{chromosome}.tsv"),
     params:
         mincount = config["popoolation_params"]["tajimad"]["mincount"],
         mincoverage = config["popoolation_params"]["tajimad"]["mincoverage"],
@@ -15,8 +15,8 @@ rule theta_popoolation:
         poolsize = lambda wildcards: config["pool_sizes"][wildcards.population],
         stepsize = config["popoolation_params"]["tajimad"]["stepsize"],
         windowsize = config["popoolation_params"]["tajimad"]["windowsize"],
-    log: TABLE_THETA + "{population}/{chromosome}.log"
-    benchmark: TABLE_THETA + "{population}/{chromosome}.json"
+    log: TABLE_THETA + "{population}/{population}.{chromosome}.log"
+    benchmark: TABLE_THETA + "{population}/{population}.{chromosome}.json"
     conda: "theta.yml"
     shell:
         "perl src/popoolation_1.2.2/Variance-sliding.pl "
@@ -41,7 +41,7 @@ rule theta_merge_vs:
     """
     input:
         expand(
-            TABLE_THETA + "{population}/{chromosome}.tsv",
+            TABLE_THETA + "{population}/{population}.{chromosome}.tsv",
             chromosome = CHROMOSOMES,
             population = ["{population}"]
         )
@@ -59,7 +59,7 @@ rule theta_merge_vs:
 rule theta_merge_snps:
     input:
         expand(
-            TABLE_THETA + "{population}/{chromosome}.snps",
+            TABLE_THETA + "{population}/{population}.{chromosome}.snps",
             chromosome = CHROMOSOMES,
             population = ["{population}"]
         )

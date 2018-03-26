@@ -1,13 +1,3 @@
-# def files_for_sync_chromosome(wildcards):
-#     """
-#     Return files mpileup files associated to current chromosome.
-#     """
-#     files = [MPILEUP_RAW + population + "/" + wildcards.chromosome + ".cram"
-#         for population in POPULATIONS]
-#     return sorted(files)
-
-
-
 rule sync_mpileup2sync_chromosome:
     """
     Call SNPs with samtools mpileup and convert to sync.
@@ -17,7 +7,7 @@ rule sync_mpileup2sync_chromosome:
     """
     input:
         mpileups = expand(
-            MPILEUP_RAW + "{population}/{chromosome}.mpileup.gz",
+            MPILEUP_RAW + "{population}/{population}.{chromosome}.mpileup.gz",
             population=POPULATIONS,
             chromosome="{chromosome}"
         ),
@@ -29,7 +19,7 @@ rule sync_mpileup2sync_chromosome:
         min_qual = config["popoolation2_params"]["mpileup2sync"]["min_qual"],
         mpileups_comma = "{" + ",".join(
             expand(
-                MPILEUP_RAW + "{population}/{chromosome}.mpileup.gz",
+                MPILEUP_RAW + "{population}/{population}.{chromosome}.mpileup.gz",
                 population=POPULATIONS,
                 chromosome="{chromosome}"
             )
@@ -84,3 +74,9 @@ rule sync_subsample_chromosome:
             "--method {params.method} "
         "2> {log} ; "
         "pigz --best --keep {output.sync} 2>> {log}"
+
+
+
+rule sync:
+    input:
+        [SYNC_SUB + chromosome + ".sync.gz" for chromosome in CHROMOSOMES]

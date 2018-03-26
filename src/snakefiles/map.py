@@ -4,14 +4,14 @@ rule map_bwa_index:
         fa = RAW + "genome.fa"
     output:
         mock  = touch(
-            MAP_RAW + "genome"
+            MAP_INDEX + "genome"
         ),
         buckets = expand(
-            MAP_RAW + "genome.{suffix}",
+            MAP_INDEX + "genome.{suffix}",
             suffix = "amb ann bwt pac sa".split()
         )
-    log: MAP_RAW + "genome.bwa_index.log"
-    benchmark: MAP_RAW + "genome.bwa_index.json"
+    log: MAP_INDEX + "bwa_index.log"
+    benchmark: MAP_INDEX + "bwa_index.json"
     conda: "map.yml"
     shell:
         "bwa index -p {output.mock} {input.fa} > {log} 2>&1"
@@ -21,15 +21,15 @@ rule map_bwa_index:
 rule map_bwa_map:
     """Map population with bowtie2, sort with samtools, compress to cram"""
     input:
-        forward = QC + "{population}/{library}_1.fq.gz",
-        reverse = QC + "{population}/{library}_2.fq.gz",
-        unp_forward = QC + "{population}/{library}_3.fq.gz",
-        unp_reverse = QC + "{population}/{library}_4.fq.gz",
-        index = MAP_RAW + "genome",
+        forward = QC + "{population}.{library}_1.fq.gz",
+        reverse = QC + "{population}.{library}_2.fq.gz",
+        unp_forward = QC + "{population}.{library}_3.fq.gz",
+        unp_reverse = QC + "{population}.{library}_4.fq.gz",
+        index = MAP_INDEX + "genome",
         reference = RAW + "genome.fa"
     output:
         cram = protected(
-            MAP_RAW + "{population}/{library}.cram"
+            MAP_RAW + "{population}.{library}.cram"
         )
     params:
         bowtie2_params = config["bwa_params"],
@@ -38,8 +38,8 @@ rule map_bwa_map:
         sq_platform = "PL:Illumina",
         sq_sample = "SM:{population}",
     threads: 24
-    log: MAP_RAW + "{population}/{library}.bwa_mem.log"
-    benchmark: MAP_RAW + "{population}/{library}.bwa_mem.json"
+    log: MAP_RAW + "{population}.{library}.bwa_mem.log"
+    benchmark: MAP_RAW + "{population}.{library}.bwa_mem.json"
     conda: "map.yml"
     shell:
         "(bwa mem "
@@ -71,18 +71,18 @@ rule map_split:  # USE BAM bc it markduplicates needs a file
     since it makes two passes.
     """
     input:
-        cram = MAP_RAW + "{population}/{library}.cram",
-        crai = MAP_RAW + "{population}/{library}.cram.crai",
+        cram = MAP_RAW + "{population}.{library}.cram",
+        crai = MAP_RAW + "{population}.{library}.cram.crai",
         reference = RAW + "genome.fa"
     output:
         bam = temp(
-            MAP_SPLIT + "{population}/{library}/{chromosome}.bam"
+            MAP_SPLIT + "{population}.{library}.{chromosome}.bam"
         )
     threads: 1
     params:
         chromosome = "{chromosome}"
-    log: MAP_SPLIT + "{population}/{library}/{chromosome}.log"
-    benchmark: MAP_SPLIT + "{population}/{library}/{chromosome}.json"
+    log: MAP_SPLIT + "{population}.{library}.{chromosome}.log"
+    benchmark: MAP_SPLIT + "{population}.{library}.{chromosome}.json"
     conda: "map.yml"
     shell:
         "samtools view "
@@ -105,17 +105,17 @@ rule map_filter:  # TODO: java memory, uncompressed bam
     Pairs with something unpaired will disappear.
     """
     input:
-        bam = MAP_SPLIT + "{population}/{library}/{chromosome}.bam",
+        bam = MAP_SPLIT + "{population}.{library}.{chromosome}.bam",
         reference = RAW + "genome.fa"
     output:
         cram = protected(
-            MAP_FILT + "{population}/{library}/{chromosome}.cram"
+            MAP_FILT + "{population}.{library}.{chromosome}.cram"
         ),
-        dupstats = MAP_FILT + "{population}/{library}/{chromosome}.dupstats"
+        dupstats = MAP_FILT + "{population}.{library}.{chromosome}.dupstats"
     params:
         memory= config["picard_markduplicates_params"]["memory"]
-    log: MAP_FILT + "{population}/{library}/{chromosome}.log"
-    benchmark: MAP_FILT + "{population}/{library}/{chromosome}.json"
+    log: MAP_FILT + "{population}.{library}.{chromosome}.log"
+    benchmark: MAP_FILT + "{population}.{library}.{chromosome}.json"
     threads: 1
     conda: "map.yml"
     shell:
@@ -143,3 +143,22 @@ rule map_filter:  # TODO: java memory, uncompressed bam
             "-@ {threads} "
             "/dev/stdin "
         ") 2> {log}"
+
+
+
+def get_library_files_from_sample(wildcards):
+    """ TODO: needs improvement/simplification
+    Return the list of libraries corresponding to a population and chromosome.
+    """
+    files = [
+        MAP_FILT + population + "." + library + "." + chromosome + ".cram"
+        for population in config["samples_pe"]
+        for library in config["samples_pe"][population]
+        for chromosome in CHROMOSOMES
+    ]
+    return files
+
+
+rule map:
+    input:
+        cram = get_library_files_from_sample

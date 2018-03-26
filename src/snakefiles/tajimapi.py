@@ -3,10 +3,10 @@ rule tajimapi_popoolation:
     Get the sliding Tajima's D values.
     """
     input:
-        mpileup_gz = MPILEUP_SUB + "{population}/{chromosome}.mpileup.gz"
+        mpileup_gz = MPILEUP_SUB + "{population}/{population}.{chromosome}.mpileup.gz"
     output:
-        snps = temp(TABLE_PI + "{population}/{chromosome}.snps"),
-        vs = temp(TABLE_PI + "{population}/{chromosome}.tsv"),
+        snps = temp(TABLE_PI + "{population}/{population}.{chromosome}.snps"),
+        vs = temp(TABLE_PI + "{population}/{population}.{chromosome}.tsv"),
     params:
         mincount = config["popoolation_params"]["tajimad"]["mincount"],
         mincoverage = config["popoolation_params"]["tajimad"]["mincoverage"],
@@ -15,8 +15,8 @@ rule tajimapi_popoolation:
         poolsize = lambda wildcards: config["pool_sizes"][wildcards.population],
         stepsize = config["popoolation_params"]["tajimad"]["stepsize"],
         windowsize = config["popoolation_params"]["tajimad"]["windowsize"],
-    log: TABLE_PI + "{population}/{chromosome}.log"
-    benchmark: TABLE_PI + "{population}/{chromosome}.json"
+    log: TABLE_PI + "{population}/{population}.{chromosome}.log"
+    benchmark: TABLE_PI + "{population}/{population}.{chromosome}.json"
     conda: "tajimapi.yml"
     shell:
         "perl src/popoolation_1.2.2/Variance-sliding.pl "
@@ -41,7 +41,7 @@ rule tajimapi_merge_vs:
     """
     input:
         expand(
-            TABLE_PI + "{population}/{chromosome}.tsv",
+            TABLE_PI + "{population}/{population}.{chromosome}.tsv",
             chromosome = CHROMOSOMES,
             population = ["{population}"]
         )

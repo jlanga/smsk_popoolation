@@ -12,19 +12,19 @@ rule qc_trimmomatic_pe:
     posterior to the trimming since the output comes slower than the input is read.
     """
     input:
-        forward = RAW + "{sample}/{library}_1.fq.gz",
-        reverse = RAW + "{sample}/{library}_2.fq.gz"
+        forward = RAW + "{population}.{library}_1.fq.gz",
+        reverse = RAW + "{population}.{library}_2.fq.gz"
     output:
-        forward     = temp(QC + "{sample}/{library}_1.fq.gz"),
-        reverse     = temp(QC + "{sample}/{library}_2.fq.gz"),
-        forward_unp = temp(QC + "{sample}/{library}_3.fq.gz"),
-        reverse_unp = temp(QC + "{sample}/{library}_4.fq.gz")
+        forward     = temp(QC + "{population}.{library}_1.fq.gz"),
+        reverse     = temp(QC + "{population}.{library}_2.fq.gz"),
+        forward_unp = temp(QC + "{population}.{library}_3.fq.gz"),
+        reverse_unp = temp(QC + "{population}.{library}_4.fq.gz")
     params:
-        adaptor     = lambda wildcards: config["samples_pe"][wildcards.sample][wildcards.library]["adaptor"],
-        phred       = lambda wildcards: config["samples_pe"][wildcards.sample][wildcards.library]["phred"],
+        adaptor     = lambda wildcards: config["samples_pe"][wildcards.population][wildcards.library]["adaptor"],
+        phred       = lambda wildcards: config["samples_pe"][wildcards.population][wildcards.library]["phred"],
         trimmomatic_params = config["trimmomatic_params"]
-    log: QC + "{sample}/{library}.trimmomatic_pe.log"
-    benchmark: QC + "{sample}/{library}.trimmomatic_pe.json"
+    log: QC + "{population}.{library}.trimmomatic_pe.log"
+    benchmark: QC + "{population}.{library}.trimmomatic_pe.json"
     threads: 4
     conda: "qc.yml"
     shell:
@@ -54,15 +54,15 @@ rule qc_trimmomatic_se:
     Output is piped to gzip.
     """
     input:
-        single = RAW + "{sample}/{library}_se.fq.gz",
+        single = RAW + "{population}.{library}_se.fq.gz",
     output:
-        single = temp(QC + "{sample}/{library}_se.fq.gz")
+        single = temp(QC + "{population}.{library}_se.fq.gz")
     params:
-        adaptor = lambda wildcards: config["samples_se"][wildcards.sample][wildcards.library]["adaptor"],
-        phred = lambda wildcards: config["samples_se"][wildcards.sample][wildcards.library]["phred"],
+        adaptor = lambda wildcards: config["samples_se"][wildcards.population][wildcards.library]["adaptor"],
+        phred = lambda wildcards: config["samples_se"][wildcards.population][wildcards.library]["phred"],
         trimmomatic_params = config["trimmomatic_params"]
-    log: QC + "{sample}/{library}.trimmomatic_se.log"
-    benchmark: QC + "{sample}/{library}.trimmomatic_se.json"
+    log: QC + "{population}.{library}.trimmomatic_se.log"
+    benchmark: QC + "{population}.{library}.trimmomatic_se.json"
     threads: 2
     conda: "qc.yml"
     shell:
@@ -75,3 +75,19 @@ rule qc_trimmomatic_se:
             "ILLUMINACLIP:{params.adaptor}:2:30:10 "
             "{params.trimmomatic_params} "
         "2> {log}"
+
+
+def get_qc_files(wildcards):
+    """ TODO: needs improvement/simplification
+    Return the list of libraries corresponding to a population and chromosome.
+    """
+    return [
+        QC + population + "." + library + "_1.fq.gz"
+        for population in config["samples_pe"]
+        for library in config["samples_pe"][population]
+    ]
+
+
+rule qc:
+    input:
+        get_qc_files

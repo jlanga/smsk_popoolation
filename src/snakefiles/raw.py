@@ -4,8 +4,8 @@ rule raw_make_links_pe_sample:
         forward= lambda wildcards: config["samples_pe"][wildcards.sample][wildcards.library]["forward"],
         reverse= lambda wildcards: config["samples_pe"][wildcards.sample][wildcards.library]["reverse"]
     output:
-        forward= RAW + "{sample}/{library}_1.fq.gz",
-        reverse= RAW + "{sample}/{library}_2.fq.gz"
+        forward= RAW + "{sample}.{library}_1.fq.gz",
+        reverse= RAW + "{sample}.{library}_2.fq.gz"
     shell:
         "ln --symbolic $(readlink --canonicalize {input.forward}) {output.forward}; "
         "ln --symbolic $(readlink --canonicalize {input.reverse}) {output.reverse}"
@@ -17,7 +17,7 @@ rule raw_make_links_se_sample:
     input:
         single= lambda wildcards: config["samples_se"][wildcards.sample][wildcards.library]["single"],
     output:
-        single= RAW + "{sample}/{library}_se.fq.gz"
+        single= RAW + "{sample}.{library}_se.fq.gz"
     shell:
         "ln --symbolic $(readlink --canonicalize {input.single}) {output.single}"
 

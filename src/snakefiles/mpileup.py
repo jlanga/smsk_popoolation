@@ -4,8 +4,8 @@ def get_library_files_from_sample(wildcards):
     """
     files = [
         MAP_FILT + \
-        wildcards.population + "/" + \
-        library + "/" + \
+        wildcards.population + "." + \
+        library + "." + \
         wildcards.chromosome + ".cram" \
         for library in config["samples_pe"][wildcards.population]
     ]
@@ -19,9 +19,9 @@ rule mpileup_call:
         fa  = RAW + "genome.fa",
         fai = RAW + "genome.fa.fai"
     output:
-        mpileup_gz = MPILEUP_RAW + "{population}/{chromosome}.mpileup.gz"
-    log: MPILEUP_RAW + "{population}/{chromosome}.log"
-    benchmark: MPILEUP_RAW + "{population}/{chromosome}.json"
+        mpileup_gz = MPILEUP_RAW + "{population}/{population}.{chromosome}.mpileup.gz"
+    log: MPILEUP_RAW + "{population}/{population}.{chromosome}.log"
+    benchmark: MPILEUP_RAW + "{population}/{population}.{chromosome}.json"
     threads: 1  # mpileup and gzip work at the same pace
     conda: "mpileup.yml"
     shell:
@@ -48,16 +48,16 @@ rule mpileup_popoolation_identify_indels:
     Get a GTF with the indels present.
     """
     input:
-        mpileup_gz = MPILEUP_RAW + "{population}/{chromosome}.mpileup.gz"
+        mpileup_gz = MPILEUP_RAW + "{population}/{population}.{chromosome}.mpileup.gz"
     output:
         gtf = temp(
-            MPILEUP_FILT + "{population}/{chromosome}.gtf"
+            MPILEUP_FILT + "{population}/{population}.{chromosome}.gtf"
         )
     params:
         indel_window = config["popoolation_params"]["find_indels"]["indel_window"],
         min_count    = config["popoolation_params"]["find_indels"]["min_count"]
-    log: MPILEUP_FILT + "{population}/{chromosome}.gtf.log"
-    benchmark: MPILEUP_FILT + "{population}/{chromosome}.gtf.json"
+    log: MPILEUP_FILT + "{population}/{population}.{chromosome}.gtf.log"
+    benchmark: MPILEUP_FILT + "{population}/{population}.{chromosome}.gtf.json"
     conda: "mpileup.yml"
     shell:
         "perl src/popoolation_1.2.2/basic-pipeline/identify-genomic-indel-regions.pl "
@@ -75,17 +75,17 @@ rule mpileup_popoolation_filter_indels:
     Compress results.
     """
     input:
-        mpileup_gz = MPILEUP_RAW + "{population}/{chromosome}.mpileup.gz",
-        gtf = MPILEUP_FILT + "{population}/{chromosome}.gtf"
+        mpileup_gz = MPILEUP_RAW + "{population}/{population}.{chromosome}.mpileup.gz",
+        gtf = MPILEUP_FILT + "{population}/{population}.{chromosome}.gtf"
     output:
         mpileup_fifo = temp(
-            MPILEUP_FILT + "{population}/{chromosome}.mpileup"
+            MPILEUP_FILT + "{population}/{population}.{chromosome}.mpileup"
         ),
         mpileup_gz = temp(
-            MPILEUP_FILT + "{population}/{chromosome}.mpileup.gz"
+            MPILEUP_FILT + "{population}/{population}.{chromosome}.mpileup.gz"
         )
-    log: MPILEUP_FILT + "{population}/{chromosome}.mpileup.log"
-    benchmark: MPILEUP_FILT + "{population}/{chromosome}.mpileup.json"
+    log: MPILEUP_FILT + "{population}/{population}.{chromosome}.mpileup.log"
+    benchmark: MPILEUP_FILT + "{population}/{population}.{chromosome}.mpileup.json"
     conda: "mpileup.yml"
     shell:
         "mkfifo {output.mpileup_fifo}; "
@@ -101,21 +101,21 @@ rule mpileup_popoolation_filter_indels:
 rule mpileup_popoolation_subsample:
     """Perform the subsampling step. Compress results as they are generated through a FIFO"""
     input:
-        mpileup = MPILEUP_FILT + "{population}/{chromosome}.mpileup.gz"
+        mpileup = MPILEUP_FILT + "{population}/{population}.{chromosome}.mpileup.gz"
     output:
         mpileup_fifo = temp(
-            MPILEUP_SUB + "{population}/{chromosome}.mpileup"
+            MPILEUP_SUB + "{population}/{population}.{chromosome}.mpileup"
         ),
         mpileup_gz = protected(
-            MPILEUP_SUB + "{population}/{chromosome}.mpileup.gz"
+            MPILEUP_SUB + "{population}/{population}.{chromosome}.mpileup.gz"
         )
     params:
         minqual        = config["popoolation_params"]["subsample"]["minqual"],
         method         = config["popoolation_params"]["subsample"]["method"],
         maxcoverage    = config["popoolation_params"]["subsample"]["maxcoverage"],
         targetcoverage = config["popoolation_params"]["subsample"]["targetcoverage"]
-    log: MPILEUP_SUB + "{population}/{chromosome}.log"
-    benchmark: MPILEUP_SUB + "{population}/{chromosome}.json"
+    log: MPILEUP_SUB + "{population}/{population}.{chromosome}.log"
+    benchmark: MPILEUP_SUB + "{population}/{population}.{chromosome}.json"
     conda: "mpileup.yml"
     shell:
         "mkfifo {output.mpileup_fifo}; "
@@ -129,3 +129,20 @@ rule mpileup_popoolation_subsample:
             "--input <(gzip -dc {input.mpileup}) "
             "--output {output.mpileup_fifo} "
         "2> {log} 1>&2 ; "
+
+
+def get_mpileup_subsample(wildcards):
+    """ TODO: needs improvement/simplification
+    Return the list of libraries corresponding to a population and chromosome.
+    """
+    files = [
+        MPILEUP_SUB + population + "/" + population + "." + chromosome + ".mpileup.gz"
+        for population in config["samples_pe"]
+        for chromosome in CHROMOSOMES
+    ]
+    return files
+
+
+rule mpileup_subsampled:
+    input:
+        mpuleups = get_mpileup_subsample

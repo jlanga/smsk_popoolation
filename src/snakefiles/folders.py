@@ -4,6 +4,7 @@ QC = "results/qc/"
 
 
 ## mappings
+MAP_INDEX = "results/index/"
 MAP_RAW = "results/map/raw/"
 MAP_SPLIT = "results/map/split/"
 MAP_FILT = "results/map/filt/"
