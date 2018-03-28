@@ -16,6 +16,7 @@ MPILEUP_SUB = "results/mpileup/sub/"
 
 ## sync - popoolation2
 SYNC_MPILEUP = "results/sync/mpileup/"
+SYNC_FILT = "results/sync/filt/"
 SYNC_RAW = "results/sync/mpileup2sync/"
 SYNC_SUB = "results/sync/subsampled/"
 

@@ -12,7 +12,7 @@ def get_library_files_from_sample(wildcards):
     return files
 
 
-rule mpileup_call:
+rule mpileup_convert:
     """Compute the mpileup and compress it"""
     input:
         cram = get_library_files_from_sample,

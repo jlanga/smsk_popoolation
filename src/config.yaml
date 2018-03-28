@@ -75,6 +75,9 @@ popoolation2_params:
     mpileup2sync:
         min_qual:  20
         memory: 2g
+    find_indels:
+        indel_window: 5
+        min_count: 2
     subsample_synchronized:
         target_coverage: 10
         max_coverage:    50
