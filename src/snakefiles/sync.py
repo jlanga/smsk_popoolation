@@ -86,14 +86,15 @@ rule sync_mpileup2sync_chromosome:
         sync = temp(SYNC_RAW + "{chromosome}.sync")  # TEMP!
     params:
         min_qual = config["popoolation2_params"]["mpileup2sync"]["min_qual"],
-        memory = config["popoolation2_params"]["mpileup2sync"]["memory"]
     threads: 1
     log: SYNC_RAW + "{chromosome}.log"
     benchmark: SYNC_RAW + "{chromosome}.json"
+    resources:
+        memory_gb = config["popoolation2_params"]["mpileup2sync"]["memory_gb"]
     conda: "sync.yml"
     shell:
         "(gzip --decompress --stdout {input.mpileup_gz} "
-        "| java -Xmx1G -jar src/popoolation2_1201/mpileup2sync.jar "
+        "| java -Xmx {resources.memory_gb}G -jar src/popoolation2_1201/mpileup2sync.jar "
             "--input /dev/stdin "
             "--output {output.sync} "
             "--fastq-type sanger "

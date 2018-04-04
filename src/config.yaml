@@ -38,7 +38,7 @@ bwa_params:
     ""
 
 picard_markduplicates_params:
-    memory: 1g
+    memory_gb: 1
 
 popoolation_params:
     find_indels:
@@ -74,7 +74,7 @@ popoolation_params:
 popoolation2_params:
     mpileup2sync:
         min_qual:  20
-        memory: 2g
+        memory_gb: 2
     find_indels:
         indel_window: 5
         min_count: 2

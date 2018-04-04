@@ -112,14 +112,14 @@ rule map_filter:  # TODO: java memory, uncompressed bam
             MAP_FILT + "{population}.{library}.{chromosome}.cram"
         ),
         dupstats = MAP_FILT + "{population}.{library}.{chromosome}.dupstats"
-    params:
-        memory= config["picard_markduplicates_params"]["memory"]
     log: MAP_FILT + "{population}.{library}.{chromosome}.log"
     benchmark: MAP_FILT + "{population}.{library}.{chromosome}.json"
     threads: 1
+    resources:
+        memory_gb = config["picard_markduplicates_params"]["memory_gb"]
     conda: "map.yml"
     shell:
-        "(picard -Xmx{params.memory} MarkDuplicates "
+        "(picard -Xmx{resources.memory_gb}g MarkDuplicates "
             "INPUT={input.bam} "
             "OUTPUT=/dev/stdout "
             "METRICS_FILE={output.dupstats} "
