@@ -32,12 +32,12 @@ rule map_bwa_map:
             MAP_RAW + "{population}.{library}.cram"
         )
     params:
-        bowtie2_params = config["bwa_params"],
+        additional_params = config["bwa_params"]["additional_params"],
         sq_id = "{population}_{library}",
         sq_library = "LB:truseq_{library}",
         sq_platform = "PL:Illumina",
         sq_sample = "SM:{population}",
-    threads: 24
+    threads: config["bwa_params"]["threads"]
     log: MAP_RAW + "{population}.{library}.bwa_mem.log"
     benchmark: MAP_RAW + "{population}.{library}.bwa_mem.json"
     conda: "map.yml"
@@ -46,7 +46,7 @@ rule map_bwa_map:
             "-M "
             "-R '@RG\tID:{params.sq_id}\t{params.sq_library}\t{params.sq_platform}\t{params.sq_sample}' "
             "-t {threads} "
-            "{params.bowtie2_params} "
+            "{params.additional_params} "
             "{input.index} "
             "{input.forward} "
             "{input.reverse} "
