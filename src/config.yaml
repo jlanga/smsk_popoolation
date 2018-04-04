@@ -35,7 +35,8 @@ trimmomatic_params:
     "AVGQUAL:3 MINLEN:31 LEADING:19 TRAILING:19 MINLEN:31 SLIDINGWINDOW:4:5 LEADING:5 TRAILING:5 MINLEN:25 TOPHRED33"
 
 bwa_params:
-    ""
+    threads: 2  # If you have lots of libraries, keep it to two, if you have < 10, raise it. samtools sort is the bottleneck
+    additional_params: ""
 
 picard_markduplicates_params:
     memory_gb: 1
