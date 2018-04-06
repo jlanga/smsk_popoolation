@@ -94,7 +94,7 @@ rule sync_mpileup2sync_chromosome:
     conda: "sync.yml"
     shell:
         "(gzip --decompress --stdout {input.mpileup_gz} "
-        "| java -Xmx {resources.memory_gb}G -jar src/popoolation2_1201/mpileup2sync.jar "
+        "| java -Xmx{resources.memory_gb}g -jar src/popoolation2_1201/mpileup2sync.jar "
             "--input /dev/stdin "
             "--output {output.sync} "
             "--fastq-type sanger "
