@@ -40,7 +40,7 @@ rule fst_sliding_chromosome:
             "--min-count {params.min_count} "
             "--output {params.tsv} "
             "--pool-size {params.pool_size} "
-        "2> {log} ; "
+        "2> {log} 1>&2 ; "
         "gzip --best --keep {params.tsv} 2>> {log}"
 
 

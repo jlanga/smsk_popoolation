@@ -134,7 +134,7 @@ rule sync_subsample_chromosome:
             "--target-coverage {params.target_coverage} "
             "--max-coverage {params.max_coverage} "
             "--method {params.method} "
-        "2> {log} ; "
+        "2> {log} 1>&2 ; "
         "pigz --best --keep {output.sync} 2>> {log}"
 
 
