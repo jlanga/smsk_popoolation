@@ -93,11 +93,7 @@ rule all:
             PLOT_HP + "{population}.pdf",
             population = POPULATIONS
         ),
-        [
-            PLOT_FST + str(i) + "_" + str(j) +".pdf"
-            for i in range(1, len(POPULATIONS))
-            for j in range(i+1, len(POPULATIONS)+1)
-        ],
+        rules.fst.input,
         rules.reports.input
 
 

@@ -63,52 +63,64 @@ rule fst_merge:
         "pigz --best --stdout {input} > {output}"
 
 
-
-rule fst_plot:  # TODO: the nested double for makes it impossible to understand
-    """
-    Plot pairwise F_ST distributions over a genome
-    """
+rule fst_split_table:
+    """Split fst table into a pair"""
     input:
-        merged_tsv_gz = PLOT_FST + "all.tsv.gz",
+        merged_tsv_gz = PLOT_FST + "all.tsv.gz"
     output:
-        z_pdfs = [
-            PLOT_FST + str(i) + "_" + str(j) +"_z.pdf"
-            for i in range(1, len(POPULATIONS))
-            for j in range(i+1, len(POPULATIONS)+1)
-        ],
-        pdfs = [
+        fst_tsv = PLOT_FST + "{pop1}_{pop2}.fst.tsv"
+    log:
+        TABLE_FST + "split_{pop1}_{pop2}.log"
+    benchmark:
+        TABLE_FST + "split_{pop1}_{pop2}.json"
+    params:
+        pop1 = "{pop1}",
+        pop2 = "{pop2}"
+    threads:
+        1
+    conda: "fst.yml"
+    shell:
+        "(gzip --decompress --stdout {input.merged_tsv_gz} "
+        "| python3 src/fst_to_genomic_score.py "
+            "{params.pop1} "
+            "{params.pop2} "
+        "> {output.fst_tsv}) "
+        "2> {log} 1>&2"
+
+
+rule fst_plot:
+    """Plot pairwise F_ST distributions over a genome"""
+    input:
+        fst_tsv = PLOT_FST + "{pop1}_{pop2}.fst.tsv"
+    output:
+        z_pdf = PLOT_FST + "{pop1}_{pop2}_z.pdf",
+        pdf = PLOT_FST + "{pop1}_{pop2}.pdf"
+    threads: 1
+    log: PLOT_FST + "plot_{pop1}_{pop2}.log"
+    benchmark: PLOT_FST + "plot_{pop1}_{pop2}.json"
+    conda: "fst.yml"
+    shell:
+        "Rscript src/plot_score.R "
+            "--input {input.fst_tsv} "
+            "--output {output.pdf} "
+        "2> {log} 1>&2; "
+        "Rscript src/plot_score.R "
+            "--normalize "
+            "--input {input.fst_tsv} "
+            "--output {output.z_pdf} "
+        "2>> {log} 1>&2;"
+
+
+rule fst:
+    """Make every plot"""
+    input:
+        [
             PLOT_FST + str(i) + "_" + str(j) +".pdf"
             for i in range(1, len(POPULATIONS))
             for j in range(i+1, len(POPULATIONS)+1)
+        ] +
+        [
+            PLOT_FST + str(i) + "_" + str(j) +"_z.pdf"
+            for i in range(1, len(POPULATIONS))
+            for j in range(i+1, len(POPULATIONS)+1)
         ]
-    params:
-        plot_fst = PLOT_FST,
-        merged_tsv = PLOT_FST + "all.tsv",
-        n_pop = len(POPULATIONS)
-    threads:
-        1
-    log:
-        PLOT_FST + "plot.log"
-    benchmark:
-        PLOT_FST + "plot.json"
-    conda: "fst.yml"
-    shell:
-        "for i in `seq 1 {params.n_pop}`; do "
-            "for j in `seq $(($i + 1)) {params.n_pop}`; do "
-                "gzip --decompress --stdout {input.merged_tsv_gz} "
-                "| python src/fst_to_genomic_score.py "
-                    "$(( $i - 1 )) "
-                    "$(( $j - 1 )) "
-                "> {params.plot_fst}/${{i}}_${{j}}.fst "
-                "2>> {log} ; "
-                "Rscript src/plot_score.R "
-                    "--input {params.plot_fst}/${{i}}_${{j}}.fst "
-                    "--output {params.plot_fst}/${{i}}_${{j}}.pdf "
-                "2>> {log} ; "
-                "Rscript src/plot_score.R "
-                    "--normalize "
-                    "--input {params.plot_fst}/${{i}}_${{j}}.fst "
-                    "--output {params.plot_fst}/${{i}}_${{j}}_z.pdf "
-                "2>> {log} ; "
-            "done "
-        "done"
