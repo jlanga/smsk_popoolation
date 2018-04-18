@@ -82,8 +82,8 @@ rule fst_split_table:
     shell:
         "(gzip --decompress --stdout {input.merged_tsv_gz} "
         "| python3 src/fst_to_genomic_score.py "
-            "{params.pop1} "
-            "{params.pop2} "
+            "$(({params.pop1} - 1)) "
+            "$(({params.pop2} - 1)) "
         "> {output.fst_tsv}) "
         "2> {log} 1>&2"
 
