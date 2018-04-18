@@ -70,9 +70,9 @@ rule fst_split_table:
     output:
         fst_tsv = PLOT_FST + "{pop1}_{pop2}.fst.tsv"
     log:
-        TABLE_FST + "split_{pop1}_{pop2}.log"
+        PLOT_FST + "split_{pop1}_{pop2}.log"
     benchmark:
-        TABLE_FST + "split_{pop1}_{pop2}.json"
+        PLOT_FST + "split_{pop1}_{pop2}.json"
     params:
         pop1 = "{pop1}",
         pop2 = "{pop2}"
