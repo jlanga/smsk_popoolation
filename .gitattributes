@@ -1,0 +1,5 @@
+data/genome/2R.fa.gz filter=lfs diff=lfs merge=lfs -text
+data/reads/pop1_2.fq.gz filter=lfs diff=lfs merge=lfs -text
+data/reads/pop2_1.fq.gz filter=lfs diff=lfs merge=lfs -text
+data/reads/pop2_2.fq.gz filter=lfs diff=lfs merge=lfs -text
+data/reads/pop1_1.fq.gz filter=lfs diff=lfs merge=lfs -text
