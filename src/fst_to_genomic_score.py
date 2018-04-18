@@ -11,12 +11,11 @@ def triangular_number(T):
     n = ( 1 + sqrt( 1 + 8 * T ))/2
     if n.is_integer():
         return n
-    print("The number of analysis made seem wrong. The number of F_st is not a triangular number. Exiting")
-    sys.exit()
+    raise SystemExit("The number of analysis made seem wrong. The number of F_st is not a triangular number. Exiting")
 
 if pop1 == pop2:
-    print("Populations must be different")
-    sys.exit()
+    raise SystemExit("Populations must be different")
+
 
 if pop1 >= pop2:
     pop1 , pop2 = pop2 , pop1 # Swap
@@ -29,10 +28,13 @@ for line in sys.stdin:
     chromosome  = line[0]
     position    = line[1]
     analysis    = line[5:]
-    if pop2 >= npop:
-        print("Error with analysis to be extracted, exitting")
-        sys.exit()
-    index = pop1 + pop2 - 1
+    if pop2 >= npop + 1:
+        raise SystemExit("Error with analysis to be extracted, exitting")
+    # index = pop1 + pop2 - 1
+    index = pop1 + pop2 - 3
+    sys.stderr.write(f"{index}")
     fst = analysis[ index ]
     fst = fst.split("=")[1]
-    sys.stdout.write(chromosome + "\t" + position + "\t" + str(fst) + "\n")
+    sys.stdout.write(
+        f"{chromosome}\t{position}\t{fst}\n"
+    )
