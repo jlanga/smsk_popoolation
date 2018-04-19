@@ -23,9 +23,9 @@ install:
     - conda config --add channels conda-forge
     - conda config --add channels bioconda
     - conda install --yes -c bioconda snakemake
-    - conda clean --all --yes
     - bash src/install/from_tarball.sh
     - snakemake --use-conda --create-envs-only
+    - conda clean --all --yes
 
 script:
     - export PATH="/home/travis/miniconda3/bin:$PATH"
