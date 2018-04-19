@@ -32,4 +32,5 @@ script:
     - snakemake --timestamp --resources memory_gb=3 --use-conda -j
 
 after_failure:
-    - find results -name "*.log" -printf "%T@\t%p\n" | sort -n | cut -f 2 | head -10 | xargs tail -vn +1
+    - cat results/sync/subsampled/2R.log
+    #- find results -name "*.log" -printf "%T@\t%p\n" | sort -n | cut -f 2 | head -10 | xargs tail -vn +1
