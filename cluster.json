@@ -1,0 +1,36 @@
+{
+    "__default__" :
+    {
+        "time" : "06:00:00",
+        "t" : 1,
+        "mem": 1024
+    },
+    "qc_trimmomatic_pe" :
+    {
+        "t": 4,
+        "mem": 6000
+    },
+    "qc_trimmomatic_se" :
+    {
+        "t": 4,
+        "mem": 6000
+    },
+    "map_bwa_index" :
+    {
+        "mem": 6000
+    },
+    "map_bwa_map" :
+    {
+        "time" : "24:00:00",
+        "mem": 3000,
+        "t": 2
+    },
+    "mpileup_convert":
+    {
+        "time": "12:00:00"
+    },
+    "sync_mpileup2sync_chromosome":
+    {
+        "mem": 4000
+    }
+}
