@@ -32,7 +32,7 @@ for line in sys.stdin:
         raise SystemExit("Error with analysis to be extracted, exitting")
     # index = pop1 + pop2 - 1
     index = pop1 + pop2 - 3
-    sys.stderr.write(f"{index}")
+    #sys.stderr.write(f"{index}")
     fst = analysis[ index ]
     fst = fst.split("=")[1]
     sys.stdout.write(
