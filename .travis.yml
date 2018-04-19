@@ -29,7 +29,7 @@ install:
 
 script:
     - export PATH="/home/travis/miniconda3/bin:$PATH"
-    - snakemake --timestamp --use-conda -j
+    - snakemake --timestamp --resources memory_gb=3 --use-conda -j
 
 after_failure:
     - find results -name "*.log" -printf "%T@\t%p\n" | sort -n | cut -f 2 | head -10 | xargs tail -vn +1
