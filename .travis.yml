@@ -25,6 +25,7 @@ install:
     - conda install --yes -c bioconda snakemake
     - conda clean --all --yes
     - bash src/install/from_tarball.sh
+    - snakemake --use-conda --create-envs-only
 
 script:
     - export PATH="/home/travis/miniconda3/bin:$PATH"
