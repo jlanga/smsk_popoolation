@@ -1,6 +1,7 @@
 shell.prefix("set -euo pipefail;")
 configfile: "src/config.yaml"
 
+singularity: "docker://continuumio/miniconda3:4.4.10"
 
 # Folder variables
 include: "src/snakefiles/folders.py"
