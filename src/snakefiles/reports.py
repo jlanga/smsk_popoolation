@@ -23,7 +23,9 @@ rule reports_samtools_flagstat:
     shell: "samtools flagstat {input} > {output} 2> {log}"
 
 rule reports_samtools_idxstats:
-    input: "{filename}.cram"
+    input:
+        cram="{filename}.cram",
+        crai="{filename}.cram.crai"
     output: "{filename}.idxstats.txt"
     log: "{filename}.idxstats.log"
     benchmark: "{filename}.idxstats.bmk"
