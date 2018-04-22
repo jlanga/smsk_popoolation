@@ -37,14 +37,8 @@ rule reports_samtools_idxstats:
 rule reports:
     input:
         expand(
-            RAW + population + "." + library + "_" + end + "_fastqc.html"
-            for population in config["samples_pe"]
-            for library in config["samples_pe"][population]
-            for end in "1 2".split(" ")
-        ),
-        expand(
             MAP_RAW + population + "." + library + "." + analysis
-            for population in config["samples_pe"]
-            for library in config["samples_pe"][population]
+            for population in config["samples"]
+            for library in config["samples"][population]["libraries"]
             for analysis in "stats.tsv flagstat.txt idxstats.txt".split(" ")
         )

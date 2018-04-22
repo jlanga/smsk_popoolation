@@ -1,4 +1,4 @@
-rule qc_trimmomatic_pe:
+rule qc_trimmomatic:
     """Run trimmomatic on paired end mode
 
     to eliminate Illumina adaptors andremove low quality regions and reads.
@@ -20,8 +20,8 @@ rule qc_trimmomatic_pe:
         forward_unp = temp(QC + "{population}.{library}_3.fq.gz"),
         reverse_unp = temp(QC + "{population}.{library}_4.fq.gz")
     params:
-        adaptor     = lambda wildcards: config["samples_pe"][wildcards.population][wildcards.library]["adaptor"],
-        phred       = lambda wildcards: config["samples_pe"][wildcards.population][wildcards.library]["phred"],
+        adaptor     = lambda wildcards: config["samples"][wildcards.population]["libraries"][wildcards.library]["adaptor"],
+        phred       = lambda wildcards: config["samples"][wildcards.population]["libraries"][wildcards.library]["phred"],
         trimmomatic_params = config["trimmomatic_params"]
     log: QC + "{population}.{library}.trimmomatic_pe.log"
     benchmark: QC + "{population}.{library}.trimmomatic_pe.json"
@@ -46,45 +46,14 @@ rule qc_trimmomatic_pe:
         "2> {log}"
 
 
-
-rule qc_trimmomatic_se:
-    """Run trimmomatic on single end mode
-    to eliminate Illumina adaptors and remove low quality regions and reads.
-    Input is piped through gzip.
-    Output is piped to gzip.
-    """
-    input:
-        single = RAW + "{population}.{library}_se.fq.gz",
-    output:
-        single = temp(QC + "{population}.{library}_se.fq.gz")
-    params:
-        adaptor = lambda wildcards: config["samples_se"][wildcards.population][wildcards.library]["adaptor"],
-        phred = lambda wildcards: config["samples_se"][wildcards.population][wildcards.library]["phred"],
-        trimmomatic_params = config["trimmomatic_params"]
-    log: QC + "{population}.{library}.trimmomatic_se.log"
-    benchmark: QC + "{population}.{library}.trimmomatic_se.json"
-    threads: 2
-    conda: "qc.yml"
-    shell:
-        "trimmomatic SE "
-            "-threads {threads} "
-            "-{params.phred} "
-            "<(gzip --decompress --stdout {input.single}) "
-            ">(cut --fields 1 --delimiter \" \" "
-                "| gzip --fast > {output.single}) "
-            "ILLUMINACLIP:{params.adaptor}:2:30:10 "
-            "{params.trimmomatic_params} "
-        "2> {log}"
-
-
 def get_qc_files(wildcards):
     """ TODO: needs improvement/simplification
     Return the list of libraries corresponding to a population and chromosome.
     """
     return [
         QC + population + "." + library + "_1.fq.gz"
-        for population in config["samples_pe"]
-        for library in config["samples_pe"][population]
+        for population in config["samples"]
+        for library in config["samples"][population]["libraries"]
     ]
 
 

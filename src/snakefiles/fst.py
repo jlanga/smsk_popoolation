@@ -21,9 +21,10 @@ rule fst_sliding_chromosome:
         min_covered_fraction = config["popoolation2_params"]["fst_sliding"]["min_covered_fraction"],
         min_coverage = config["popoolation2_params"]["fst_sliding"]["min_coverage"],
         max_coverage = config["popoolation2_params"]["fst_sliding"]["max_coverage"],
-        pool_size = ":".join(
-            [config["pool_sizes"][population] for population in POPULATIONS]
-        ),
+        pool_size = ":".join([
+            config["samples"][population]["pool_size"]
+            for population in POPULATIONS
+        ]),
         min_count = config["popoolation2_params"]["fst_sliding"]["min_count"]
     log: TABLE_FST + "{chromosome}.log"
     benchmark: TABLE_FST + "{chromosome}.json"
@@ -93,7 +94,6 @@ rule fst_plot:
     input:
         fst_tsv = PLOT_FST + "{pop1}_{pop2}.fst.tsv"
     output:
-        z_pdf = PLOT_FST + "{pop1}_{pop2}_z.pdf",
         pdf = PLOT_FST + "{pop1}_{pop2}.pdf"
     threads: 1
     log: PLOT_FST + "plot_{pop1}_{pop2}.log"
@@ -104,11 +104,6 @@ rule fst_plot:
             "--input {input.fst_tsv} "
             "--output {output.pdf} "
         "2> {log} 1>&2; "
-        "Rscript src/plot_score.R "
-            "--normalize "
-            "--input {input.fst_tsv} "
-            "--output {output.z_pdf} "
-        "2>> {log} 1>&2;"
 
 
 rule fst:
@@ -116,11 +111,6 @@ rule fst:
     input:
         [
             PLOT_FST + str(i) + "_" + str(j) +".pdf"
-            for i in range(1, len(POPULATIONS))
-            for j in range(i+1, len(POPULATIONS)+1)
-        ] +
-        [
-            PLOT_FST + str(i) + "_" + str(j) +"_z.pdf"
             for i in range(1, len(POPULATIONS))
             for j in range(i+1, len(POPULATIONS)+1)
         ]

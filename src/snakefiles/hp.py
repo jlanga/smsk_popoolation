@@ -3,7 +3,7 @@ rule hp_table_population_chromosome:
     Build the hp table for a population in a chromosome.
     """
     input:
-        snps_gz =  PLOT_D + "{population}.snps.gz"
+        snps_gz =  PLOT_POPOOLATION + "D/{population}.D.snps.gz"
     output:
         hp_gz = protected(TABLE_HP + "{population}.tsv.gz")
     log: TABLE_HP + "{population}.log"
@@ -25,7 +25,6 @@ rule hp_plot_population:
     input:
         hp_gz = TABLE_HP + "{population}.tsv.gz"
     output:
-        z_pdf = PLOT_HP + "{population}_z.pdf",
         pdf = PLOT_HP + "{population}.pdf"
     threads:
         1
@@ -36,9 +35,4 @@ rule hp_plot_population:
         "Rscript src/plot_score.R "
             "--input {input.hp_gz} "
             "--output {output.pdf} "
-        "2>> {log} ; "
-        "Rscript src/plot_score.R "
-            "--normalize "
-            "--input {input.hp_gz} "
-            "--output {output.z_pdf} "
-        "2>> {log}"
+        "2> {log}"

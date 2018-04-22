@@ -7,7 +7,7 @@ def get_library_files_from_sample(wildcards):
         wildcards.population + "." + \
         library + "." + \
         wildcards.chromosome + ".cram" \
-        for library in config["samples_pe"][wildcards.population]
+        for library in config["samples"][wildcards.population]["libraries"]
     ]
     return files
 
@@ -110,10 +110,10 @@ rule mpileup_popoolation_subsample:
             MPILEUP_SUB + "{population}/{population}.{chromosome}.mpileup.gz"
         )
     params:
-        minqual        = config["popoolation_params"]["subsample"]["minqual"],
-        method         = config["popoolation_params"]["subsample"]["method"],
-        maxcoverage    = config["popoolation_params"]["subsample"]["maxcoverage"],
-        targetcoverage = config["popoolation_params"]["subsample"]["targetcoverage"]
+        minqual = config["popoolation_params"]["subsample"]["minqual"],
+        method = config["popoolation_params"]["subsample"]["method"],
+        maxcoverage = lambda wildcards: config["samples"][wildcards.population]["max_coverage"],
+        targetcoverage = lambda wildcards: config["samples"][wildcards.population]["target_coverage"]
     log: MPILEUP_SUB + "{population}/{population}.{chromosome}.log"
     benchmark: MPILEUP_SUB + "{population}/{population}.{chromosome}.json"
     conda: "mpileup.yml"
@@ -137,7 +137,7 @@ def get_mpileup_subsample(wildcards):
     """
     files = [
         MPILEUP_SUB + population + "/" + population + "." + chromosome + ".mpileup.gz"
-        for population in config["samples_pe"]
+        for population in config["samples"]
         for chromosome in CHROMOSOMES
     ]
     return files

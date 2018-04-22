@@ -152,8 +152,8 @@ def get_library_files_from_sample(wildcards):
     """
     files = [
         MAP_FILT + population + "." + library + "." + chromosome + ".cram"
-        for population in config["samples_pe"]
-        for library in config["samples_pe"][population]
+        for population in config["samples"]
+        for library in config["samples"][population]["libraries"]
         for chromosome in CHROMOSOMES
     ]
     return files

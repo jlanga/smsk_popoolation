@@ -1,8 +1,8 @@
 rule raw_make_links_pe_sample:
     """Make a link to the original file, with a prettier name than default"""
     input:
-        forward= lambda wildcards: config["samples_pe"][wildcards.sample][wildcards.library]["forward"],
-        reverse= lambda wildcards: config["samples_pe"][wildcards.sample][wildcards.library]["reverse"]
+        forward= lambda wildcards: config["samples"][wildcards.sample]["libraries"][wildcards.library]["forward"],
+        reverse= lambda wildcards: config["samples"][wildcards.sample]["libraries"][wildcards.library]["reverse"]
     output:
         forward= RAW + "{sample}.{library}_1.fq.gz",
         reverse= RAW + "{sample}.{library}_2.fq.gz"
@@ -12,14 +12,14 @@ rule raw_make_links_pe_sample:
 
 
 
-rule raw_make_links_se_sample:
-    """Make a link to the original file, with a prettier name than default"""
-    input:
-        single= lambda wildcards: config["samples_se"][wildcards.sample][wildcards.library]["single"],
-    output:
-        single= RAW + "{sample}.{library}_se.fq.gz"
-    shell:
-        "ln --symbolic $(readlink --canonicalize {input.single}) {output.single}"
+# rule raw_make_links_se_sample:
+#     """Make a link to the original file, with a prettier name than default"""
+#     input:
+#         single= lambda wildcards: config["samples_se"][wildcards.sample][wildcards.library]["single"],
+#     output:
+#         single= RAW + "{sample}.{library}_se.fq.gz"
+#     shell:
+#         "ln --symbolic $(readlink --canonicalize {input.single}) {output.single}"
 
 
 rule raw_extract_genome:
