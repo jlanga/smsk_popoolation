@@ -1,5 +1,5 @@
 shell.prefix("set -euo pipefail;")
-configfile: "src/config.yaml"
+configfile: "config.yml"
 
 singularity: "docker://continuumio/miniconda3:4.4.10"
 
