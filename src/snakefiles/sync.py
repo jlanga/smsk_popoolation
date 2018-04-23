@@ -74,7 +74,7 @@ rule sync_filter_indels:
         "2> {log} 1>&2"
 
 
-rule sync_mpileup2sync_chromosome:
+rule sync_mpileup2sync:
     """Convert joint mpileup to sync
 
     - mpileup2sync returns error always, and that is why there is a || true.
@@ -105,7 +105,7 @@ rule sync_mpileup2sync_chromosome:
 
 
 
-rule sync_subsample_chromosome:
+rule sync_subsample:
     """
     Subsample a sync file.
 
@@ -122,7 +122,10 @@ rule sync_subsample_chromosome:
         )
     params:
         target_coverage = config["popoolation2_params"]["subsample_synchronized"]["target_coverage"],
-        max_coverage =  config["popoolation2_params"]["subsample_synchronized"]["max_coverage"],
+        max_coverage = ",".join([
+            config["samples"][population]["max_coverage"]
+            for population in POPULATIONS
+        ]),
         method =  config["popoolation2_params"]["subsample_synchronized"]["method"]
     log: SYNC_SUB + "{chromosome}.log"
     benchmark: SYNC_SUB + "{chromosome}.json"
