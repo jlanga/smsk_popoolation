@@ -7,13 +7,13 @@ rule popoolation_variance_sliding:
         vs = temp(TABLE_POPOOLATION + "{analysis}/{population}.{chromosome}.{analysis}.tsv"),
     params:
         measure = "{analysis}",
-        mincount = lambda wildcards: config["samples"][wildcards.population]["min_count"],
-        mincoverage = lambda wildcards: config["samples"][wildcards.population]["min_coverage"],
+        mincount = lambda wildcards: config["popoolation_params"][wildcards.analysis]["min_count"],
+        mincoverage = lambda wildcards: config["popoolation_params"][wildcards.analysis]["min_coverage"],
         maxcoverage = lambda wildcards: config["samples"][wildcards.population]["max_coverage"],
-        mincoveredfraction = lambda wildcards: config["popoolation_params"][wildcards.analysis]["mincoveredfraction"],
+        mincoveredfraction = lambda wildcards: config["popoolation_params"][wildcards.analysis]["min_covered_fraction"],
         poolsize = lambda wildcards: config["samples"][wildcards.population]["pool_size"],
-        stepsize = lambda wildcards: config["popoolation_params"][wildcards.analysis]["stepsize"],
-        windowsize = lambda wildcards: config["popoolation_params"][wildcards.analysis]["windowsize"],
+        stepsize = lambda wildcards: config["popoolation_params"][wildcards.analysis]["step_size"],
+        windowsize = lambda wildcards: config["popoolation_params"][wildcards.analysis]["window_size"],
     log: TABLE_POPOOLATION + "{analysis}/{population}.{chromosome}.{analysis}.log"
     benchmark: TABLE_POPOOLATION + "{analysis}/{population}.{chromosome}.{analysis}.json"
     conda: "popoolation.yml"
@@ -48,7 +48,7 @@ rule popoolation_merge_variance_sliding:
     log: PLOT_POPOOLATION + "merge_vs.log"
     benchmark: PLOT_POPOOLATION + "merge_vs.json"
     threads: 8
-    conda: "tajimad.yml"
+    conda: "popoolation.yml"
     shell:
         "(bash src/variance_sliding_to_genomic_score.sh {input} "
         "| pigz --best --processes {threads} > {output}) "
@@ -66,7 +66,7 @@ rule popoolation_merge_snps:
         )
     output: protected(PLOT_POPOOLATION + "{analysis}/{population}.{analysis}.snps.gz")
     threads: 8
-    conda: "tajimad.yml"
+    conda: "popoolation.yml"
     shell: "pigz --processes {threads} --best --stdout --processes {threads} {input} > {output}"
 
 
@@ -79,7 +79,7 @@ rule popoolation_plot:
         pdf = protected(PLOT_POPOOLATION + "{analysis}/{population}.{analysis}.pdf")
     log: PLOT_POPOOLATION + "{analysis}/{population}.{analysis}.log"
     benchmark: PLOT_POPOOLATION + "{analysis}/{population}.{analysis}.json"
-    conda: "tajimad.yml"
+    conda: "popoolation.yml"
     shell:
         "Rscript src/plot_score.R "
             "--input {input.tsv_gz} "

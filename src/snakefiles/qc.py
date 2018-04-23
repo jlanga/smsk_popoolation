@@ -26,6 +26,7 @@ rule qc_trimmomatic:
     log: QC + "{population}.{library}.trimmomatic_pe.log"
     benchmark: QC + "{population}.{library}.trimmomatic_pe.json"
     threads: 4
+    priority: 50  # Do this and later the mappings
     conda: "qc.yml"
     shell:
         "trimmomatic PE "

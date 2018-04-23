@@ -110,10 +110,10 @@ rule mpileup_popoolation_subsample:
             MPILEUP_SUB + "{population}/{population}.{chromosome}.mpileup.gz"
         )
     params:
-        minqual = config["popoolation_params"]["subsample"]["minqual"],
+        minqual = config["popoolation_params"]["subsample"]["min_qual"],
         method = config["popoolation_params"]["subsample"]["method"],
         maxcoverage = lambda wildcards: config["samples"][wildcards.population]["max_coverage"],
-        targetcoverage = lambda wildcards: config["samples"][wildcards.population]["target_coverage"]
+        targetcoverage = lambda wildcards: config["popoolation_params"]["subsample"]["target_coverage"]
     log: MPILEUP_SUB + "{population}/{population}.{chromosome}.log"
     benchmark: MPILEUP_SUB + "{population}/{population}.{chromosome}.json"
     conda: "mpileup.yml"

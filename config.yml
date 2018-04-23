@@ -50,23 +50,27 @@ popoolation_params:
         indel_window:       5
         min_count:          2
     subsample:
-        minqual:            20
+        min_qual:            20
         method:             withoutreplace
-        targetcoverage:     10
+        target_coverage:     10
     D:
-        mincount:           2
-        mincoveredfraction: 0.5
-        stepsize:           1000
-        windowsize:         1000
+        min_coverage: 4
+        min_count:           2
+        min_covered_fraction: 0.5
+        step_size:           1000
+        window_size:         1000
     pi:
-        mincount:           2
-        mincoveredfraction: 0.5
-        stepsize:           1000
-        windowsize:         1000
+        min_coverage: 4
+        min_count:           2
+        min_covered_fraction: 0.5
+        step_size:           1000
+        window_size:         1000
     theta:
-        mincoveredfraction: 0.5
-        stepsize:           1000
-        windowsize:         1000
+        min_coverage: 4
+        min_count:           2
+        min_covered_fraction: 0.5
+        step_size:           1000
+        window_size:         1000
 
 popoolation2_params:
     mpileup2sync:
