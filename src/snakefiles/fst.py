@@ -20,10 +20,11 @@ rule fst_sliding_chromosome:
         step_size = config["popoolation2_params"]["fst_sliding"]["step_size"],
         min_covered_fraction = config["popoolation2_params"]["fst_sliding"]["min_covered_fraction"],
         min_coverage = config["popoolation2_params"]["fst_sliding"]["min_coverage"],
-        max_coverage = ",".join([
-            config["samples"][population]["max_coverage"]
-            for population in POPULATIONS
-        ]),
+        max_coverage = 10000,
+        # max_coverage = ",".join([
+        #     config["samples"][population]["max_coverage"]
+        #     for population in POPULATIONS
+        # ]),
         pool_size = ":".join([
             config["samples"][population]["pool_size"]
             for population in POPULATIONS
