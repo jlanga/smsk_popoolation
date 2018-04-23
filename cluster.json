@@ -2,17 +2,14 @@
     "__default__" :
     {
         "time" : "06:00:00",
-        "threads" : 1,
         "mem": 1024
     },
     "qc_trimmomatic_pe" :
     {
-        "threads": 4,
         "mem": 6000
     },
     "qc_trimmomatic_se" :
     {
-        "threads": 4,
         "mem": 6000
     },
     "map_bwa_index" :
