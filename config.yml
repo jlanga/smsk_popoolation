@@ -1,10 +1,7 @@
 samples:
     pop1:
-        min_count: "2"
         pool_size: "500"
-        min_coverage: "5"
         max_coverage: "200"
-        target_coverage: "10"
         libraries:
             lib1:
                 forward: data/reads/pop1_1.fq.gz
@@ -17,11 +14,8 @@ samples:
             #     adaptor: data/adapters/TruSeq3-PE-2.fa
             #     phred:   phred33
     pop2:
-        min_count: "2"
         pool_size: "500"
-        min_coverage: "5"
         max_coverage: "200"
-        target_coverage: "10"
         libraries:
             lib1:
                 forward: data/reads/pop2_1.fq.gz
