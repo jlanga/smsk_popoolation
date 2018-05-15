@@ -16,32 +16,6 @@ CHROMOSOMES  = config["chromosomes"].split(" ")
 ENDS = "1 2 u".split(" ")
 
 
-# Wildcards functions
-def priority_by_chromosome(wildcards):
-    priority = 50 - int(wildcards.chromosome) + 1
-    return str(priority)
-
-
-
-def tajimad_files(wildcards):
-    files = [tajimad + "/" + wildcards.population + "/" + chromosome + ".tsv.gz"
-                for chromosome in CHROMOSOMES]
-    return files
-
-
-
-def tajimapi_files(wildcards):
-    files = [tajimapi + "/" + wildcards.population + "/" + chromosome + ".tsv.gz"
-                for chromosome in CHROMOSOMES]
-    return files
-
-
-
-def theta_files(wildcards):
-    files = [theta + "/" + wildcards.population + "/" + chromosome + ".tsv.gz"
-                for chromosome in CHROMOSOMES]
-    return files
-
 include: "src/snakefiles/generic.py"
 include: "src/snakefiles/raw.py"
 include: "src/snakefiles/qc.py"
