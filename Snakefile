@@ -1,3 +1,6 @@
+from snakemake.utils import min_version
+min_version("5.0")
+
 shell.prefix("set -euo pipefail;")
 configfile: "config.yml"
 
