@@ -45,8 +45,8 @@ rule popoolation_merge_variance_sliding:
             analysis = ["{analysis}"]
         )
     output: protected(PLOT_POPOOLATION + "{analysis}/{population}.{analysis}.tsv.gz")
-    log: PLOT_POPOOLATION + "merge_vs.log"
-    benchmark: PLOT_POPOOLATION + "merge_vs.json"
+    log: PLOT_POPOOLATION + "{analysis}/{population}.{analysis}.merge_vs.log"
+    benchmark: PLOT_POPOOLATION + "{analysis}/{population}.{analysis}.merge_vs.json"
     threads: 8
     conda: "popoolation.yml"
     shell:
@@ -77,8 +77,8 @@ rule popoolation_plot:
         tsv_gz = PLOT_POPOOLATION + "{analysis}/{population}.{analysis}.tsv.gz"
     output:
         pdf = protected(PLOT_POPOOLATION + "{analysis}/{population}.{analysis}.pdf")
-    log: PLOT_POPOOLATION + "{analysis}/{population}.{analysis}.log"
-    benchmark: PLOT_POPOOLATION + "{analysis}/{population}.{analysis}.json"
+    log: PLOT_POPOOLATION + "{analysis}/{population}.{analysis}.plot.log"
+    benchmark: PLOT_POPOOLATION + "{analysis}/{population}.{analysis}.plot.json"
     conda: "popoolation.yml"
     shell:
         "Rscript src/plot_score.R "
