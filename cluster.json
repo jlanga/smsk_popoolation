@@ -2,17 +2,14 @@
     "__default__" :
     {
         "time" : "06:00:00",
-        "t" : 1,
         "mem": 1024
     },
     "qc_trimmomatic_pe" :
     {
-        "t": 4,
         "mem": 6000
     },
     "qc_trimmomatic_se" :
     {
-        "t": 4,
         "mem": 6000
     },
     "map_bwa_index" :
@@ -23,7 +20,6 @@
     {
         "time" : "24:00:00",
         "mem": 3000,
-        "t": 2
     },
     "mpileup_convert":
     {
