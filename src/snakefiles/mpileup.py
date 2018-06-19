@@ -167,10 +167,10 @@ rule mpileup_popoolation_subsample:
             MPILEUP_SUB + "{population}/{population}.{chromosome}.mpileup.gz"
         )
     params:
-        minqual = get_subsample_min_qual,
+        min_qual = get_subsample_min_qual,
         method = get_subsample_method,
-        maxcoverage = get_subsample_max_coverage,
-        targetcoverage = get_subsample_target_coverage
+        max_coverage = get_subsample_max_coverage,
+        target_coverage = get_subsample_target_coverage
     log:
         MPILEUP_SUB + "{population}/{population}.{chromosome}.log"
     benchmark:
@@ -184,11 +184,11 @@ rule mpileup_popoolation_subsample:
         (cat {output.mpileup_fifo} | gzip --best > {output.mpileup_gz} &)
 
         perl src/popoolation_1.2.2/basic-pipeline/subsample-pileup.pl \
-            --min-qual {params.minqual} \
+            --min-qual {params.min_qual} \
             --method {params.method} \
-            --max-coverage {params.maxcoverage} \
+            --max-coverage {params.max_coverage} \
             --fastq-type sanger \
-            --target-coverage {params.targetcoverage} \
+            --target-coverage {params.target_coverage} \
             --input <(gzip -dc {input.mpileup}) \
             --output {output.mpileup_fifo} \
         2> {log} 1>&2

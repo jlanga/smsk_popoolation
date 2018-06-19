@@ -32,35 +32,47 @@ popoolation:
         min_qual: 20
         method: withoutreplace
         target_coverage: 10
+        # max_coverage: from tsv
     D:
         min_count: 2
+        min_coverage: 4
+        # max_coverage: from tsv
         min_covered_fraction: 0.5
+        # pool_size: from tsv
         step_size: 1000
         window_size: 1000
     pi:
         min_count: 2
+        min_coverage: 4
+        # max_coverage: from tsv
         min_covered_fraction: 0.5
+        # pool_size: from tsv
         step_size: 1000
         window_size: 1000
     theta:
         min_count: 2
+        min_coverage: 4
+        # max_coverage: from tsv
         min_covered_fraction: 0.5
+        # pool_size: from tsv
         step_size: 1000
         window_size: 1000
 
 popoolation2:
-    mpileup2sync:
-        min_qual: 20
-        memory_gb: 2
     find_indels:
         indel_window: 5
         min_count: 20
     subsample:
-        target_coverage: 10
-        max_coverage: 10000
+        min_qual: 20
         method: withoutreplace
-    fst_sliding:
+        target_coverage: 10
+        # max_coverage: from tsv
+        memory_gb: 2
+    fst:
+        min_count: 3
+        min_coverage: 4
+        # max_coverage: from tsv
+        min_covered_fraction: 1.0
+        # pool_size: from tsv
         window_size: 1
         step_size: 1
-        min_covered_fraction: 1.0
-        min_count: 3

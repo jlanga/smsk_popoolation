@@ -17,6 +17,31 @@ def compose_mpileups_comma(wildcards):
     return composed
 
 
+def get_sync_min_qual(wildcards):
+    return params["popoolation2"]["subsample"]["min_qual"]
+
+
+def get_sync_target_coverage(wildcards):
+    return params["popoolation2"]["subsample"]["target_coverage"]
+
+
+def compose_max_coverages(wildcards):
+    coverages = (
+        samples
+        [["population", "max_coverage"]]
+        .drop_duplicates()
+        ["max_coverage"]
+        .values
+        .tolist()
+    )
+    coverages = map(str, coverages)
+    return ",".join(coverages)
+
+
+def get_sync_subsample_method(wildcards):
+    return params["popoolation2"]["subsample"]["method"]
+
+
 rule sync_identify_indels:
     """
     Identify indels like in mpileup_popoolation_identify_indels, but all
@@ -69,14 +94,6 @@ rule sync_filter_indels:
         mpileup_gz = SYNC_FILT + "{chromosome}.mpileup.gz"
     params:
         mpileups_comma = compose_mpileups_comma
-        # mpileups_comma = "{" + ",".join(
-        #     expand(
-        #         MPILEUP_RAW \
-        #             + "{population}/{population}.{chromosome}.mpileup.gz",
-        #         population=POPULATIONS,
-        #         chromosome="{chromosome}"
-        #     )
-        # ) + "}"
     log:
         SYNC_FILT + "{chromosome}.filter_indels.log"
     benchmark:
@@ -100,10 +117,6 @@ rule sync_filter_indels:
         """
 
 
-def get_sync_min_qual(wildcards):
-    return params["popoolation2"]["mpileup2sync"]["min_qual"]
-
-
 rule sync_mpileup2sync:
     """Convert joint mpileup to sync
 
@@ -124,7 +137,7 @@ rule sync_mpileup2sync:
     benchmark:
         SYNC_RAW + "{chromosome}.json"
     resources:
-        memory_gb = params["popoolation2"]["mpileup2sync"]["memory_gb"]
+        memory_gb = params["popoolation2"]["subsample"]["memory_gb"]
     conda:
         "sync.yml"
     shell:
@@ -139,27 +152,6 @@ rule sync_mpileup2sync:
         || true) \
         2> {log} 1>&2
         """
-
-
-def get_sync_target_coverage(wildcards):
-    return params["popoolation2"]["subsample"]["target_coverage"]
-
-
-def compose_max_coverages(wildcards):
-    coverages = (
-        samples
-        [["population", "max_coverage"]]
-        .drop_duplicates()
-        ["max_coverage"]
-        .values
-        .tolist()
-    )
-    coverages = map(str, coverages)
-    return ",".join(coverages)
-
-
-def get_sync_subsample_method(wildcards):
-    return params["popoolation2"]["subsample"]["method"]
 
 
 rule sync_subsample:

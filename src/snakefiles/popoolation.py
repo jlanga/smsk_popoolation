@@ -1,17 +1,21 @@
-def get_min_count(wildcards):
+def get_popoolation_min_count(wildcards):
     return params["popoolation"][wildcards.analysis]["min_count"]
 
 
-def get_min_covered_fraction(wildcards):
+def get_popoolation_min_covered_fraction(wildcards):
     return params["popoolation"][wildcards.analysis]["min_covered_fraction"]
 
 
-def get_step_size(wildcards):
+def get_popoolation_step_size(wildcards):
     return params["popoolation"][wildcards.analysis]["step_size"]
 
 
-def get_window_size(wildcards):
+def get_popoolation_window_size(wildcards):
     return params["popoolation"][wildcards.analysis]["window_size"]
+
+
+def get_popoolation_min_coverage(wildcards):
+    return params["popoolation"][wildcards.analysis]["min_coverage"]
 
 
 def get_pool_size(wildcards):
@@ -23,6 +27,21 @@ def get_pool_size(wildcards):
         .values
         .tolist()[0][0]
     )
+
+
+def get_popoolation_max_coverage(wildcards):
+    return (
+        samples
+        [samples["population"] == wildcards.population]
+        [["max_coverage"]]
+        .drop_duplicates()
+        .values
+        .tolist()[0]
+    )
+
+
+# def get_popoolation_min_coverage(wildcards):
+#     return params["popoolation"]["subsample"]["min_coverage"]
 
 
 rule popoolation_variance_sliding:
@@ -39,13 +58,13 @@ rule popoolation_variance_sliding:
             + "{analysis}/{population}.{chromosome}.{analysis}.tsv"
     params:
         measure = "{analysis}",
-        min_count = get_min_count,
-        min_coverage = params["popoolation"]["subsample"]["target_coverage"],
-        max_coverage = params["popoolation"]["subsample"]["target_coverage"],
-        min_covered_fraction = get_min_covered_fraction,
+        min_count = get_popoolation_min_count,
+        min_coverage = get_popoolation_min_coverage,
+        max_coverage = get_popoolation_max_coverage,
+        min_covered_fraction = get_popoolation_min_covered_fraction,
         pool_size = get_pool_size,
-        step_size = get_step_size,
-        window_size = get_window_size
+        step_size = get_popoolation_step_size,
+        window_size = get_popoolation_window_size
     log:
         TABLE_POPOOLATION \
             + "{analysis}/{population}.{chromosome}.{analysis}.log"
