@@ -3,19 +3,27 @@ rule map_bwa_index:
     input:
         fa = RAW + "genome.fa"
     output:
-        mock  = touch(
-            MAP_INDEX + "genome"
-        ),
+        mock = touch(MAP_INDEX + "genome"),
         buckets = expand(
             MAP_INDEX + "genome.{suffix}",
-            suffix = "amb ann bwt pac sa".split()
+            suffix="amb ann bwt pac sa".split()
         )
-    log: MAP_INDEX + "bwa_index.log"
-    benchmark: MAP_INDEX + "bwa_index.json"
-    conda: "map.yml"
+    log:
+        MAP_INDEX + "bwa_index.log"
+    benchmark:
+        MAP_INDEX + "bwa_index.json"
+    conda:
+        "map.yml"
     shell:
         "bwa index -p {output.mock} {input.fa} > {log} 2>&1"
 
+
+def compose_rg_tag(wildcards):
+    identifier = "ID:" + wildcards.population + "_" + wildcards.library
+    library = "LB:truseq_" + wildcards.library
+    platform = "PL:Illumina"
+    sample = "SM:" + wildcards.population
+    return f"@RG\t{identifier}\t{library}\t{platform}\t{sample}"
 
 
 rule map_bwa_map:
@@ -32,43 +40,46 @@ rule map_bwa_map:
             MAP_RAW + "{population}.{library}.cram"
         )
     params:
-        additional_params = config["bwa_params"]["additional_params"],
-        sq_id = "{population}_{library}",
-        sq_library = "LB:truseq_{library}",
-        sq_platform = "PL:Illumina",
-        sq_sample = "SM:{population}",
-    threads: config["bwa_params"]["threads"]
-    log: MAP_RAW + "{population}.{library}.bwa_mem.log"
-    benchmark: MAP_RAW + "{population}.{library}.bwa_mem.json"
-    conda: "map.yml"
+        extra = params["bwa"]["extra"],
+        rg_tag = compose_rg_tag
+    threads:
+        params["bwa"]["threads"]
+    log:
+        MAP_RAW + "{population}.{library}.bwa_mem.log"
+    benchmark:
+        MAP_RAW + "{population}.{library}.bwa_mem.json"
+    conda:
+        "map.yml"
     shell:
-        "(bwa mem "
-            "-M "
-            "-R '@RG\tID:{params.sq_id}\t{params.sq_library}\t{params.sq_platform}\t{params.sq_sample}' "
-            "-t {threads} "
-            "{params.additional_params} "
-            "{input.index} "
-            "{input.forward} "
-            "{input.reverse} "
-        "| samtools sort "
-            "-l 9 "
-            "-o {output.cram} "
-            "--reference {input.reference} "
-            "--output-fmt CRAM "
-            "-@ {threads} "
-            "/dev/stdin "
-        ") 2> {log}"
+        """
+        (bwa mem \
+            -M \
+            -R '{params.rg_tag}' \
+            -t {threads} \
+            {params.extra} \
+            {input.index} \
+            {input.forward} \
+            {input.reverse} \
+        | samtools sort \
+            -l 9 \
+            -o {output.cram} \
+            --reference {input.reference} \
+            --output-fmt CRAM \
+            -@ {threads} \
+            /dev/stdin \
+        ) 2> {log}
+        """
 
 
-
-rule map_split:  # USE BAM bc it markduplicates needs a file
+rule map_split:
     """Extract chromosome in cram
 
-    We use uncompressed bam to accelerate the output. The result of this rule is
-    temporary.
+    We use uncompressed bam to accelerate the output. The result of this rule
+    is temporary.
 
     Note: the following step is picard MarkDuplicates, and needs a proper file
-    since it makes two passes.
+    since it makes two passes. Output is a bam because MarkDuplicates needs
+    one.
     """
     input:
         cram = MAP_RAW + "{population}.{library}.cram",
@@ -78,22 +89,24 @@ rule map_split:  # USE BAM bc it markduplicates needs a file
         bam = temp(
             MAP_SPLIT + "{population}.{library}.{chromosome}.bam"
         )
-    threads: 1
     params:
         chromosome = "{chromosome}"
-    log: MAP_SPLIT + "{population}.{library}.{chromosome}.log"
-    benchmark: MAP_SPLIT + "{population}.{library}.{chromosome}.json"
-    conda: "map.yml"
+    log:
+        MAP_SPLIT + "{population}.{library}.{chromosome}.log"
+    benchmark:
+        MAP_SPLIT + "{population}.{library}.{chromosome}.json"
+    conda:
+        "map.yml"
     shell:
-        "samtools view "
-            "-u "
-            "-T {input.reference} "
-            "-o {output.bam} "
-            "-@ {threads} "
-            "{input.cram} "
-            "{params.chromosome} "
-        "2> {log}"
-
+        """
+        samtools view \
+            -u \
+            -T {input.reference} \
+            -o {output.bam} \
+            {input.cram} \
+            {params.chromosome} \
+        2> {log}
+        """
 
 
 rule map_filter:  # TODO: java memory, uncompressed bam
@@ -112,53 +125,50 @@ rule map_filter:  # TODO: java memory, uncompressed bam
             MAP_FILT + "{population}.{library}.{chromosome}.cram"
         ),
         dupstats = MAP_FILT + "{population}.{library}.{chromosome}.dupstats"
-    log: MAP_FILT + "{population}.{library}.{chromosome}.log"
-    benchmark: MAP_FILT + "{population}.{library}.{chromosome}.json"
-    threads: 1
+    log:
+        MAP_FILT + "{population}.{library}.{chromosome}.log"
+    benchmark:
+        MAP_FILT + "{population}.{library}.{chromosome}.json"
     resources:
-        memory_gb = config["picard_markduplicates_params"]["memory_gb"]
-    conda: "map.yml"
+        memory_gb = params["picard_markduplicates"]["memory_gb"]
+    conda:
+        "map.yml"
     shell:
-        "(picard -Xmx{resources.memory_gb}g MarkDuplicates "
-            "INPUT={input.bam} "
-            "OUTPUT=/dev/stdout "
-            "METRICS_FILE={output.dupstats} "
-            "ASSUME_SORT_ORDER=coordinate "
-            "VALIDATION_STRINGENCY=SILENT "
-            "COMPRESSION_LEVEL=0 "
-            "REMOVE_DUPLICATES=true "
-            "QUIET=false "
-        "| samtools view "
-            "-q 20 "
-            "-f 0x0002 "  # read mapped in proper pair. Leave only
-            "-F 0x0004 "  # read unmapped. Throw away
-            "-F 0x0008 "  # mate unmapped. Throw away
-            "-u "
-            "- "
-        "| samtools sort "
-            "-l 9 "
-            "-o {output.cram} "
-            "--reference {input.reference} "
-            "--output-fmt CRAM "
-            "-@ {threads} "
-            "/dev/stdin "
-        ") 2> {log}"
-
-
-
-def get_library_files_from_sample(wildcards):
-    """ TODO: needs improvement/simplification
-    Return the list of libraries corresponding to a population and chromosome.
-    """
-    files = [
-        MAP_FILT + population + "." + library + "." + chromosome + ".cram"
-        for population in config["samples"]
-        for library in config["samples"][population]["libraries"]
-        for chromosome in CHROMOSOMES
-    ]
-    return files
+        """
+        (picard -Xmx{resources.memory_gb}g MarkDuplicates \
+            INPUT={input.bam} \
+            OUTPUT=/dev/stdout \
+            METRICS_FILE={output.dupstats} \
+            ASSUME_SORT_ORDER=coordinate \
+            VALIDATION_STRINGENCY=SILENT \
+            COMPRESSION_LEVEL=0 \
+            REMOVE_DUPLICATES=true \
+            QUIET=false \
+        | samtools view \
+            -q 20 \
+            -f 0x0002  `# read mapped in proper pair. Leave only` \
+            -F 0x0004  `# read unmapped. Throw away` \
+            -F 0x0008  `# mate unmapped. Throw away` \
+            -u \
+            - \
+        | samtools sort \
+            -l 9 \
+            -o {output.cram} \
+            --reference {input.reference} \
+            --output-fmt CRAM \
+            /dev/stdin \
+        ) 2> {log}
+        """
 
 
 rule map:
     input:
-        cram = get_library_files_from_sample
+        [
+            MAP_FILT + population + "." + library + "." + chromosome + ".cram"
+            for population, library in (
+                samples[["population", "library"]]
+                .values
+                .tolist()
+            )
+            for chromosome in CHROMOSOMES
+        ]

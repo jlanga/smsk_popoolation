@@ -1,39 +1,40 @@
-rule raw_make_links_pe_sample:
+def get_reads(wildcards):
+    pop = wildcards.population
+    lib = wildcards.library
+    forward, reverse = (
+        samples
+        [(samples["population"] == pop) & (samples["library"] == lib)]
+        [["forward", "reverse"]]
+        .values
+        .tolist()[0]
+    )
+    return forward, reverse
+
+
+rule raw_make_links_pe:
     """Make a link to the original file, with a prettier name than default"""
     input:
-        forward= lambda wildcards: config["samples"][wildcards.sample]["libraries"][wildcards.library]["forward"],
-        reverse= lambda wildcards: config["samples"][wildcards.sample]["libraries"][wildcards.library]["reverse"]
+        get_reads
     output:
-        forward= RAW + "{sample}.{library}_1.fq.gz",
-        reverse= RAW + "{sample}.{library}_2.fq.gz"
+        forward
+        = RAW + "{population}.{library}_1.fq.gz",
+        reverse = RAW + "{population}.{library}_2.fq.gz"
     shell:
-        "ln --symbolic $(readlink --canonicalize {input.forward}) {output.forward}; "
-        "ln --symbolic $(readlink --canonicalize {input.reverse}) {output.reverse}"
-
-
-
-# rule raw_make_links_se_sample:
-#     """Make a link to the original file, with a prettier name than default"""
-#     input:
-#         single= lambda wildcards: config["samples_se"][wildcards.sample][wildcards.library]["single"],
-#     output:
-#         single= RAW + "{sample}.{library}_se.fq.gz"
-#     shell:
-#         "ln --symbolic $(readlink --canonicalize {input.single}) {output.single}"
+        """
+        ln --symbolic $(readlink --canonicalize {input[0]}) {output.forward}
+        ln --symbolic $(readlink --canonicalize {input[1]}) {output.reverse}
+        """
 
 
 rule raw_extract_genome:
     """Extract the fasta.gz on config.yaml into genome.fa"""
     input:
-        fa_gz = config["reference"]["dna"]
+        fa_gz = features["reference"]["dna"]
     output:
         fa = RAW + "genome.fa"
-    log: RAW + "genome.log"
-    benchmark: RAW + "genome.json"
+    log:
+        RAW + "genome.log"
+    benchmark:
+        RAW + "genome.json"
     shell:
-        "gzip "
-            "--decompress "
-            "--stdout "
-            "{input.fa_gz} "
-        "> {output.fa} "
-        "2> {log}"
+        "gzip --decompress --stdout {input.fa_gz} > {output.fa} 2> {log}"

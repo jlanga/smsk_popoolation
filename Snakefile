@@ -1,8 +1,21 @@
+import pandas as pd
+
 from snakemake.utils import min_version
+
 min_version("5.0")
 
 shell.prefix("set -euo pipefail;")
-configfile: "config.yml"
+
+configfile: "params.yml"
+params = config.copy()
+config = {}
+
+configfile: "features.yml"
+features = config.copy()
+
+del config
+
+samples = pd.read_table("samples.tsv")
 
 singularity: "docker://continuumio/miniconda3:4.4.10"
 
@@ -10,9 +23,9 @@ singularity: "docker://continuumio/miniconda3:4.4.10"
 include: "src/snakefiles/folders.py"
 
 # Other variables
-POPULATIONS = config["samples"] if config["samples"] is not None else []
+POPULATIONS = samples["population"].drop_duplicates().values.tolist()
 PAIRS = ["pe_pe", "pe_se"]
-CHROMOSOMES  = config["chromosomes"].split(" ")
+CHROMOSOMES = features["chromosomes"].split(" ")
 ENDS = "1 2 u".split(" ")
 
 
@@ -38,13 +51,16 @@ rule all:
         rules.popoolation_theta.input,
         expand(
             PLOT_HP + "{population}.pdf",
-            population = POPULATIONS
+            population=POPULATIONS
         ),
         rules.fst.input,
         rules.reports.input
 
 
-
 rule clean:
     shell:
-        "rm -r results/"
+        """
+        if [[ -d results ]]; then
+            rm -r results/
+        fi
+        """

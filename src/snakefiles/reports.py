@@ -6,6 +6,7 @@ rule reports_fastqc:
     conda: "reports.yml"
     shell: "fastqc --noextract --nogroup {input} 2> {log} 1>&2"
 
+
 rule reports_samtools_stats:
     input: "{filename}.cram"
     output: "{filename}.stats.tsv"
@@ -13,6 +14,7 @@ rule reports_samtools_stats:
     benchmark: "{filename}.stats.bmk"
     conda: "reports.yml"
     shell: "samtools stats {input} > {output} 2>&1"
+
 
 rule reports_samtools_flagstat:
     input: "{filename}.cram"
@@ -22,10 +24,11 @@ rule reports_samtools_flagstat:
     conda: "reports.yml"
     shell: "samtools flagstat {input} > {output} 2> {log}"
 
+
 rule reports_samtools_idxstats:
     input:
-        cram="{filename}.cram",
-        crai="{filename}.cram.crai"
+        cram = "{filename}.cram",
+        crai = "{filename}.cram.crai"
     output: "{filename}.idxstats.txt"
     log: "{filename}.idxstats.log"
     benchmark: "{filename}.idxstats.bmk"
@@ -33,12 +36,14 @@ rule reports_samtools_idxstats:
     shell: "samtools idxstats {input} > {output} 2> {log}"
 
 
-
 rule reports:
     input:
         expand(
             MAP_RAW + population + "." + library + "." + analysis
-            for population in config["samples"]
-            for library in config["samples"][population]["libraries"]
+            for population, library in (
+                samples
+                [["population", "library"]]
+                .values.tolist()
+            )
             for analysis in "stats.tsv flagstat.txt idxstats.txt".split(" ")
         )
