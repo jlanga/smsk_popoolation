@@ -92,8 +92,10 @@ rule fst_merge:
         TABLE_FST + "merge.log"
     benchmark:
         TABLE_FST + "merge.json"
-    threads: 24
-    conda: "fst.yml"
+    threads:
+        24
+    conda:
+        "fst.yml"
     shell:
         "pigz --best --stdout {input} > {output}"
 
@@ -111,9 +113,9 @@ rule fst_split_table:
     params:
         pop1 = "{pop1}",
         pop2 = "{pop2}"
-    threads:
-        1
-    conda: "fst.yml"
+
+    conda:
+        "fst.yml"
     shell:
         """
         (gzip --decompress --stdout {input.merged_tsv_gz} \
@@ -131,10 +133,12 @@ rule fst_plot:
         fst_tsv = PLOT_FST + "{pop1}_{pop2}.fst.tsv"
     output:
         pdf = PLOT_FST + "{pop1}_{pop2}.pdf"
-    threads: 1
-    log: PLOT_FST + "plot_{pop1}_{pop2}.log"
-    benchmark: PLOT_FST + "plot_{pop1}_{pop2}.json"
-    conda: "fst.yml"
+    log:
+        PLOT_FST + "plot_{pop1}_{pop2}.log"
+    benchmark:
+        PLOT_FST + "plot_{pop1}_{pop2}.json"
+    conda:
+        "fst.yml"
     shell:
         """
         Rscript src/plot_score.R \

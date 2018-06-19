@@ -40,10 +40,6 @@ def get_popoolation_max_coverage(wildcards):
     )
 
 
-# def get_popoolation_min_coverage(wildcards):
-#     return params["popoolation"]["subsample"]["min_coverage"]
-
-
 rule popoolation_variance_sliding:
     """
     Run popoolation's Variance sliding script: Tajima's D, Tajima's Theta or Pi
