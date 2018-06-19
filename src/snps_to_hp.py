@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-from numpy import mean
 import sys
 
 
@@ -25,7 +24,9 @@ def compute_hp(block):
     header = header[1:]  # Trim the >
     header = header.split(":")
     chromosome, position = header[0:2]
-    hps = []
+    sum_major = 0
+    sum_minor = 0
+
     for line in block:
 
         if not line:
@@ -34,15 +35,16 @@ def compute_hp(block):
         line = line.strip().split("\t")
         genotypes = map(int, line[4:8])
         genotypes = sorted(genotypes, reverse=True)
-        maj_n, min_n = genotypes[0:2]
-        hp = 2 * maj_n * min_n / ((maj_n + min_n)**2)
-        hps.append(hp)
+        major, minor, *_ = genotypes
+        sum_major += major
+        sum_minor += minor
 
-    result_string = "{chromosome}\t{position}\t{hp}\n".format(
-        chromosome=chromosome,
-        position=position,
-        hp=mean(hps)
-    )
+    if sum_major > 0 and sum_minor > 0:
+        hp = 2 * sum_major * sum_minor / (sum_major + sum_minor)**2
+    else:
+        hp = "NA"
+
+    result_string = f"{chromosome}\t{position}\t{hp}\n"
 
     return result_string
 
