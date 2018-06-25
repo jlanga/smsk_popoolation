@@ -75,7 +75,6 @@ rule fst_sliding:
             --output {params.tsv} \
             --pool-size {params.pool_size} \
         2> {log} 1>&2
-        
         gzip --best --keep {params.tsv} 2>> {log}
         """
 
@@ -114,7 +113,6 @@ rule fst_split_table:
     params:
         pop1 = "{pop1}",
         pop2 = "{pop2}"
-
     conda:
         "fst.yml"
     shell:
@@ -123,8 +121,7 @@ rule fst_split_table:
         | python3 src/fst_to_genomic_score.py \
             {params.pop1} \
             {params.pop2} \
-        > {output.fst_tsv}) \
-        2> {log} 1>&2
+        > {output.fst_tsv})
         """
 
 
