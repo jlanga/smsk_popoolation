@@ -38,7 +38,7 @@ read_scores <- function(filename){
       read_tsv(  # Read file and select the columns
           file = .,
           col_names = c("chromosome", "position", "score"),
-          col_types = "cnn",
+          col_types = "cid",
           na = c("na")
       ) %>%
       mutate(  # Convert chromosome to a factor
