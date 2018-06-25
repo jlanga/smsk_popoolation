@@ -75,6 +75,7 @@ rule fst_sliding:
             --output {params.tsv} \
             --pool-size {params.pool_size} \
         2> {log} 1>&2
+        
         gzip --best --keep {params.tsv} 2>> {log}
         """
 
@@ -89,9 +90,9 @@ rule fst_merge:
             PLOT_FST + "all.tsv.gz"
         )
     log:
-        TABLE_FST + "merge.log"
+        PLOT_FST + "merge.log"
     benchmark:
-        TABLE_FST + "merge.json"
+        PLOT_FST + "merge.json"
     threads:
         24
     conda:
@@ -106,10 +107,10 @@ rule fst_split_table:
         merged_tsv_gz = PLOT_FST + "all.tsv.gz"
     output:
         fst_tsv = PLOT_FST + "{pop1}_{pop2}.fst.tsv"
-    log:
-        PLOT_FST + "split_{pop1}_{pop2}.log"
-    benchmark:
-        PLOT_FST + "split_{pop1}_{pop2}.json"
+    # log:
+    #     PLOT_FST + "split_{pop1}_{pop2}.log"
+    # benchmark:
+    #     PLOT_FST + "split_{pop1}_{pop2}.json"
     params:
         pop1 = "{pop1}",
         pop2 = "{pop2}"
