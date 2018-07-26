@@ -1,3 +1,7 @@
+"""folders.py
+Variables to store the folder names
+"""
+
 RAW = "results/raw/"
 
 # QC
