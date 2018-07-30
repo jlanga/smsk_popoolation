@@ -45,7 +45,7 @@ read_scores <- function(filename){
           file = .,
           col_names = c("chromosome", "position", "score"),
           col_types = "cid",
-          na = c("na")
+          na = c("na", "", "NA")
       ) %>%
       mutate(  # Convert chromosome to a factor
         chromosome = factor(
