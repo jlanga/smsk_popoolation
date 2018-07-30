@@ -127,7 +127,7 @@ plot_score <- function(data, fileout, hlines=NULL){
 filein  <- args$input
 fileout <- args$output
 normalize <- args$normalize
-log <- args$logarithm
+logarithm <- args$logarithm
 
 data <- read_scores(filein)
 
