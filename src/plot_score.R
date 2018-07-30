@@ -2,9 +2,6 @@
 library(argparse)
 library(tidyverse)
 
-
-color_palette <- c("darkblue", "orange")
-
 parser <- ArgumentParser()
 
 parser$add_argument(
@@ -28,11 +25,20 @@ parser$add_argument(
     default = FALSE
 )
 
+parser$add_argument(
+    "-l", "--logarithm",
+    action = "store_true",
+    help = "Apply -log2(value). If --normalize, first normalizes, then log",
+    default = FALSE
+)
+
 args <- parser$parse_args()
 
 
 # Function to read the files with the Tajma D's calculations
 read_scores <- function(filename){
+
+    color_palette <- c("darkblue", "orange")
 
     data <- filename %>%
       read_tsv(  # Read file and select the columns
@@ -55,7 +61,7 @@ read_scores <- function(filename){
         color = color_palette[color]
       )
 
-      data <- as.data.frame(data)
+      #data <- as.data.frame(data)
 
       return(data)
 }
@@ -121,15 +127,19 @@ plot_score <- function(data, fileout, hlines=NULL){
 filein  <- args$input
 fileout <- args$output
 normalize <- args$normalize
+log <- args$logarithm
 
 data <- read_scores(filein)
 
-if( normalize){
-    data %>%
-    mutate(
-        score = (score - mean(score, na.rm = TRUE)) / sd(score, na.rm = TRUE)
-    ) %>%
-    plot_score(., fileout)
-}else{
-    plot_score(data, fileout)
+if(normalize){
+    m = mean(data$score, na.rm = TRUE)
+    s = sd(data$score, na.rm = TRUE)
+    data <- data %>%
+        mutate(score = (score - m) / s)
+
+if(logarithm){
+    data <- data %>%
+        mutate(score = -log2(score))
 }
+
+plot_score(data, fileout)

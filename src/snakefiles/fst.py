@@ -142,6 +142,7 @@ rule fst_plot:
         Rscript src/plot_score.R \
             --input {input.fst_tsv} \
             --output {output.pdf} \
+            --normalize \
         2> {log} 1>&2
         """
 

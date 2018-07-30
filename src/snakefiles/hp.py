@@ -39,6 +39,7 @@ rule hp_plot_population:
         Rscript src/plot_score.R \
             --input {input.hp_gz} \
             --output {output.pdf} \
+            --logarithm \
         2> {log}
         """
 
