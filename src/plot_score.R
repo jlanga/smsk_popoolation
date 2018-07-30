@@ -136,6 +136,7 @@ if(normalize){
     s = sd(data$score, na.rm = TRUE)
     data <- data %>%
         mutate(score = (score - m) / s)
+}
 
 if(logarithm){
     data <- data %>%
