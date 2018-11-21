@@ -56,6 +56,6 @@ install: |
 
 script: |
     export PATH="/home/travis/miniconda3/bin:$PATH"
-    snakemake --timestamp --resources memory_gb=3 --use-conda -j
+    snakemake --resources memory_gb=3 --use-conda -j
 
 after_failure:
