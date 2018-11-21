@@ -2,7 +2,7 @@
 
 mkdir -p src/
 
-pushd src/
+pushd src/ || exit
 
 # popoolation
 wget \
@@ -16,4 +16,4 @@ wget \
     http://downloads.sourceforge.net/project/popoolation2/popoolation2_1201.zip
 unzip popoolation2_1201.zip
 
-popd
+popd || exit

@@ -1,3 +1,5 @@
+# Environment for hp subworkflow
+---
 channels:
     - bioconda
     - conda-forge

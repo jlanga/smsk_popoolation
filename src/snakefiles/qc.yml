@@ -1,3 +1,5 @@
+# Environment for qc subworkflow
+---
 channels:
     - bioconda
     - conda-forge

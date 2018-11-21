@@ -1,4 +1,10 @@
 #!/usr/bin/env python3
+
+"""snps_to_hp.py
+
+Compute the pooled heterozygosities from a .snps file from popoolation.
+"""
+
 import sys
 
 
@@ -39,17 +45,17 @@ def compute_hp(block):
         sum_major += major
         sum_minor += minor
 
-    if sum_major > 0 and sum_minor > 0:
-        hp = 2 * sum_major * sum_minor / (sum_major + sum_minor)**2
-    else:
-        hp = "NA"
+    pooledh = "NA"
 
-    result_string = f"{chromosome}\t{position}\t{hp}\n"
+    if sum_major > 0 and sum_minor > 0:
+        pooledh = 2 * sum_major * sum_minor / (sum_major + sum_minor)**2
+
+    result_string = f"{chromosome}\t{position}\t{pooledh}\n"
 
     return result_string
 
 
 if __name__ == "__main__":
-    hps = (compute_hp(block) for block in get_blocks(sys.stdin))
-    for result in hps:
+    POOLEDHS = (compute_hp(block) for block in get_blocks(sys.stdin))
+    for result in POOLEDHS:
         sys.stdout.write(result)

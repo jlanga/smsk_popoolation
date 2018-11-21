@@ -1,3 +1,5 @@
+# Environment for popoolation subworkflow
+---
 channels:
     - bioconda
     - conda-forge
