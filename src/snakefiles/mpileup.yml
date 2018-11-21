@@ -1,3 +1,5 @@
+# Environment for mpileup subworkflow
+---
 channels:
     - bioconda
     - conda-forge

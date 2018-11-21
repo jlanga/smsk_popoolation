@@ -1,3 +1,5 @@
+# Environment for reports subworkflow
+---
 channels:
     - bioconda
     - conda-forge
