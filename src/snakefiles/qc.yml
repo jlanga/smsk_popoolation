@@ -1,8 +1,8 @@
 # Environment for qc subworkflow
 ---
 channels:
-    - bioconda
     - conda-forge
+    - bioconda
     - defaults
 dependencies:
     - trimmomatic=0.35
