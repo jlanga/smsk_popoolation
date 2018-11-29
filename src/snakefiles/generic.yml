@@ -1,8 +1,8 @@
 # Environment for generic subworkflow
 ---
 channels:
-    - bioconda
     - conda-forge
+    - bioconda
     - defaults
 dependencies:
     - samtools=1.5.0

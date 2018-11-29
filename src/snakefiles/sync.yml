@@ -1,8 +1,8 @@
 # Environment for sync subworkflow
 ---
 channels:
-    - bioconda
     - conda-forge
+    - bioconda
     - defaults
 dependencies:
     - perl=5.22.0

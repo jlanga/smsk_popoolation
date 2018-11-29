@@ -1,8 +1,8 @@
 # Environment for map subworkflow
 ---
 channels:
-    - bioconda
     - conda-forge
+    - bioconda
     - defaults
 dependencies:
     - bwa=0.7.15
