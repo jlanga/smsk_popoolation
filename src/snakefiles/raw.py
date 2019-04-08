@@ -16,8 +16,7 @@ rule raw_make_links_pe:
     input:
         get_reads
     output:
-        forward
-        = RAW + "{population}.{library}_1.fq.gz",
+        forward = RAW + "{population}.{library}_1.fq.gz",
         reverse = RAW + "{population}.{library}_2.fq.gz"
     shell:
         """
