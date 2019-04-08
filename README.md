@@ -28,21 +28,29 @@ Follow the contents of the `.travis.yml` file:
     ```sh
     git clone https://github.com/jlanga/smsk_popoolation.git smsk_popoolation
     cd smsk_popoolation
-    bash bin/install/conda_env.sh  # Dowload packages and create an environment
-    bash bin/install/from_tarball.sh  # Download popoolation and popoolation2 tarballs 
+    snakemake --use-conda --create-envs-only
     ```
 
-3. Activate the environment (`source deactivate` to deactivate):
+3. Run the test dataset:
+
     ```sh
-    source activate smsk_popoolation
+    snakemake --use-conda -
     ```
 
-4. Modify the `config.yaml` with your dataset
+4. Modify the following files:
+
+    - `features.yaml`: the path to the genome reference, and the names of every chromosome to be processed.
+
+    - `samples.tsv`: paths and library information of each of the samples.
+
+    - `params.yml`: execution parameters of different tools.
+
+    - `cluster.json`: memory limits for some of the steps-
 
 5. Execute the pipeline:
 
     ```sh
-    snakemake -j
+    snakemake --use-conda -j
     ```
 
 ## Representation of the pipeline

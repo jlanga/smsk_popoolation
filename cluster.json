@@ -19,7 +19,7 @@
     "map_bwa_map" :
     {
         "time" : "24:00:00",
-        "mem": 3000,
+        "mem": 3000
     },
     "mpileup_convert":
     {
