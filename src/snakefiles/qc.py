@@ -45,13 +45,13 @@ rule qc_trimmomatic:
     Sequences will be stored permanently later on on CRAM
     """
     input:
-        forward = RAW + "{population}.{library}_1.fq.gz",
-        reverse = RAW + "{population}.{library}_2.fq.gz"
+        fwd = RAW + "{population}.{library}_1.fq.gz",
+        rev = RAW + "{population}.{library}_2.fq.gz"
     output:
-        forward = temp(QC + "{population}.{library}_1.fq.gz"),
-        reverse = temp(QC + "{population}.{library}_2.fq.gz"),
-        forward_unp = temp(QC + "{population}.{library}_3.fq.gz"),
-        reverse_unp = temp(QC + "{population}.{library}_4.fq.gz")
+        fwd = temp(QC + "{population}.{library}_1.fq.gz"),
+        rev = temp(QC + "{population}.{library}_2.fq.gz"),
+        fwd_unp = temp(QC + "{population}.{library}_3.fq.gz"),
+        rev_unp = temp(QC + "{population}.{library}_4.fq.gz")
     params:
         adaptor = get_adaptor,
         phred = get_phred,
@@ -71,12 +71,12 @@ rule qc_trimmomatic:
         trimmomatic PE \
             -threads {threads} \
             -{params.phred} \
-            <(gzip --decompress --stdout {input.forward}) \
-            <(gzip --decompress --stdout {input.reverse}) \
-            >(gzip --fast > {output.forward}) \
-            >(gzip --fast > {output.forward_unp}) \
-            >(gzip --fast > {output.reverse}) \
-            >(gzip --fast > {output.reverse_unp}) \
+            <(gzip --decompress --stdout {input.fwd}) \
+            <(gzip --decompress --stdout {input.rev}) \
+            >(gzip --fast > {output.fwd}) \
+            >(gzip --fast > {output.fwd_unp}) \
+            >(gzip --fast > {output.rev}) \
+            >(gzip --fast > {output.rev_unp}) \
             ILLUMINACLIP:{params.adaptor}:2:30:10 \
             {params.trimmomatic_params} \
         2> {log} 1>&2

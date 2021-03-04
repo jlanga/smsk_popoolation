@@ -16,12 +16,12 @@ rule raw_make_links_pe:
     input:
         get_reads
     output:
-        forward = RAW + "{population}.{library}_1.fq.gz",
-        reverse = RAW + "{population}.{library}_2.fq.gz"
+        fwd = RAW + "{population}.{library}_1.fq.gz",
+        rev = RAW + "{population}.{library}_2.fq.gz"
     shell:
         """
-        ln --symbolic $(readlink --canonicalize {input[0]}) {output.forward}
-        ln --symbolic $(readlink --canonicalize {input[1]}) {output.reverse}
+        ln --symbolic $(readlink --canonicalize {input[0]}) {output.fwd}
+        ln --symbolic $(readlink --canonicalize {input[1]}) {output.rev}
         """
 
 
