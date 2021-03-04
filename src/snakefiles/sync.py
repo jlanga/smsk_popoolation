@@ -88,7 +88,7 @@ rule sync_filter_indels:
             population=POPULATIONS,
             chromosome="{chromosome}"
         ),
-        gtf = temp(SYNC_FILT + "{chromosome}.gtf")
+        gtf = SYNC_FILT + "{chromosome}.gtf"
     output:
         mpileup_fifo = temp(SYNC_FILT + "{chromosome}.mpileup"),
         mpileup_gz = SYNC_FILT + "{chromosome}.mpileup.gz"
