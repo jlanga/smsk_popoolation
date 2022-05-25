@@ -12,14 +12,15 @@ set -euo pipefail
 
 
 do_snakemake_dryrun(){
-    (snakemake clean || True)
-    snakemake --dryrun --printshellcmds
+    (snakemake -j 1 clean || true)
+    snakemake --dryrun --printshellcmds -j 1
 }
 
 do_pipeline(){
     snakemake \
 	--use-conda \
-	--jobs
+        --conda-frontend mamba \
+	--jobs 4
 }
 
 do_lint_snakefiles() {
