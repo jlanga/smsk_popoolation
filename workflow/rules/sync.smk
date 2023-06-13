@@ -130,7 +130,7 @@ rule sync_mpileup2sync:
     log:
         SYNC_MPILEUP2SYNC / "{chromosome}.log",
     benchmark:
-        SYNC_MPILEUP2SYNC / "{chromosome}.json"
+        SYNC_MPILEUP2SYNC / "{chromosome}.bmk"
     resources:
         memory_gb=params["popoolation2"]["subsample"]["memory_gb"],
     conda:
@@ -166,7 +166,7 @@ rule SYNC_SUBSAMPLEDsample:
     log:
         SYNC_SUBSAMPLED / "{chromosome}.log",
     benchmark:
-        SYNC_SUBSAMPLED / "{chromosome}.json"
+        SYNC_SUBSAMPLED / "{chromosome}.bmk"
     conda:
         "../envs/sync.yml"
     shell:

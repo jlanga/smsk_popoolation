@@ -9,7 +9,7 @@ rule hp_table_population_chromosome:
     log:
         HP_TABLES / "{population}.log",
     benchmark:
-        HP_TABLES / "{population}.json"
+        HP_TABLES / "{population}.bmk"
     conda:
         "../envs/hp.yml"
     shell:
@@ -31,7 +31,7 @@ rule hp_plot_population:
     log:
         HP_PLOTS / "{population}.log",
     benchmark:
-        HP_PLOTS / "{population}.json"
+        HP_PLOTS / "{population}.bmk"
     conda:
         "../envs/hp.yml"
     shell:

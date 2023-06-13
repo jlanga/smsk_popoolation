@@ -30,6 +30,6 @@ rule raw_extract_genome:
     log:
         RAW / "genome.log",
     benchmark:
-        RAW / "genome.json"
+        RAW / "genome.bmk"
     shell:
         "gzip --decompress --stdout {input.fa_gz} > {output.fa} 2> {log}"

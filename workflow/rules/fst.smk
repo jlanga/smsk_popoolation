@@ -55,7 +55,7 @@ rule fst_sliding:
     log:
         FST_TABLES / "{chromosome}.log",
     benchmark:
-        FST_TABLES / "{chromosome}.json"
+        FST_TABLES / "{chromosome}.bmk"
     conda:
         "../envs/fst.yml"
     shell:
@@ -84,7 +84,7 @@ rule fst_merge:
     log:
         FST_PLOTS / "merge.log",
     benchmark:
-        FST_PLOTS / "merge.json"
+        FST_PLOTS / "merge.bmk"
     threads: 24
     conda:
         "../envs/fst.yml"
@@ -101,7 +101,7 @@ rule fst_split_table:
     # log:
     #     FST_PLOTS + "split_{pop1}_{pop2}.log"
     # benchmark:
-    #     FST_PLOTS + "split_{pop1}_{pop2}.json"
+    #     FST_PLOTS + "split_{pop1}_{pop2}.bmk"
     params:
         pop1="{pop1}",
         pop2="{pop2}",
@@ -126,7 +126,7 @@ rule fst_plot:
     log:
         FST_PLOTS / "plot_{pop1}_{pop2}.log",
     benchmark:
-        FST_PLOTS / "plot_{pop1}_{pop2}.json"
+        FST_PLOTS / "plot_{pop1}_{pop2}.bmk"
     conda:
         "../envs/fst.yml"
     shell:

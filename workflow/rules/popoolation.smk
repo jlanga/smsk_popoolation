@@ -55,7 +55,7 @@ rule popoolation_variance_sliding:
     log:
         POPOOLATION_TABLES / "{analysis}/{population}.{chromosome}.{analysis}.log",
     benchmark:
-        POPOOLATION_TABLES / "{analysis}/{population}.{chromosome}.{analysis}.json"
+        POPOOLATION_TABLES / "{analysis}/{population}.{chromosome}.{analysis}.bmk"
     conda:
         "../envs/popoolation.yml"
     shell:
@@ -91,7 +91,7 @@ rule popoolation_merge_variance_sliding:
     log:
         POPOOLATION_PLOTS / "{analysis}/{population}.{analysis}.merge_vs.log",
     benchmark:
-        POPOOLATION_PLOTS / "{analysis}/{population}.{analysis}.merge_vs.json"
+        POPOOLATION_PLOTS / "{analysis}/{population}.{analysis}.merge_vs.bmk"
     threads: 8
     conda:
         "../envs/popoolation.yml"
@@ -129,7 +129,7 @@ rule POPOOLATION_PLOTS:
     log:
         POPOOLATION_PLOTS / "{analysis}/{population}.{analysis}.plot.log",
     benchmark:
-        POPOOLATION_PLOTS / "{analysis}/{population}.{analysis}.plot.json"
+        POPOOLATION_PLOTS / "{analysis}/{population}.{analysis}.plot.bmk"
     conda:
         "../envs/popoolation.yml"
     shell:

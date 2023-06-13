@@ -10,7 +10,7 @@ rule map_bwa_index:
     log:
         MAP_INDEX / "bwa_index.log",
     benchmark:
-        MAP_INDEX / "bwa_index.json"
+        MAP_INDEX / "bwa_index.bmk"
     conda:
         "../envs/map.yml"
     shell:
@@ -43,7 +43,7 @@ rule map_bwa_map:
     log:
         MAP_RAW / "{population}.{library}.bwa_mem.log",
     benchmark:
-        MAP_RAW / "{population}.{library}.bwa_mem.json"
+        MAP_RAW / "{population}.{library}.bwa_mem.bmk"
     conda:
         "../envs/map.yml"
     shell:
@@ -88,7 +88,7 @@ rule map_split:
     log:
         MAP_SPLIT / "{population}.{library}.{chromosome}.log",
     benchmark:
-        MAP_SPLIT / "{population}.{library}.{chromosome}.json"
+        MAP_SPLIT / "{population}.{library}.{chromosome}.bmk"
     conda:
         "../envs/map.yml"
     shell:
@@ -120,7 +120,7 @@ rule map_filter:  # TODO: java memory, uncompressed bam
     log:
         MAP_FILT / "{population}.{library}.{chromosome}.log",
     benchmark:
-        MAP_FILT / "{population}.{library}.{chromosome}.json"
+        MAP_FILT / "{population}.{library}.{chromosome}.bmk"
     resources:
         memory_gb=params["picard_markduplicates"]["memory_gb"],
     conda:

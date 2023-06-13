@@ -22,7 +22,7 @@ rule mpileup_convert:
     log:
         MPILEUP_RAW / "{population}/{population}.{chromosome}.log",
     benchmark:
-        MPILEUP_RAW / "{population}/{population}.{chromosome}.json"
+        MPILEUP_RAW / "{population}/{population}.{chromosome}.bmk"
     conda:
         "../envs/mpileup.yml"
     shell:
@@ -67,7 +67,7 @@ rule mpileup_popoolation_identify_indels:
     log:
         MPILEUP_FILT / "{population}/{population}.{chromosome}.gtf.log",
     benchmark:
-        MPILEUP_FILT / "{population}/{population}.{chromosome}.gtf.json"
+        MPILEUP_FILT / "{population}/{population}.{chromosome}.gtf.bmk"
     conda:
         "../envs/mpileup.yml"
     shell:
@@ -102,7 +102,7 @@ rule mpileup_popoolation_filter_indels:
     log:
         MPILEUP_FILT / "{population}/{population}.{chromosome}.mpileup.log",
     benchmark:
-        MPILEUP_FILT / "{population}/{population}.{chromosome}.mpileup.json"
+        MPILEUP_FILT / "{population}/{population}.{chromosome}.mpileup.bmk"
     conda:
         "../envs/mpileup.yml"
     shell:
@@ -159,7 +159,7 @@ rule mpileup_popoolation_subsample:
     log:
         MPILEUP_SUB / "{population}/{population}.{chromosome}.log",
     benchmark:
-        MPILEUP_SUB / "{population}/{population}.{chromosome}.json"
+        MPILEUP_SUB / "{population}/{population}.{chromosome}.bmk"
     conda:
         "../envs/mpileup.yml"
     shell:
