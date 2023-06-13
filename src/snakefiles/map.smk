@@ -29,8 +29,8 @@ def compose_rg_tag(wildcards):
 rule map_bwa_map:
     """Map population with bowtie2, sort with samtools, compress to cram"""
     input:
-        forward = QC + "{population}.{library}_1.fq.gz",
-        reverse = QC + "{population}.{library}_2.fq.gz",
+        forward_ = QC + "{population}.{library}_1.fq.gz",
+        reverse_ = QC + "{population}.{library}_2.fq.gz",
         unp_forward = QC + "{population}.{library}_3.fq.gz",
         unp_reverse = QC + "{population}.{library}_4.fq.gz",
         index = MAP_INDEX + "genome",
@@ -58,8 +58,8 @@ rule map_bwa_map:
             -t {threads} \
             {params.extra} \
             {input.index} \
-            {input.forward} \
-            {input.reverse} \
+            {input.forward_} \
+            {input.reverse_} \
         | samtools sort \
             -l 9 \
             -o {output.cram} \

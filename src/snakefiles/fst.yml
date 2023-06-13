@@ -1,14 +1,13 @@
 # Environment for fst subworkflow
 ---
 channels:
-    - conda-forge
-    - bioconda
-    - defaults
+  - conda-forge
+  - bioconda
+  - nodefaults
 dependencies:
     - python>=3.5
     - perl=5.22.0
     - numpy
-    - pigz
-    - r-tidyverse=1.1.1=r3.4.1_0
-    - r-argparse=1.0.4=r3.4.1_0
-    - readline=6.2
+    - pigz=2.6
+    - r-tidyverse=2.0.0
+    - r-argparse=2.2.2

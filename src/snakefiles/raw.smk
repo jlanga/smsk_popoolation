@@ -1,14 +1,14 @@
 def get_reads(wildcards):
     pop = wildcards.population
     lib = wildcards.library
-    forward, reverse = (
+    forward_, reverse_ = (
         samples
         [(samples["population"] == pop) & (samples["library"] == lib)]
         [["forward", "reverse"]]
         .values
         .tolist()[0]
     )
-    return forward, reverse
+    return forward_, reverse_
 
 
 rule raw_make_links_pe:
@@ -16,12 +16,12 @@ rule raw_make_links_pe:
     input:
         get_reads
     output:
-        forward = RAW + "{population}.{library}_1.fq.gz",
-        reverse = RAW + "{population}.{library}_2.fq.gz"
+        forward_ = RAW + "{population}.{library}_1.fq.gz",
+        reverse_ = RAW + "{population}.{library}_2.fq.gz"
     shell:
         """
-        ln --symbolic $(readlink --canonicalize {input[0]}) {output.forward}
-        ln --symbolic $(readlink --canonicalize {input[1]}) {output.reverse}
+        ln --symbolic $(readlink --canonicalize {input[0]}) {output.forward_}
+        ln --symbolic $(readlink --canonicalize {input[1]}) {output.reverse_}
         """
 
 

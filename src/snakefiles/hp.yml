@@ -1,13 +1,12 @@
 # Environment for hp subworkflow
 ---
 channels:
-    - conda-forge
-    - bioconda
-    - defaults
+  - conda-forge
+  - bioconda
+  - nodefaults
 dependencies:
     - python>=3.5
-    - pigz
-    - r-tidyverse=1.1.1=r3.4.1_0
-    - r-argparse=1.0.4=r3.4.1_0
-    - readline=6.2
-    - numpy
+    - pigz=2.6
+    - r-tidyverse=2
+    - r-argparse=2.2.2
+    - numpy=1.24.3
