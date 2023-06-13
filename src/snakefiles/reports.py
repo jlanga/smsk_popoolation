@@ -33,7 +33,7 @@ rule reports_samtools_idxstats:
     log: "{filename}.idxstats.log"
     benchmark: "{filename}.idxstats.bmk"
     conda: "reports.yml"
-    shell: "samtools idxstats {input} > {output} 2> {log}"
+    shell: "samtools idxstats {input.cram} > {output} 2> {log}"
 
 
 rule reports:
