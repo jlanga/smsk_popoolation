@@ -1,16 +1,16 @@
 rule map_bwa_index:
     """Index with bwa"""
     input:
-        fa=RAW + "genome.fa",
+        fa=RAW / "genome.fa",
     output:
-        mock=touch(MAP_INDEX + "genome"),
+        mock=touch(MAP_INDEX / "genome"),
         buckets=expand(
-            MAP_INDEX + "genome.{suffix}", suffix="amb ann bwt pac sa".split()
+            MAP_INDEX / "genome.{suffix}", suffix="amb ann bwt pac sa".split()
         ),
     log:
-        MAP_INDEX + "bwa_index.log",
+        MAP_INDEX / "bwa_index.log",
     benchmark:
-        MAP_INDEX + "bwa_index.json"
+        MAP_INDEX / "bwa_index.json"
     conda:
         "../envs/map.yml"
     shell:
@@ -18,32 +18,32 @@ rule map_bwa_index:
 
 
 def compose_rg_tag(wildcards):
-    identifier = "ID:" + wildcards.population + "_" + wildcards.library
-    library = "LB:truseq_" + wildcards.library
+    identifier = f"ID:{wildcards.population}_{wildcards.library}"
+    library = f"LB:truseq_{wildcards.library}"
     platform = "PL:Illumina"
-    sample = "SM:" + wildcards.population
+    sample = f"SM:{wildcards.population}"
     return f"@RG\t{identifier}\t{library}\t{platform}\t{sample}"
 
 
 rule map_bwa_map:
     """Map population with bowtie2, sort with samtools, compress to cram"""
     input:
-        forward_=QC + "{population}.{library}_1.fq.gz",
-        reverse_=QC + "{population}.{library}_2.fq.gz",
-        unp_forward=QC + "{population}.{library}_3.fq.gz",
-        unp_reverse=QC + "{population}.{library}_4.fq.gz",
-        index=MAP_INDEX + "genome",
-        reference=RAW + "genome.fa",
+        forward_=QC / "{population}.{library}_1.fq.gz",
+        reverse_=QC / "{population}.{library}_2.fq.gz",
+        unp_forward=QC / "{population}.{library}_3.fq.gz",
+        unp_reverse=QC / "{population}.{library}_4.fq.gz",
+        index=MAP_INDEX / "genome",
+        reference=RAW / "genome.fa",
     output:
-        cram=protected(MAP_RAW + "{population}.{library}.cram"),
+        cram=protected(MAP_RAW / "{population}.{library}.cram"),
     params:
         extra=params["bwa"]["extra"],
         rg_tag=compose_rg_tag,
     threads: params["bwa"]["threads"]
     log:
-        MAP_RAW + "{population}.{library}.bwa_mem.log",
+        MAP_RAW / "{population}.{library}.bwa_mem.log",
     benchmark:
-        MAP_RAW + "{population}.{library}.bwa_mem.json"
+        MAP_RAW / "{population}.{library}.bwa_mem.json"
     conda:
         "../envs/map.yml"
     shell:
@@ -78,17 +78,17 @@ rule map_split:
     one.
     """
     input:
-        cram=MAP_RAW + "{population}.{library}.cram",
-        crai=MAP_RAW + "{population}.{library}.cram.crai",
-        reference=RAW + "genome.fa",
+        cram=MAP_RAW / "{population}.{library}.cram",
+        crai=MAP_RAW / "{population}.{library}.cram.crai",
+        reference=RAW / "genome.fa",
     output:
-        bam=temp(MAP_SPLIT + "{population}.{library}.{chromosome}.bam"),
+        bam=temp(MAP_SPLIT / "{population}.{library}.{chromosome}.bam"),
     params:
         chromosome="{chromosome}",
     log:
-        MAP_SPLIT + "{population}.{library}.{chromosome}.log",
+        MAP_SPLIT / "{population}.{library}.{chromosome}.log",
     benchmark:
-        MAP_SPLIT + "{population}.{library}.{chromosome}.json"
+        MAP_SPLIT / "{population}.{library}.{chromosome}.json"
     conda:
         "../envs/map.yml"
     shell:
@@ -112,15 +112,15 @@ rule map_filter:  # TODO: java memory, uncompressed bam
     Pairs with something unpaired will disappear.
     """
     input:
-        bam=MAP_SPLIT + "{population}.{library}.{chromosome}.bam",
-        reference=RAW + "genome.fa",
+        bam=MAP_SPLIT / "{population}.{library}.{chromosome}.bam",
+        reference=RAW / "genome.fa",
     output:
-        cram=protected(MAP_FILT + "{population}.{library}.{chromosome}.cram"),
-        dupstats=MAP_FILT + "{population}.{library}.{chromosome}.dupstats",
+        cram=protected(MAP_FILT / "{population}.{library}.{chromosome}.cram"),
+        dupstats=MAP_FILT / "{population}.{library}.{chromosome}.dupstats",
     log:
-        MAP_FILT + "{population}.{library}.{chromosome}.log",
+        MAP_FILT / "{population}.{library}.{chromosome}.log",
     benchmark:
-        MAP_FILT + "{population}.{library}.{chromosome}.json"
+        MAP_FILT / "{population}.{library}.{chromosome}.json"
     resources:
         memory_gb=params["picard_markduplicates"]["memory_gb"],
     conda:
@@ -156,7 +156,7 @@ rule map_filter:  # TODO: java memory, uncompressed bam
 rule map:
     input:
         [
-            MAP_FILT + population + "." + library + "." + chromosome + ".cram"
+            MAP_FILT / f"{population}.{library}.{chromosome}.cram"
             for population, library in (
                 samples[["population", "library"]].values.tolist()
             )

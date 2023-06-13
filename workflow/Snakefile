@@ -14,9 +14,6 @@ features = yaml.load(open("config/features.yml", "r"), Loader=yaml.SafeLoader)
 samples = pd.read_table("config/samples.tsv")
 
 
-singularity: "docker://continuumio/miniconda3:4.4.10"
-
-
 # Other variables
 POPULATIONS = samples["population"].drop_duplicates().values.tolist()
 PAIRS = ["pe_pe", "pe_se"]
@@ -45,7 +42,7 @@ rule all:
         rules.popoolation_d.input,
         rules.popoolation_pi.input,
         rules.popoolation_theta.input,
-        expand(PLOT_HP + "{population}.pdf", population=POPULATIONS),
+        expand(HP_PLOTS / "{population}.pdf", population=POPULATIONS),
         rules.fst.input,
         rules.reports.input,
 

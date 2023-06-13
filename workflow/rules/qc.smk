@@ -35,21 +35,21 @@ rule qc_trimmomatic:
     Sequences will be stored permanently later on on CRAM
     """
     input:
-        forward_=RAW + "{population}.{library}_1.fq.gz",
-        reverse_=RAW + "{population}.{library}_2.fq.gz",
+        forward_=RAW / "{population}.{library}_1.fq.gz",
+        reverse_=RAW / "{population}.{library}_2.fq.gz",
     output:
-        forward_=temp(QC + "{population}.{library}_1.fq.gz"),
-        reverse_=temp(QC + "{population}.{library}_2.fq.gz"),
-        forward_unp=temp(QC + "{population}.{library}_3.fq.gz"),
-        reverse_unp=temp(QC + "{population}.{library}_4.fq.gz"),
+        forward_=temp(QC / "{population}.{library}_1.fq.gz"),
+        reverse_=temp(QC / "{population}.{library}_2.fq.gz"),
+        forward_unp=temp(QC / "{population}.{library}_3.fq.gz"),
+        reverse_unp=temp(QC / "{population}.{library}_4.fq.gz"),
     params:
         adaptor=get_adaptor,
         phred=get_phred,
         trimmomatic_params=get_trimmomatic_params,
     log:
-        QC + "{population}.{library}.trimmomatic_pe.log",
+        QC / "{population}.{library}.trimmomatic_pe.log",
     benchmark:
-        QC + "{population}.{library}.trimmomatic_pe.json"
+        QC / "{population}.{library}.trimmomatic_pe.json"
     threads: 4
     priority: 50  # Do this and later the mappings
     conda:
@@ -74,8 +74,9 @@ rule qc_trimmomatic:
 rule qc:
     input:
         [
-            QC + population + "." + library + "_1.fq.gz"
+            QC / f"{population}.{library}_{end}.fq.gz"
             for population, library in (
                 samples[["population", "library"]].values.tolist()
             )
+            for end in ["1", "2"]
         ],

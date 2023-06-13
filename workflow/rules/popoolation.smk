@@ -39,10 +39,10 @@ rule popoolation_variance_sliding:
     Run popoolation's Variance sliding script: Tajima's D, Tajima's Theta or Pi
     """
     input:
-        mpileup_gz=MPILEUP_SUB + "{population}/{population}.{chromosome}.mpileup.gz",
+        mpileup_gz=MPILEUP_SUB / "{population}/{population}.{chromosome}.mpileup.gz",
     output:
-        snps=TABLE_POPOOLATION + "{analysis}/{population}.{chromosome}.{analysis}.snps",
-        vs=TABLE_POPOOLATION + "{analysis}/{population}.{chromosome}.{analysis}.tsv",
+        snps=POPOOLATION_TABLES / "{analysis}/{population}.{chromosome}.{analysis}.snps",
+        vs=POPOOLATION_TABLES / "{analysis}/{population}.{chromosome}.{analysis}.tsv",
     params:
         measure="{analysis}",
         min_count=get_popoolation_min_count,
@@ -53,9 +53,9 @@ rule popoolation_variance_sliding:
         step_size=get_popoolation_step_size,
         window_size=get_popoolation_window_size,
     log:
-        TABLE_POPOOLATION + "{analysis}/{population}.{chromosome}.{analysis}.log",
+        POPOOLATION_TABLES / "{analysis}/{population}.{chromosome}.{analysis}.log",
     benchmark:
-        TABLE_POPOOLATION + "{analysis}/{population}.{chromosome}.{analysis}.json"
+        POPOOLATION_TABLES / "{analysis}/{population}.{chromosome}.{analysis}.json"
     conda:
         "../envs/popoolation.yml"
     shell:
@@ -81,17 +81,17 @@ rule popoolation_merge_variance_sliding:
     """Merge results across chromosomes"""
     input:
         expand(
-            TABLE_POPOOLATION + "{analysis}/{population}.{chromosome}.{analysis}.tsv",
+            POPOOLATION_TABLES / "{analysis}/{population}.{chromosome}.{analysis}.tsv",
             chromosome=CHROMOSOMES,
             population=["{population}"],
             analysis=["{analysis}"],
         ),
     output:
-        protected(PLOT_POPOOLATION + "{analysis}/{population}.{analysis}.tsv.gz"),
+        protected(POPOOLATION_PLOTS / "{analysis}/{population}.{analysis}.tsv.gz"),
     log:
-        PLOT_POPOOLATION + "{analysis}/{population}.{analysis}.merge_vs.log",
+        POPOOLATION_PLOTS / "{analysis}/{population}.{analysis}.merge_vs.log",
     benchmark:
-        PLOT_POPOOLATION + "{analysis}/{population}.{analysis}.merge_vs.json"
+        POPOOLATION_PLOTS / "{analysis}/{population}.{analysis}.merge_vs.json"
     threads: 8
     conda:
         "../envs/popoolation.yml"
@@ -105,13 +105,14 @@ rule popoolation_merge_snps:
     """Merge snps"""
     input:
         expand(
-            TABLE_POPOOLATION + "{analysis}/{population}.{chromosome}.{analysis}.snps",
+            POPOOLATION_TABLES
+            / "{analysis}/{population}.{chromosome}.{analysis}.snps",
             chromosome=CHROMOSOMES,
             population=["{population}"],
             analysis=["{analysis}"],
         ),
     output:
-        protected(PLOT_POPOOLATION + "{analysis}/{population}.{analysis}.snps.gz"),
+        protected(POPOOLATION_PLOTS / "{analysis}/{population}.{analysis}.snps.gz"),
     threads: 8
     conda:
         "../envs/popoolation.yml"
@@ -119,16 +120,16 @@ rule popoolation_merge_snps:
         "pigz --processes {threads} --best --stdout {input} > {output}"
 
 
-rule popoolation_plot:
+rule POPOOLATION_PLOTS:
     """Plot a genome-wide result's from variance sliding"""
     input:
-        tsv_gz=PLOT_POPOOLATION + "{analysis}/{population}.{analysis}.tsv.gz",
+        tsv_gz=POPOOLATION_PLOTS / "{analysis}/{population}.{analysis}.tsv.gz",
     output:
-        pdf=protected(PLOT_POPOOLATION + "{analysis}/{population}.{analysis}.pdf"),
+        pdf=protected(POPOOLATION_PLOTS / "{analysis}/{population}.{analysis}.pdf"),
     log:
-        PLOT_POPOOLATION + "{analysis}/{population}.{analysis}.plot.log",
+        POPOOLATION_PLOTS / "{analysis}/{population}.{analysis}.plot.log",
     benchmark:
-        PLOT_POPOOLATION + "{analysis}/{population}.{analysis}.plot.json"
+        POPOOLATION_PLOTS / "{analysis}/{population}.{analysis}.plot.json"
     conda:
         "../envs/popoolation.yml"
     shell:
@@ -142,18 +143,18 @@ rule popoolation_plot:
 
 rule popoolation_d:
     input:
-        expand(PLOT_POPOOLATION + "D/{population}.D.pdf", population=POPULATIONS),
+        expand(POPOOLATION_PLOTS / "D/{population}.D.pdf", population=POPULATIONS),
 
 
 rule popoolation_pi:
     input:
-        expand(PLOT_POPOOLATION + "pi/{population}.pi.pdf", population=POPULATIONS),
+        expand(POPOOLATION_PLOTS / "pi/{population}.pi.pdf", population=POPULATIONS),
 
 
 rule popoolation_theta:
     input:
         expand(
-            PLOT_POPOOLATION + "theta/{population}.theta.pdf", population=POPULATIONS
+            POPOOLATION_PLOTS / "theta/{population}.theta.pdf", population=POPULATIONS
         ),
 
 

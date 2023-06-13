@@ -9,7 +9,7 @@ def get_sync_min_count(wildcards):
 def compose_mpileups_comma(wildcards):
     chromosome = wildcards.chromosome
     mpileups = [
-        MPILEUP_RAW + population + "/" + population + "." + chromosome + ".mpileup.gz"
+        MPILEUP_RAW / f"{population}/{population}.{chromosome}.mpileup.gz"
         for population in POPULATIONS
     ]
     composed = "{" + ",".join(mpileups) + "}"
@@ -34,7 +34,7 @@ def compose_max_coverages(wildcards):
     return ",".join(coverages)
 
 
-def get_sync_subsample_method(wildcards):
+def get_SYNC_SUBSAMPLEDsample_method(wildcards):
     return params["popoolation2"]["subsample"]["method"]
 
 
@@ -45,20 +45,20 @@ rule sync_identify_indels:
     """
     input:
         mpileups=expand(
-            MPILEUP_RAW + "{population}/{population}.{chromosome}.mpileup.gz",
+            MPILEUP_RAW / "{population}/{population}.{chromosome}.mpileup.gz",
             population=POPULATIONS,
             chromosome="{chromosome}",
         ),
     output:
-        gtf=temp(SYNC_FILT + "{chromosome}.gtf"),
+        gtf=temp(SYNC_FILT / "{chromosome}.gtf"),
     params:
         indel_window=get_sync_indel_window,
         min_count=get_sync_indel_window,
         mpileups_comma=compose_mpileups_comma,
     log:
-        SYNC_FILT + "{chromosome}.identify_indels.log",
+        SYNC_FILT / "{chromosome}.identify_indels.log",
     benchmark:
-        SYNC_FILT + "{chromosome}.identify_indels.bmk"
+        SYNC_FILT / "{chromosome}.identify_indels.bmk"
     conda:
         "../envs/sync.yml"
     shell:
@@ -80,20 +80,20 @@ rule sync_filter_indels:
     """Filter indels from the joint mpileup"""
     input:
         mpileups=expand(
-            MPILEUP_RAW + "{population}/{population}.{chromosome}.mpileup.gz",
+            MPILEUP_RAW / "{population}/{population}.{chromosome}.mpileup.gz",
             population=POPULATIONS,
             chromosome="{chromosome}",
         ),
-        gtf=SYNC_FILT + "{chromosome}.gtf",
+        gtf=SYNC_FILT / "{chromosome}.gtf",
     output:
-        mpileup_fifo=temp(SYNC_FILT + "{chromosome}.mpileup"),
-        mpileup_gz=SYNC_FILT + "{chromosome}.mpileup.gz",
+        mpileup_fifo=temp(SYNC_FILT / "{chromosome}.mpileup"),
+        mpileup_gz=SYNC_FILT / "{chromosome}.mpileup.gz",
     params:
         mpileups_comma=compose_mpileups_comma,
     log:
-        SYNC_FILT + "{chromosome}.filter_indels.log",
+        SYNC_FILT / "{chromosome}.filter_indels.log",
     benchmark:
-        SYNC_FILT + "{chromosome}.filter_indels.bmk"
+        SYNC_FILT / "{chromosome}.filter_indels.bmk"
     conda:
         "../envs/sync.yml"
     shell:
@@ -120,17 +120,17 @@ rule sync_mpileup2sync:
     - Next step requires a proper file
     """
     input:
-        mpileup_gz=SYNC_FILT + "{chromosome}.mpileup.gz",
+        mpileup_gz=SYNC_FILT / "{chromosome}.mpileup.gz",
     output:
-        sync=temp(SYNC_RAW + "{chromosome}.sync"),  # TEMP!
+        sync=temp(SYNC_MPILEUP2SYNC / "{chromosome}.sync"),  # TEMP!
     params:
         min_qual=get_sync_min_qual,
     # Required for java not doing more than needed
     threads: 1
     log:
-        SYNC_RAW + "{chromosome}.log",
+        SYNC_MPILEUP2SYNC / "{chromosome}.log",
     benchmark:
-        SYNC_RAW + "{chromosome}.json"
+        SYNC_MPILEUP2SYNC / "{chromosome}.json"
     resources:
         memory_gb=params["popoolation2"]["subsample"]["memory_gb"],
     conda:
@@ -149,24 +149,24 @@ rule sync_mpileup2sync:
         """
 
 
-rule sync_subsample:
+rule SYNC_SUBSAMPLEDsample:
     """
     Subsample a sync file.
 
     Note: A proper file is required as input and output.
     """
     input:
-        sync=SYNC_RAW + "{chromosome}.sync",
+        sync=SYNC_MPILEUP2SYNC / "{chromosome}.sync",
     output:
-        sync=temp(SYNC_SUB + "{chromosome}.sync"),
+        sync=temp(SYNC_SUBSAMPLED / "{chromosome}.sync"),
     params:
         target_coverage=get_sync_target_coverage,
         max_coverage=compose_max_coverages,
-        method=get_sync_subsample_method,
+        method=get_SYNC_SUBSAMPLEDsample_method,
     log:
-        SYNC_SUB + "{chromosome}.log",
+        SYNC_SUBSAMPLED / "{chromosome}.log",
     benchmark:
-        SYNC_SUB + "{chromosome}.json"
+        SYNC_SUBSAMPLED / "{chromosome}.json"
     conda:
         "../envs/sync.yml"
     shell:
@@ -183,9 +183,9 @@ rule sync_subsample:
 
 rule sync_compress:
     input:
-        sync=SYNC_SUB + "{chromosome}.sync",
+        sync=SYNC_SUBSAMPLED / "{chromosome}.sync",
     output:
-        sync_gz=protected(SYNC_SUB + "{chromosome}.sync.gz"),
+        sync_gz=protected(SYNC_SUBSAMPLED / "{chromosome}.sync.gz"),
     threads: 4
     shell:
         "pigz --best --keep {output.sync}"
@@ -193,4 +193,4 @@ rule sync_compress:
 
 rule sync:
     input:
-        [SYNC_SUB + chromosome + ".sync.gz" for chromosome in CHROMOSOMES],
+        [SYNC_SUBSAMPLED / f"{chromosome}.sync.gz" for chromosome in CHROMOSOMES],

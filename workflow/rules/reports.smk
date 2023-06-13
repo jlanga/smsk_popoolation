@@ -63,7 +63,7 @@ rule reports_samtools_idxstats:
 rule reports:
     input:
         expand(
-            MAP_RAW + population + "." + library + "." + analysis
+            MAP_RAW / f"{population}.{library}.{analysis}"
             for population, library in (
                 samples[["population", "library"]].values.tolist()
             )

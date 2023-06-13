@@ -12,8 +12,8 @@ rule raw_make_links_pe:
     input:
         get_reads,
     output:
-        forward_=RAW + "{population}.{library}_1.fq.gz",
-        reverse_=RAW + "{population}.{library}_2.fq.gz",
+        forward_=RAW / "{population}.{library}_1.fq.gz",
+        reverse_=RAW / "{population}.{library}_2.fq.gz",
     shell:
         """
         ln --symbolic $(readlink --canonicalize {input[0]}) {output.forward_}
@@ -26,10 +26,10 @@ rule raw_extract_genome:
     input:
         fa_gz=features["reference"]["dna"],
     output:
-        fa=RAW + "genome.fa",
+        fa=RAW / "genome.fa",
     log:
-        RAW + "genome.log",
+        RAW / "genome.log",
     benchmark:
-        RAW + "genome.json"
+        RAW / "genome.json"
     shell:
         "gzip --decompress --stdout {input.fa_gz} > {output.fa} 2> {log}"
