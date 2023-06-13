@@ -5,7 +5,7 @@ channels:
   - bioconda
   - nodefaults
 dependencies:
-    - perl=5.22.0
-    - pigz
-    - r-tidyverse=2.0
-    - r-argparse=2.2
+  - perl=5.22.0
+  - pigz
+  - r-tidyverse=2.0
+  - r-argparse=2.2

@@ -5,6 +5,6 @@ channels:
   - bioconda
   - nodefaults
 dependencies:
-    - perl=5.22.0
-    - pigz
-    - openjdk
+  - perl=5.22.0
+  - pigz
+  - openjdk
