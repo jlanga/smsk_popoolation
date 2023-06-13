@@ -1,16 +1,3 @@
-def get_library_files_from_sample(wildcards):
-    """TODO: needs improvement/simplification
-    Return the list of libraries corresponding to a population and chromosome.
-    """
-    chromosome = wildcards.chromosome
-    population = wildcards.population
-    libraries = samples[samples["population"] == population]["library"].values.tolist()
-    files = [
-        MAP_FILT / f"{population}.{library}.{chromosome}.cram" for library in libraries
-    ]
-    return files
-
-
 rule mpileup_convert:
     """Compute the mpileup and compress it"""
     input:
@@ -43,14 +30,6 @@ rule mpileup_convert:
         > {output.mpileup_gz} \
         ) 2> {log}
         """
-
-
-def get_indel_window(wildcards):
-    return params["popoolation"]["find_indels"]["indel_window"]
-
-
-def get_indel_min_count(wildcards):
-    return params["popoolation"]["find_indels"]["min_count"]
 
 
 rule mpileup_popoolation_identify_indels:
@@ -117,24 +96,6 @@ rule mpileup_popoolation_filter_indels:
             --output {output.mpileup_fifo} \
         2> {log} 1>&2
         """
-
-
-def get_subsample_min_qual(wildcards):
-    return params["popoolation"]["subsample"]["min_qual"]
-
-
-def get_subsample_method(wildcards):
-    return params["popoolation"]["subsample"]["method"]
-
-
-def get_subsample_max_coverage(wildcards):
-    return samples[samples["population"] == wildcards.population][
-        "max_coverage"
-    ].tolist()[0]
-
-
-def get_subsample_target_coverage(wildcards):
-    return params["popoolation"]["subsample"]["target_coverage"]
 
 
 rule mpileup_popoolation_subsample:

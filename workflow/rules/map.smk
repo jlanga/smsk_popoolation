@@ -17,14 +17,6 @@ rule map_bwa_index:
         "bwa index -p {output.mock} {input.fa} > {log} 2>&1"
 
 
-def compose_rg_tag(wildcards):
-    identifier = f"ID:{wildcards.population}_{wildcards.library}"
-    library = f"LB:truseq_{wildcards.library}"
-    platform = "PL:Illumina"
-    sample = f"SM:{wildcards.population}"
-    return f"@RG\t{identifier}\t{library}\t{platform}\t{sample}"
-
-
 rule map_bwa_map:
     """Map population with bowtie2, sort with samtools, compress to cram"""
     input:
