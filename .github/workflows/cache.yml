@@ -1,0 +1,29 @@
+# Cache .snakemake/conda each sunday / monday night
+---
+# name: Cache conda packages weekly
+on:  # yamllint disable-line rule:truthy
+  schedule:
+    - cron: '0 0 * * 1'
+  workflow_dispatch:
+
+jobs:
+  weekly-cache:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - name: Set up cache
+        uses: actions/cache@v2
+        with:
+          path: .snakemake/conda
+          key: snakemake-conda
+        id: cache
+      - name: Download environments
+        uses: snakemake/snakemake-github-action@v1.24.0
+        with:
+          directory: .
+          snakefile: workflow/Snakefile
+          args: >
+            --use-conda
+            --conda-create-envs-only
+            --conda-frontend mamba
+            --cores 1
