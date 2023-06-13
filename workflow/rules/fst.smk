@@ -66,9 +66,9 @@ rule fst_split_table:
     output:
         fst_tsv=FST_PLOTS / "{pop1}_{pop2}.fst.tsv",
     # log:
-    #     FST_PLOTS + "split_{pop1}_{pop2}.log"
+    #     FST_PLOTS / "split_{pop1}_{pop2}.log"
     # benchmark:
-    #     FST_PLOTS + "split_{pop1}_{pop2}.bmk"
+    #     FST_PLOTS / "split_{pop1}_{pop2}.bmk"
     params:
         pop1="{pop1}",
         pop2="{pop2}",
