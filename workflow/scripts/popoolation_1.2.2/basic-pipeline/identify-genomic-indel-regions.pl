@@ -54,18 +54,18 @@ my($count_entries,$count_indelpos,$count_bases_covered)=(0,0,0);
 
 while(my $line=<$ifh>)
 {
-    
+
     chomp $line;
     # prefilter, without proper parsing of the pileup
-    $count_entries++;    
+    $count_entries++;
     my($chr,$pos,$rc,$cov,$nucs,$qual)=split/\s+/,$line;
-    
-    
+
+
     next unless $nucs=~m/[-+]\d/;
     $count_indelpos++;
     my ($valid,$indelleng)=Utility::parse_pileup($nucs,$mincount);
     next unless $valid;
-    
+
     push @$indelposar,{
             chr=>$chr,
             pos=>$pos,
@@ -94,37 +94,37 @@ exit;
     package Utility;
     use strict;
     use warnings;
-    
+
     sub parse_pileup
     {
         my $nucs=shift;
         my $mincount=shift;
 
-        
+
         my $tempindels=[];
         # deletions have a length in the reference: the numbe after the '-'
         my(@dels)=$nucs=~m/[-](\d+)(??{"[ACGTNacgtn]{$1}"})/g;
         # gi|9626372|ref|NC_001422.1|     329     T       95      .$..$.$................................-1A...-1A......................................................
         # gi|9626372|ref|NC_001422.1|     330     A       94      .$...............................*..*........................................................^F.^F.
-        
+
         foreach my $d (@dels)
         {
             push @$tempindels,$d;
         }
-        
+
         # insertions have no length in the reference: length zero (they only have a length in the read)
         my(@ins)=$nucs=~m/[+](\d+)(??{"[ACGTNacgtn]{$1}"})/g;
         foreach my $i (@ins)
         {
             push @$tempindels,0;
         }
-        
+
         my $tlh={}; # temporary length hash
         foreach my $t (@$tempindels)
         {
             $tlh->{$t}++
         }
-        
+
         my $maxleng=0;
         my $valid=0;
         while(my($leng,$count)=each(%$tlh))
@@ -135,10 +135,10 @@ exit;
                 $maxleng=$leng if $leng> $maxleng;
             }
         }
-        
+
         return ($valid, $maxleng);
     }
-    
+
     sub format_gtf
     {
         my $e=shift;
@@ -148,26 +148,26 @@ exit;
         # AB000381 Twinscan  CDS          700   707   .   +   2  gene_id "AB000381.000"; transcript_id "AB000381.000.1";
         my $str="$e->{chr}\tpileup\tindelregion\t$e->{start}\t$e->{end}\t.\t.\t.\tgene_id \".\"; transcript_id \".\";\n";
     }
-    
-    
+
+
     sub get_region_calculator
     {
         my $indels=shift;
         my $windowlength=shift;
         $indels=[sort {$a->{chr} cmp $b->{chr}
                           or $a->{pos} <=> $b->{pos}} @$indels];
-    
-        # A closure (can be used as a lightwight class!)           
+
+        # A closure (can be used as a lightwight class!)
         return sub
         {
           return undef unless @$indels;
           my $ini=shift @$indels;
           my $chr=$ini->{chr};
           my $start=$ini->{pos};
-          
+
           #the end position of the current indelstretch
           my $activepos=$start+$ini->{len};
-          
+
           while(@$indels)
           {
             my $next=shift @$indels;
@@ -179,9 +179,9 @@ exit;
             {
                 unshift @$indels,$next;
                 last;
-            } 
+            }
           }
-          
+
           $start=$start-($windowlength-1);
           $start=1 if $start<1;
           $activepos+=$windowlength;
@@ -203,14 +203,14 @@ exit;
     use FindBin qw($RealBin);
     use lib "$RealBin/../Modules";
     use Test;
-    
+
     sub runTests
     {
         test_parse_pileup();
         test_get_region_calculator();
         exit;
     }
-    
+
     sub test_parse_pileup
     {
 
@@ -221,63 +221,63 @@ exit;
         ($valid,$best)=Utility::parse_pileup(".-1A.",1);
         is($best,1,"test parse pileup; correct size");
         is($valid,1,"test parse pileup; valid correct");
-        
+
         ($valid,$best)=Utility::parse_pileup(".-1A...+2AA..",1);
         is($best,1,"test parse pileup; correct size",1);
         is($valid,1,"test parse pileup; valid correct");
-        
+
         ($valid,$best)=Utility::parse_pileup(".+1A...+2AA..",1);
         is($best,0,"test parse pileup; correct size");
         is($valid,1,"test parse pileup; valid correct");
-        
+
         ($valid,$best)=Utility::parse_pileup(".-1A...-2AA..",1);
         is($best,2,"test parse pileup; correct size");
         is($valid,1,"test parse pileup; valid correct");
-        
+
         ($valid,$best)=Utility::parse_pileup("..-3ACG.-1A...-2AA..",1);
         is($best,3,"test parse pileup; correct size");
         is($valid,1,"test parse pileup; valid correct");
-        
+
         ($valid,$best)=Utility::parse_pileup(".-1A...+2AA..",2);
         is($best,0,"test parse pileup; correct size");
         is($valid,0,"test parse pileup; valid correct");
-        
+
         ($valid,$best)=Utility::parse_pileup(".+2AA...+2AA..",2);
         is($best,0,"test parse pileup; correct size");
         is($valid,1,"test parse pileup; valid correct");
-        
+
         ($valid,$best)=Utility::parse_pileup(".-1A...-1A..",2);
         is($best,1,"test parse pileup; correct size");
         is($valid,1,"test parse pileup; valid correct");
     }
-    
+
     sub test_get_region_calculator
     {
         my $indels;
         my $calc;
         my $r;
-        
+
         $indels=[{chr=>2,pos=>20,len=>0}];
         $calc=Utility::get_region_calculator($indels,1);
         $r=$calc->();
         is($r->{chr},"2","region_calculator: chromosome correct");
         is($r->{start},20,"region_calculator: start correct");
         is($r->{end},21,"region_calculator: end correct");
-        
+
         $indels=[{chr=>2,pos=>20,len=>1}];
         $calc=Utility::get_region_calculator($indels,1);
         $r=$calc->();
         is($r->{chr},"2","region_calculator: chromosome correct");
         is($r->{start},20,"region_calculator: start correct");
         is($r->{end},22,"region_calculator: end correct");
-        
+
         $indels=[{chr=>2,pos=>20,len=>0}];
         $calc=Utility::get_region_calculator($indels,2);
         $r=$calc->();
         is($r->{chr},"2","region_calculator: chromosome correct");
         is($r->{start},19,"region_calculator: start correct");
         is($r->{end},22,"region_calculator: end correct");
-        
+
         $indels=[{chr=>2,pos=>20,len=>2}];
         $calc=Utility::get_region_calculator($indels,3);
         $r=$calc->();
@@ -286,14 +286,14 @@ exit;
         is($r->{end},25,"region_calculator: end correct");
         $r=$calc->();
         not_exists($r,"region_calculator; correct no more entries");
-        
+
         $indels=[{chr=>2,pos=>20,len=>2},{chr=>2,pos=>28,len=>2}];
         $calc=Utility::get_region_calculator($indels,3);
         $r=$calc->();
         is($r->{chr},"2","region_calculator: chromosome correct");
         is($r->{start},18,"region_calculator: start correct");
         is($r->{end},33,"region_calculator: end correct");
-        
+
         $indels=[{chr=>2,pos=>20,len=>2},{chr=>2,pos=>29,len=>2}];
         $calc=Utility::get_region_calculator($indels,3);
         $r=$calc->();
@@ -307,7 +307,7 @@ exit;
         $r=$calc->();
         not_exists($r,"region_calculator; correct no more entries");
 
-        
+
     }
 }
 
@@ -376,6 +376,3 @@ A pileup file as described here: http://samtools.sourceforge.net/pileup.shtml; e
 
 
 =cut
-
-
-

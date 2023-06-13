@@ -14,12 +14,12 @@
         my $mincoverage=shift;
         my $maxcoverage=shift;
 
-        
-        
+
+
         # get_theta_calculator($b,$n,$snp)
         # get_pi_calculator($b,$n,$snp)
 
-        
+
         my $self = bless {
                           mincoverage=>$mincoverage,
                           maxcoverage=>$maxcoverage,
@@ -31,7 +31,7 @@
                           }, __PACKAGE__;
         return $self;
     }
-    
+
 
 
     sub calculate_measure
@@ -40,9 +40,9 @@
         my $measure=shift;
         my $snps=shift;
         my $covercount=shift;
-        
+
         $measure=lc($measure);
-        
+
         if($measure eq "pi")
         {
             return $self->_calculate_pi($snps,$covercount);
@@ -60,24 +60,24 @@
             die "unknown measure to calculate $measure";
         }
     }
-    
-    
+
+
     sub _calculate_pi
     {
         my $self=shift;
         my $snps=shift;
         my $covercount=shift;
-    
+
         my $measurecalculater=$self->{pi};
         my $pi_sum=$measurecalculater->($self->{b},$self->{n},$snps);
 
         my $toret=0;
         $toret=$pi_sum/$covercount if $covercount;
         return $toret;
-        
+
     }
-    
-    
+
+
     sub _calculate_theta
     {
         my $self=shift;
@@ -89,8 +89,8 @@
         $toret=$theta/$covercount if $covercount;
         return $toret;
     }
-    
-    
+
+
     sub _calculate_d
     {
         my $self=shift;

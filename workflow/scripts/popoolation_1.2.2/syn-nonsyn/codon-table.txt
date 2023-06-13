@@ -4,7 +4,7 @@
 ATT: I
 ATC: I
 ATA: I
-CTT: L 
+CTT: L
 CTC: L
 CTA: L
 CTG: L

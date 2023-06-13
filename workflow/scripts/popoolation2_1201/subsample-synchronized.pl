@@ -67,11 +67,11 @@ while(my $line=<$ifh>)
     next unless $line;
     my $p=$pp->($line);
     next unless $p->{iscov};
-    
+
     my $samplecount=@{$p->{samples}};
     for(my $i=0; $i<$samplecount; $i++)
     {
-        # randomly subsample every sample to the given coverage        
+        # randomly subsample every sample to the given coverage
         my $subsampled=$subsampler->($p->{samples}[$i]);
         $p->{samples}[$i]=$subsampled;
     }
@@ -88,8 +88,8 @@ while(my $line=<$ifh>)
     use Test::TSubsample;
     use Test::TSynchronized;
     use Test::TMaxCoverage;
-    
-    
+
+
     sub runTests
     {
         run_MaxCoverageTests();
@@ -138,10 +138,10 @@ The maximum coverage may be provided as one of the following:
 =item B<--method>
 
 Specify the method for subsampling of the synchronized file. Either: withreplace, withoutreplace, fraction; Mandatory
- 
+
  withreplace: subsample with replacement
  withoutreplace: subsample without replacement
- fraction: calculate the exact fraction of the allele frequencies and linearly scale them to the C<--target-coverage> and rounding to an integer; 
+ fraction: calculate the exact fraction of the allele frequencies and linearly scale them to the C<--target-coverage> and rounding to an integer;
 
 =item B<--help>
 
@@ -160,6 +160,3 @@ A synchronized file
 The output will be a reduced coverage synchronized file
 
 =cut
-
-
-

@@ -53,17 +53,17 @@ while(my $line=<$ifh>)
     my($chr,$pos)=split /\t/,$line;
     my $genes=$chrdec->($chr,$pos);
     next unless $genes;
-    
+
     my $sync=$syncparser->($line);
-    
+
     foreach my $gene (@$genes)
     {
         my $gc=$genehash->{$gene};
         die "Error for gene $gene; position $sync->{pos} smaller than start $gc->{first}\n"if $sync->{pos} <   $gc->{first};
         die "Error for gene $gene; Position $sync->{pos} larger than end $gc->{last}\n"if $pos >   $gc->{last};
         push @{$gc->{sync}},$sync;
-         
-        # in case this is the last position of the gene, handle it immediately; print it         
+
+        # in case this is the last position of the gene, handle it immediately; print it
         if($pos==$genehash->{$gene}{last})
         {
             Utility::handle_completed_gene($ofh,$genehash,$gene);
@@ -89,17 +89,17 @@ exit;
     use FindBin qw($RealBin);
     use lib "$RealBin/Modules";
     use SynchronizeUtility;
-    
+
     sub handle_completed_gene
     {
         my $ofh=shift;
         my $genehash=shift;
         my $geneid=shift;
-        
+
         my $temp=$genehash->{$geneid};
         #erase the entry from the hash -> very important memory issue
         delete($genehash->{$geneid});
-        
+
 
         my $features=$temp->{features};
         my $first=$temp->{first};
@@ -113,16 +113,16 @@ exit;
         {
             my($start,$end)=($f->{start},$f->{end});
             ($start,$end)=($end,$start) if $start>$end;
-            
+
             for my $i($start..$end)
             {
                 $binfeat->{$i}=1;
             }
         }
-        
-        
 
-        
+
+
+
         if($strand eq "+")
         {
             _write_plus_strand($ofh,$sync,$binfeat,$first,$geneid)
@@ -136,7 +136,7 @@ exit;
             die "unknown strand $strand";
         }
     }
-    
+
     sub _write_plus_strand
     {
         my $ofh=shift;
@@ -144,7 +144,7 @@ exit;
         my $binfeat=shift;
         my $first=shift;
         my $geneid=shift;
-        
+
         foreach my $s (@$syncs)
         {
 
@@ -154,7 +154,7 @@ exit;
             {
                 $nuevopos++ if(exists($binfeat->{$i}));
             }
-            
+
             my $nuevosyn=
             {
                 chr=>$geneid,
@@ -167,7 +167,7 @@ exit;
             print $ofh  $toprint."\n";
         }
     }
-    
+
     sub _write_minus_strand
     {
         my $ofh=shift;
@@ -176,7 +176,7 @@ exit;
         my $last=shift;
         my $geneid=shift;
         $syncs=[reverse(@$syncs)];
-        
+
         foreach my $s(@$syncs)
         {
 
@@ -189,9 +189,9 @@ exit;
 
             my $nuevorefchar=$s->{refchar};
             $nuevorefchar=~tr/ATCGNatcgn/TAGCNtagcn/;
-            
+
             my $nuevosamples=[];
-            
+
             foreach my $samp (@{$s->{samples}})
             {
                 my $ns={
@@ -204,7 +204,7 @@ exit;
                     };
                 push @$nuevosamples, $ns;
             }
-            
+
             my $nuevosyn=
             {
                 chr=>$geneid,
@@ -216,7 +216,7 @@ exit;
             print $ofh $toprint."\n";
         }
     }
-    
+
      sub _parsegtf
     {
         my $line=shift;
@@ -226,7 +226,7 @@ exit;
         my $end=$a[4];
         my $strand=$a[6];
         my $tfeat=$a[8];
-            
+
         unless($ref or $start or $end or $tfeat)
         {
             die "the following line is not valid";
@@ -240,7 +240,7 @@ exit;
         {
             die "the following entry does not have a valid gene id: $line";
         }
-        
+
         return
         {
             ref=>$ref,
@@ -251,8 +251,8 @@ exit;
             gi=>$gene_id
         };
     }
-    
-    
+
+
     sub _getdefaultgenecoll
     {
         return
@@ -263,11 +263,11 @@ exit;
             strand=>undef,
             first=>1000000000000,
             sync=>[],
-            covered=>0   
+            covered=>0
         }
-        # last, length, covered, lines[], first, 
+        # last, length, covered, lines[], first,
     }
-    
+
     sub _getgeneint
     {
         my $geneid=shift;
@@ -282,14 +282,14 @@ exit;
             $lastcounter++;
             $genemap->{$geneid}=$lastcounter;
             return ($lastcounter,$genemap->{$geneid});
-            
+
         }
     }
-    
+
     sub _getDecodedGenemap
     {
         my $genemap=shift;
-        
+
         my $decode=[];
         while(my($gene,$num)=each(%$genemap))
         {
@@ -297,7 +297,7 @@ exit;
         }
         return $decode;
     }
-    
+
     sub read_gtf
     {
         my $file=shift;
@@ -307,34 +307,34 @@ exit;
         my $genemap={};
         my $lastcounter=0;
 
-        
+
         print "Parsing gtf file..\n";
         while(my $line=<$ifh>)
         {
             chomp $line;
             my $ge=_parsegtf($line);
-            
+
             my $gid=$ge->{gi};
             $genecoll->{$gid}=_getdefaultgenecoll unless exists($genecoll->{$gid});
-            
+
             my $geneint;
             ($lastcounter,$geneint)=_getgeneint($gid,$genemap,$lastcounter);
-            
+
             # update the chromosome hash
             my($start,$end,$ref)=($ge->{start},$ge->{end},$ge->{ref});
             push @{$genecoll->{$gid}{features}},
                 {start=>$start,
                 end=>$end};
-            
-            
+
+
             # set the new end if it is larger than the previous one
             $genecoll->{$gid}{last} = $end if $end > $genecoll->{$gid}{last};
             $genecoll->{$gid}{first} = $start if $start < $genecoll->{$gid}{first};
             $genecoll->{$gid}{strand} = $ge->{strand} unless($genecoll->{$gid}{strand});
             die "all features of a gene have to be on the same strand; Problem for $gid"  unless $genecoll->{$gid}{strand} eq $ge->{strand};
-            
+
             #print "$ref $start $end\n";
-            
+
             for(my $i=$start; $i<=$end; $i++)
             {
                 if(exists($chrhash->{$ref}{$i}))
@@ -343,7 +343,7 @@ exit;
                     push @$ar,$geneint;
                     $ar=uniq($ar);
                     $chrhash->{$ref}{$i}=$ar;
-                    
+
                 }
                 else
                 {
@@ -352,9 +352,9 @@ exit;
             }
         }
 
-        
+
         my $decodeGeneMap=_getDecodedGenemap($genemap);
-################################################################################        
+################################################################################
         # bless the beauty of a closure
         my $chrdecocer=sub {
             my $ref=shift;
@@ -369,8 +369,8 @@ exit;
             return $dec;
         };
 ################################################################################
-            
-            
+
+
         #calculate the length of the features
         while(my($chr,$t)=each(%$chrhash))
         {
@@ -383,15 +383,15 @@ exit;
                 }
             }
         }
-    
+
         return ($chrdecocer,$genecoll);
         #chr1 Twinscan  exon         501   650   .   +   .  gene_id "AB000381.000"; transcript_id "AB000381.000.1";
     }
-    
+
     sub uniq
     {
         my $ar=shift;
-        
+
         my $h={};
         foreach my $a (@$ar)
         {
@@ -399,7 +399,7 @@ exit;
         }
         return [keys(%$h)];
     }
-    
+
 }
 
 
@@ -435,7 +435,7 @@ The output file.  Mandatory.
 
 =item B<--test>
 
-Run the unit tests for this script. 
+Run the unit tests for this script.
 
 =item B<--help>
 
@@ -459,11 +459,11 @@ A gtf-file as described here http://mblab.wustl.edu/GTF2.html
 
 The script is grouping all features having the same C<gene_id>! The feature field is not considered, so any feature may be used.
 All features having the same 'gene_id' must also have the same strand. The tag C<transcript_id> will be ignored.
-In case different features (eg. genes) are overlapping the respective entry is considered for every feature at a certain position once; 
+In case different features (eg. genes) are overlapping the respective entry is considered for every feature at a certain position once;
 
 =head2 Output
 
 
 
-  
+
 =cut

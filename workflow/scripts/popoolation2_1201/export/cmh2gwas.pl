@@ -31,7 +31,7 @@ print $ofh "CHR\tBP\tSNP\tP\n";
 while(my $line=<$ifh>)
 {
     chomp $line;
-    
+
     my @ar=split /\t/,$line;
     my $chr=shift @ar;
     my $pos=shift @ar;
@@ -75,7 +75,7 @@ The output file. Mandatory parameter
 
 =item B<--min-pvalue>
 
-IGV has some problems displaying very low p-values; Using this option all p-values being smaller than C<--min-pvalue> will be set to C<--min-pvalue>; default=1.0e-20 
+IGV has some problems displaying very low p-values; Using this option all p-values being smaller than C<--min-pvalue> will be set to C<--min-pvalue>; default=1.0e-20
 
 =item B<--help>
 
@@ -99,7 +99,7 @@ Display help for this script
  col 5: population 2
  col n: population n-3
  col n+1: cmh p-value
- 
+
 =head2 Output
 
 

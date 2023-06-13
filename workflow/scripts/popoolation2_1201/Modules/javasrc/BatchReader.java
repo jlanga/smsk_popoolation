@@ -18,8 +18,8 @@ public class BatchReader {
 		this.inputFile=inputFile;
 		this.blockSize=blockSize;
 	}
-	
-	
+
+
 	public String[] getBatch()
 	{
 		ArrayList<String> toret=new ArrayList<String>();
@@ -31,15 +31,15 @@ public class BatchReader {
 			{
 				toret.add(line);
 				eCount++;
-			}		
+			}
 		}
 		catch(IOException e)
 		{
 			e.printStackTrace();
 			System.exit(0);
 		}
-		
-		
+
+
 		// Convert to String[]
 		String[] tr=new String[toret.size()];
 		int counter=0;
@@ -48,10 +48,10 @@ public class BatchReader {
 			tr[counter]=l;
 			counter++;
 		}
-		
+
 		return  tr;
 	}
-	
+
 	public void close()
 	{
 		try

@@ -85,7 +85,7 @@ while(my $line = <$ifh>)
         print $ofhpw $header_pw."\n";
         $headerwriten=1;
     }
-    
+
     # second define a region
     if($region)
     {
@@ -93,18 +93,18 @@ while(my $line = <$ifh>)
         next unless $chr==$region->{chr};
         next if($pos<$region->{start} or $pos>$region->{end});
     }
-    
+
     my $hit=$parser->($line);
     # chr, pos, rc, delsum, data, issnp, isrcsnp, ispopsnp
     next unless $hit->{issnp};
-    
+
     # print
-    # chr, pos, rc, snptype[rc,pop,rc|pop], delsum, T:1.000:27/29 ...  A   0.112:17/19:67/70   0.222:30/35:40/45 
-    
+    # chr, pos, rc, snptype[rc,pop,rc|pop], delsum, T:1.000:27/29 ...  A   0.112:17/19:67/70   0.222:30/35:40/45
+
     my($pwc,$pwcomp)=Utility::get_pairwise_comp($hit,$samples);
     $hit->{pwchar}=$pwc; # pairwise character
     $hit->{pwcomp}=$pwcomp; # pairwise comparisions
-    
+
     my($toprint_rc,$toprint_pw)=Utility::formatOutput($hit);
     print $ofhrc $toprint_rc."\n";
     print $ofhpw $toprint_pw."\n";
@@ -119,19 +119,19 @@ exit;
     use warnings;
     use FindBin qw/$RealBin/;
     use lib "$RealBin/Modules";
-    use Synchronized;    
-    
+    use Synchronized;
+
     sub formatOutput
     {
         # rc: chr, pos, rc, alleles, alstring, delsum, snp-type, consstring, subconsstring, consfreq, subconsfreq
         # rc: chr, pos, rc, alleles, alstring, delsum, snp-type, most_diverged_char, pwfreqdif
-        my $hit=shift; 
+        my $hit=shift;
         my $toprint_rc="$hit->{chr}\t$hit->{pos}\t$hit->{refchar}\t$hit->{alleles}\t$hit->{alstring}\t$hit->{delsum}\t";
         my $toprint_pw="$hit->{chr}\t$hit->{pos}\t$hit->{refchar}\t$hit->{alleles}\t$hit->{alstring}\t$hit->{delsum}\t";
-        
+
         # chr, position, reference character
-        
-        
+
+
         #snp type
         if($hit->{isrcsnp} and $hit->{ispopsnp})
         {
@@ -142,7 +142,7 @@ exit;
         {
             $toprint_rc.="rc";
             $toprint_pw.="rc";
-            
+
         }
         elsif($hit->{ispopsnp})
         {
@@ -153,13 +153,13 @@ exit;
         {
             die "impossible";
         }
-        
+
         my $data=$hit->{samples};
         my $consstring="";
         my $subconsstring="";
         my @consfreq=();
         my @subconsfreq=();
-        
+
         foreach my $d (@$data)
         {
             # A, T, C, G, N, del, eucov, totcov, valid_cov (totcov), a_desc
@@ -167,12 +167,12 @@ exit;
             my $valid_cov=$d->{iscov};
             my $cons=$a_desc->[0];
             my $subcons=$a_desc->[1];
-            
+
             my $consc=$cons->{a};
             my $consf=$cons->{c};
             my $subconsc=$subcons->{a};
             my $subconsf=$subcons->{c};
-            
+
             unless($valid_cov)
             {
                 $consc="N"; $subconsc="N"; $consf=0; $subconsf=0;
@@ -181,17 +181,17 @@ exit;
             $consc="N" unless $consf;
             $consf="$consf/$d->{eucov}";
             $subconsf="$subconsf/$d->{eucov}";
-            
+
             $consstring.=$consc;
             $subconsstring.=$subconsc;
             push @consfreq,$consf;
             push @subconsfreq,$subconsf;
         }
-        
+
         my $consfreqstring=join("\t",@consfreq);
         my $subconsfreqstring=join("\t",@subconsfreq);
         $toprint_rc.="\t$consstring\t$subconsstring\t$consfreqstring\t$subconsfreqstring";
-        
+
         #pairwisecomparisions
         $toprint_pw.="\t$hit->{pwchar}";
         my $pwcomp=$hit->{pwcomp};
@@ -204,18 +204,18 @@ exit;
         }
         return ($toprint_rc,$toprint_pw);
     }
-    
-    
-    
-    
+
+
+
+
     sub get_pairwise_comp
     {
         my $hit=shift;
         my $samples=shift;
         my $data=$hit->{samples};
-        
+
         my @alleles=( {a=>"A",c=>0} , {a=>"T",c=>0} , {a=>"C",c=>0} , {a=>"G",c=>0} );
-        
+
         for my $i(0..$samples-1)
         {
             for my $k($i+1..$samples-1)
@@ -224,7 +224,7 @@ exit;
                 my $e2=$data->[$k];
                 next unless $e1->{iscov};
                 next unless $e2->{iscov};
-                
+
                 foreach my $al (@alleles)
                 {
                     my $f1=$e1->{$al->{a}}/$e1->{eucov};
@@ -234,10 +234,10 @@ exit;
                 }
             }
         }
-        
+
         @alleles=sort {$b->{c}<=>$a->{c}} @alleles;
         my $pwc=$alleles[0]->{a};
-        
+
         my @pwcomp=();
         for my $i(0..$samples-1)
         {
@@ -250,8 +250,8 @@ exit;
                     my $f1=$e1->{$pwc} / $e1->{eucov};
                     my $f2=$e2->{$pwc} / $e2->{eucov};
                     my $div=abs($f1-$f2);
-                    
-                    
+
+
                     # p1,p2,dif
                     push @pwcomp,
                     {
@@ -259,7 +259,7 @@ exit;
                         p2=>$e2->{$pwc}."/".$e2->{eucov},
                         dif=>$div,
                     };
-                    
+
                 }
                 else
                 {
@@ -270,17 +270,17 @@ exit;
                 }
             }
         }
-        
+
         return $pwc,\@pwcomp;
     }
-    
+
     sub get_header
     {
         my $samples=shift;
         # rc: chr, pos, rc, alleles, alstring, delsum, consstring, subconsstring, consfreq, subconsfreq
         # rc: chr, pos, rc, alleles, alstring, delsum, most_diverged_char, pwfreqdif
         my $header_rc="##chr\tpos\trc\tallele_count\tallele_states\tdeletion_sum\tsnp_type\tmajor_alleles(maa)\tminor_alleles(mia)";
-        
+
         for my $i (1..$samples)
         {
             $header_rc.="\tmaa_$i";
@@ -300,27 +300,27 @@ exit;
         }
         return ($header_rc,$header_pw);
     }
-    
+
     sub parse_region
     {
         my $reg=shift;
         my($chr,$start,$end)=$reg=~m/^(\w+):(\d+)-(\d+)$/;
-        
+
         return {
             chr=>$chr,
             start=>$start,
             end=>$end
         };
     }
-    
-    
+
+
     sub get_lightwightparser
     {
         my $mincount=shift;
         my $mincov=shift;
         my $maxcov=shift;
         my $sp=get_sumsnp_synparser($mincount,$mincov,$maxcov);
-        
+
         return sub
         {
             my $line=shift;
@@ -331,12 +331,12 @@ exit;
             return $e;
         }
     }
-    
+
     sub _update_lightwight
     {
         my $entry=shift;
         my $mincount=shift;
-        
+
         my $rc=$entry->{refchar};
         my $delcount=0;
         my $isrcsnp=0;
@@ -347,14 +347,14 @@ exit;
             my @cons=(); push @cons,{a=>"A",c=>$s->{A} };  push @cons,{a=>"T",c=>$s->{T} };  push @cons,{a=>"C",c=>$s->{C} };  push @cons,{a=>"G",c=>$s->{G}};
             @cons=sort { $b->{c} <=> $a->{c} } @cons;
             $s->{a_desc} = \@cons;
-            
+
             # perform the following operations only when the data have the correct coverage
             if($s->{iscov})
             {
                  my $delcount+=$s->{del};
                 # refcharsnp
                 $isrcsnp=1 if $s->{a_desc}[0]{a} ne $rc;
-                
+
                 # the alleles
                 foreach my $al (@alleles)
                 {
@@ -367,7 +367,7 @@ exit;
         my @valalles=grep {$_->{c}>=$mincount} @alleles;
         my $validalleles=@valalles;
         my $alstring=join("/",map {$_->{a}} @valalles);
-        
+
         my $ispopsnp=$entry->{issnp};
         $isrcsnp=0 if $rc eq "N";
         my $issnp=($ispopsnp or $isrcsnp)? 1:0;
@@ -379,11 +379,11 @@ exit;
         $entry->{issnp}=$issnp;
         return $entry;
     }
-    
 
 
 
-    
+
+
 
 }
 
@@ -397,7 +397,7 @@ exit;
     use Test::TMaxCoverage;
     use Test::TSynchronized;
     use Test;
-    
+
     sub runTests
     {
         run_MaxCoverageTests();
@@ -406,7 +406,7 @@ exit;
         test_pairwiseComparisions();
         exit;
     }
-    
+
     sub test_pairwiseComparisions
     {
         my($pch,$p);
@@ -416,13 +416,13 @@ exit;
         is($p->[0]{dif},0.2,"pairwise comparision: difference is correct");
         is($p->[0]{p1},"1/5","pairwise comparision: allele count is correct");
         is($p->[0]{p2},"0/4","pairwise comparision: allele count is correct");
-        
+
         ($pch,$p)=Utility::get_pairwise_comp($parser->("2L\t1\tC\t0:0:4:0:0:0\t1:3:4:0:0:0"),2);
         is($pch,"C","pairwise comparision: pairwise character correct");
         is($p->[0]{dif},0.5,"pairwise comparision: difference is correct");
         is($p->[0]{p1},"4/4","pairwise comparision: allele count is correct");
         is($p->[0]{p2},"4/8","pairwise comparision: allele count is correct");
-        
+
         $parser=Utility::get_lightwightparser(3,4,[10,10,10]);
         ($pch,$p)=Utility::get_pairwise_comp($parser->("2L\t1\tC\t0:0:4:0:0:0\t0:1:4:2:0:0\t1:3:4:0:0:0"),3);
         is($pch,"C","pairwise comparision: pairwise character correct");
@@ -435,9 +435,9 @@ exit;
         ok(abs($p->[2]{dif}-0.0714)<0.001,"pairwise comparision: difference is correct");
         is($p->[2]{p1},"4/7","pairwise comparision: allele count is correct");
         is($p->[2]{p2},"4/8","pairwise comparision: allele count is correct");
-        
+
     }
-    
+
     sub test_parseLightwight
     {
         my $r;
@@ -452,7 +452,7 @@ exit;
         is($r->{pos},1,"parseLightwight: position is correct");
         is($r->{alleles},2,"parseLightwight; Number of alleles correct");
         is($r->{alstring},"C/T","parseLightwight; Allelestring correct");
-        
+
         # an N in the reference should not fuck up the result
         $r=$parser->("2L\t1\tN\t0:1:4:0:0:0\t0:2:3:0:0:0");
         is($r->{issnp},1,"parseLightwight: is a SNP correct");
@@ -463,7 +463,7 @@ exit;
         is($r->{pos},1,"parseLightwight: position is correct");
         is($r->{alleles},2,"parseLightwight; Number of alleles correct");
         is($r->{alstring},"C/T","parseLightwight; Allelestring correct");
-        
+
         # coverage in one population to low?
         $r=$parser->("2L\t1\tN\t0:0:4:0:0:0\t0:2:3:0:0:0");
         is($r->{issnp},0,"parseLightwight: is a SNP correct");
@@ -474,8 +474,8 @@ exit;
         is($r->{pos},1,"parseLightwight: position is correct");
         is($r->{alleles},1,"parseLightwight; Number of alleles correct");
         is($r->{alstring},"C","parseLightwight; Allelestring correct");
-        
-        
+
+
         # NO SNP
         $r=$parser->("2L\t2\tC\t0:0:5:0:0:0\t0:0:5:0:0:0");
         is($r->{issnp},0,"parseLightwight: is a SNP correct");
@@ -486,8 +486,8 @@ exit;
         is($r->{pos},2,"parseLightwight: position is correct");
         is($r->{alleles},1,"parseLightwight; Number of alleles correct");
         is($r->{alstring},"C","parseLightwight; Allelestring correct");
-        
-        
+
+
         # a reference character SNP
         $r=$parser->("3R\t2\tC\t0:5:0:0:0:0\t0:5:0:0:0:0");
         is($r->{issnp},1,"parseLightwight: is a SNP correct");
@@ -498,7 +498,7 @@ exit;
         is($r->{pos},2,"parseLightwight: position is correct");
         is($r->{alleles},1,"parseLightwight; Number of alleles correct");
         is($r->{alstring},"T","parseLightwight; Allelestring correct");
-        
+
         $r=$parser->("3R\t2\tC\t0:5:0:0:0:0\t0:5:2:2:2:2");
         is($r->{issnp},1,"parseLightwight: is a SNP correct");
         is($r->{ispopsnp},0,"parseLightwight: is a population SNP correct");
@@ -510,25 +510,25 @@ exit;
         is($r->{alstring},"T","parseLightwight: Allelestring correct");
         is($r->{samples}[1]{eucov},9,"parseLightwight: eu-coverage is correct");
         is($r->{samples}[1]{totcov},13,"parseLightwight: tot-coverage is correct");
-        is($r->{samples}[1]{del},2,"parseLightwight: del count is correct");    
+        is($r->{samples}[1]{del},2,"parseLightwight: del count is correct");
         is($r->{samples}[1]{N},2,"parseLightwight: N count is correct");
         is($r->{samples}[1]{A},0,"parseLightwight: A count is correct");
         is($r->{samples}[1]{G},2,"parseLightwight: G count is correct");
         is($r->{samples}[1]{C},2,"parseLightwight: C count is correct");
         is($r->{samples}[1]{T},5,"parseLightwight: T count is correct");
-        
+
         # counts
         $r=$parser->("3R\t2\tC\t0:5:0:0:0:0\t5:4:3:2:1:6");
         is($r->{samples}[1]{eucov},14,"parseLightwight: eu-coverage is correct");
         is($r->{samples}[1]{totcov},21,"parseLightwight: tot-coverage is correct");
-        is($r->{samples}[1]{del},6,"parseLightwight: del count is correct");    
+        is($r->{samples}[1]{del},6,"parseLightwight: del count is correct");
         is($r->{samples}[1]{N},1,"parseLightwight: N count is correct");
         is($r->{samples}[1]{A},5,"parseLightwight: A count is correct");
         is($r->{samples}[1]{G},2,"parseLightwight: G count is correct");
         is($r->{samples}[1]{C},3,"parseLightwight: C count is correct");
         is($r->{samples}[1]{T},4,"parseLightwight: T count is correct");
-        
-        
+
+
         # reference character is a 'N'
         $r=$parser->("3R\t2\tN\t0:5:0:0:0:0\t0:5:0:0:0:0");
         is($r->{issnp},0,"parseLightwight: is a SNP correct");
@@ -539,8 +539,8 @@ exit;
         is($r->{pos},2,"parseLightwight: position is correct");
         is($r->{alleles},1,"parseLightwight; Number of alleles correct");
         is($r->{alstring},"T","parseLightwight; Allelestring correct");
-        
-        
+
+
         # a pop and rc SNP
         $r=$parser->("3R\t2\tC\t0:5:4:0:0:0\t3:5:0:0:0:0");
         is($r->{issnp},1,"parseLightwight: is a SNP correct");
@@ -551,7 +551,7 @@ exit;
         is($r->{pos},2,"parseLightwight: position is correct");
         is($r->{alleles},3,"parseLightwight; Number of alleles correct");
         is($r->{alstring},"T/C/A","parseLightwight; Allelestring correct");
-        
+
     }
 }
 
@@ -604,7 +604,7 @@ The maximum coverage may be provided as one of the following:
 
 =item B<--test>
 
-Run the unit tests for this script. 
+Run the unit tests for this script.
 
 =item B<--help>
 
@@ -624,14 +624,14 @@ A synchronized file, for example
  Unknown_group_104	5945	N	0:0:0:8:0:0	0:0:0:8:0:0	0:0:0:8:0:0
  Unknown_group_104	5946	N	0:0:9:0:0:0	0:0:9:0:0:0	0:0:9:0:0:0
  Unknown_group_104	5947	N	0:7:0:0:0:0	0:7:0:0:0:0	0:7:0:0:0:0
- 
+
  col1: reference contig (chromosome)
  col2: position in the reference contig
  col3: reference character
  col4: population 1
  col5: population 2
  coln: population n
- 
+
  population data are in the form
  A:T:C:G:N:*
  A: count of character A
@@ -669,7 +669,7 @@ The SNP site is ignored if a deletion is found in any population
  f:2-4        diff:2-5        diff:3-4        diff:3-5        diff:4-5
  gi|42519920|ref|NC_002978.6     3530    A       2       A/G     0       pop     A       0.007   0.018   0.018   0.037   0.026   0.026   0.030   0.000   0.056   0.056
  gi|42519920|ref|NC_002978.6     5450    T       2       T/A     0       pop     A       0.056   0.044   0.056   0.056   0.100   0.000   0.000   0.100   0.100   0.000
- 
+
  col1: reference chromosome (contig)
  col2: referenced position
  col3: reference character
@@ -690,6 +690,3 @@ Robert Kofler
 Christian Schloetterer
 
 =cut
-
-
-

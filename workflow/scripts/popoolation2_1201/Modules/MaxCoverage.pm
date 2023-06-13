@@ -18,9 +18,9 @@ sub get_max_coverage
 
         my $syncfile=shift;
         my $usermaxcov=shift;
-        
+
         my $popcount=get_popcount_forsyncfile($syncfile);
-        
+
         my $maxcoverages=[];
         if($usermaxcov=~/%$/)
         {
@@ -40,14 +40,14 @@ sub get_max_coverage
             }
             $maxcoverages=\@tempar;
         }
-        
+
         my $tempcount=@$maxcoverages;
         die "Number of populations $popcount does not agree with number of maximum coverages $tempcount" if($tempcount!=$popcount);
-        
-        return $maxcoverages;  
+
+        return $maxcoverages;
     }
-    
-    
+
+
     sub _get_maxcov_bypercentoutlier
     {
         my $syncfile=shift;
@@ -55,12 +55,12 @@ sub get_max_coverage
         my $popcount=shift;
         my $pp=get_basic_syncparser();
         my $minfraction=(100-$pcoutlier)/100;
-        
-        
+
+
         print "Computing maximum coverage cutoffs from the empirical distributions of coverages\n";
         open my $ifh,"<", $syncfile or die "Could not open input file";
-        
-        
+
+
         my $counter=[];
         # parse synchronized file and get the coverage distribution
         while(my $line=<$ifh>)
@@ -69,7 +69,7 @@ sub get_max_coverage
             next unless $line;
             my $parsed=$pp->($line);
             my $samples=$parsed->{samples};
-           
+
             for(my $i=0; $i<$popcount; $i++)
             {
                 my $samp=$samples->[$i];
@@ -78,21 +78,21 @@ sub get_max_coverage
                 $counter->[$i][$cov]++;
             }
         }
-        
+
         # determine the maximum coverages
         my $maxcoverages=[];
         for(my $i=0; $i<$popcount; $i++)
         {
             my $covs=$counter->[$i]||[];
             my $sum=0;
-            
+
             for(my $k=0;$k<@$covs; $k++)
             {
                 my $t=$covs->[$k];
                 next unless $t;
                 $sum+=$t;
             }
-            
+
             my $curcounter=0;
             my $lastcoverage=0;
             COVERAGE: for(my $k=0; $k<@$covs; $k++)
@@ -110,7 +110,7 @@ sub get_max_coverage
                 $lastcoverage=$k;
             }
             $maxcoverages->[$i]=0 unless $maxcoverages->[$i];
-            
+
         }
         print "Finished identifying maximum coverages\n";
         my $maxstr=join(",",@$maxcoverages);

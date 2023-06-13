@@ -14,7 +14,7 @@ use MajorAlleles; # get the two major allele
 use Test;
 use List::Util qw[min max];
 
-# Author: Ram Vinay Pandey 
+# Author: Ram Vinay Pandey
 
 # Define the variables
 my $input;
@@ -32,8 +32,8 @@ my $usermaxcoverage;
 my $minCoverageFraction=0.0;
 my $suppressna=0;
 
-# -input /Volumes/Main/popoolation2/test.syn -output /Volumes/Main/popoolation2/test.out -min-count 2 -min-coverage 10 -max-coverage 200,300,200,500 -window-size 1 -step-size 1 -min-covered-fraction 0.6    
-    
+# -input /Volumes/Main/popoolation2/test.syn -output /Volumes/Main/popoolation2/test.out -min-count 2 -min-coverage 10 -max-coverage 200,300,200,500 -window-size 1 -step-size 1 -min-covered-fraction 0.6
+
 GetOptions(
     "input=s"	    			=>\$input,
     "output=s"	    			=>\$output,
@@ -101,25 +101,25 @@ while(my $window=$reader->nextWindow())
         my $snpcount=$window->{countpuresnp};
 	my $avmincov=$window->{avmincov};
         my $data=$window->{data};
-	
+
         next unless @$data;
-	
+
 	my $coveredFrac=$above/$win;
-        
+
         my $sufficientCovered=$coveredFrac>=$minCoverageFraction;
         next if(not $sufficientCovered and $suppressna);
         next if(not $snpcount and $suppressna);
-        
+
 	my $feth=$fetCalculator->($window);
-	
+
         $coveredFrac=sprintf("%.3f",$coveredFrac);
         $avmincov=sprintf("%.1f",$avmincov);
-	
+
 	my $str=Utility::formatOutput($feth,$popcount,$sufficientCovered);
 
         print $ofh "$chr\t$pos\t$snpcount\t$coveredFrac\t$avmincov\t$str\n";
 	#print "$chr\t$pos\t$snpcount\t$coveredFrac\t$avmincov\t$str\n";
-	
+
 
 }
 
@@ -139,15 +139,15 @@ exit(0);
     use lib "$RealBin/Modules";
 
 
-    
-    
+
+
     sub formatOutput
     {
         my $fsth=shift;
         my $popcount=shift;
         my $sufcovered=shift;
-        
-        
+
+
         my $e=[];
         for(my $i=0; $i<$popcount; $i++)
         {
@@ -156,12 +156,12 @@ exit(0);
                 my $key=$i.":".$k;
                 my $val=$fsth->{$key};
                 $val="na" unless $sufcovered;
-                
+
 		unless($val eq "na" or $val eq "inf")
 		{
-		    $val=sprintf("%.8f",$val);    
+		    $val=sprintf("%.8f",$val);
 		}
-                
+
                 my $str=($i+1).":".($k+1)."=".$val;
                 push @$e,$str;
             }
@@ -169,8 +169,8 @@ exit(0);
         my $toret=join("\t",@$e);
         return $toret;
     }
-    
-    
+
+
 }
 
 
@@ -184,7 +184,7 @@ exit(0);
     use Test::TFisher;
     use Test::TSynchronized;
     use Test::TMaxCoverage;
-    
+
 
     sub runTests
     {
@@ -194,7 +194,7 @@ exit(0);
         run_FisherTests();
         exit;
     }
-    
+
 }
 
 
@@ -212,14 +212,14 @@ exit(0);
     #"test"          			=>\$test,
     #"help"	    			=>\$help
     #
-    
+
 =head1 NAME
 
-fisher-test.pl - Calculate pairwise p-values for a set of populations 
+fisher-test.pl - Calculate pairwise p-values for a set of populations
 
 =head1 SYNOPSIS
 
- perl fisher-test.pl --input input.sync --output output.fet --min-count 2 --min-coverage 4 --max-coverage 2% 
+ perl fisher-test.pl --input input.sync --output output.fet --min-count 2 --min-coverage 4 --max-coverage 2%
 
 =head1 OPTIONS
 
@@ -272,7 +272,7 @@ Suppress output for windows with no SNPs or insufficient coverage; default=off
 
 =item B<--test>
 
-Run the unit tests for this script. 
+Run the unit tests for this script.
 
 =item B<--help>
 
@@ -293,14 +293,14 @@ A synchronized file, for example
  2L	5945	N	0:0:0:8:0:0	0:0:0:8:0:0	0:0:0:8:0:0
  2L	5946	N	0:0:9:0:0:0	0:0:9:0:0:0	0:0:9:0:0:0
  2L	5947	N	0:7:0:0:0:0	0:7:0:0:0:0	0:7:0:0:0:0
- 
+
  col1: reference contig (chromosome)
  col2: position in the reference contig
  col3: reference character
  col4: population 1
  col5: population 2
  coln: population n
- 
+
  population data are in the form
  A:T:C:G:N:*
  A: count of character A
@@ -325,7 +325,7 @@ The output will be given for every sliding window, e.g.:
 
  col1: reference contig (chromosome)
  col2: mean position of the sliding window
- col3: number of SNPs found in the window (not considering sites with a deletion) 
+ col3: number of SNPs found in the window (not considering sites with a deletion)
  col4: fraction of the window which has a sufficient coverage (min. coverage <= cov <= max. coverage) in every population;
  col5: average minimum coverage in all populations
 

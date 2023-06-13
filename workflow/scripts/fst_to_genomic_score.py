@@ -9,8 +9,9 @@ Output is chr, pos, fst
 import sys
 from numpy import sqrt
 
+
 def triangular_number(number):
-    '''Finds if a number is triangular, and if so, computer the base of that
+    """Finds if a number is triangular, and if so, computer the base of that
     triangle. It is necessary to know the number of populations involved in the
     analysis of the Fst.
 
@@ -20,8 +21,8 @@ def triangular_number(number):
     3
     >>> triangular_number(2)
     -1
-    '''
-    base = (1 + sqrt(1 + 8 * number))/2
+    """
+    base = (1 + sqrt(1 + 8 * number)) / 2
     if base.is_integer():
         return int(base)
     return -1
@@ -55,8 +56,7 @@ def populations_to_index(pop1, pop2, npop):
     return k
 
 
-if __name__ == '__main__':
-
+if __name__ == "__main__":
     POPULATION_1 = int(sys.argv[1])
     POPULATION_2 = int(sys.argv[2])
 
@@ -79,7 +79,7 @@ if __name__ == '__main__':
             raise SystemExit("Error with analysis to be extracted, exitting")
         # index = pop1 + pop2 - 1
         index = populations_to_index(POPULATION_1, POPULATION_2, NPOP) - 1
-        #sys.stderr.write(f"{index}")
+        # sys.stderr.write(f"{index}")
 
         fst = analysis[index]
         fst = fst.split("=")[1]

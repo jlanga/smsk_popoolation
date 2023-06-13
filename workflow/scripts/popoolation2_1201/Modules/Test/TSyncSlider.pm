@@ -11,14 +11,14 @@
     our @ISA = qw(Exporter);
     our @EXPORT=qw(run_SyncSliderTests);
     our @EXPORT_OK = qw();
-    
-    
+
+
     sub run_SyncSliderTests
     {
         testSyncSlider();
     }
-    
-    
+
+
     sub _getSyncSliderForString #str, window, step, mincount, mincov, maxcov
     {
         my $str=shift;
@@ -43,7 +43,7 @@
         },"SyncSlider";
         return $cr;
     }
-    
+
     sub testSyncSlider
     {
         my $teststr=
@@ -57,9 +57,9 @@
         "chr3\t2\tN\t0:0:1:0:0:0\t0:0:0:5:0:0\t0:0:8:0:0:0\n".
         "chr4\t4\tN\t0:0:8:0:0:0\t0:0:8:0:0:0\t0:0:8:0:0:0\n";
         my $bpsl=_getSyncSliderForString($teststr,3,1,2,4,[10000,10000,10000]);
-        
+
         my $w=$bpsl->nextWindow();
-        
+
         is($w->{chr},"chr1","test Synclider, correct chromosome");
         is($w->{count_covered},2,"test SyncSlider, correct number of sufficiently covered regions");
         is($w->{countpuresnp},2,"test SyncSlider, correct number of snps in region");
@@ -67,9 +67,9 @@
         is($w->{end},3,"test SyncSlider, correct end position");
         is($w->{window},3,"test SyncSlider, correct window length");
         is(scalar(@{$w->{data}}),3,"Correct number of data entries");
-        
-        
-        
+
+
+
         $w=$bpsl->nextWindow();
         is($w->{chr},"chr1","test SyncSlider, correct chromosome");
         is($w->{count_covered},2,"test SyncSlider, correct number of sufficiently covered regions");
@@ -79,8 +79,8 @@
         is($w->{middle},3,"test SyncSlider, correct end position");
         is($w->{window},3,"test SyncSlider, correct window length");
         is(scalar(@{$w->{data}}),3,"Correct number of data entries");
-        
-        
+
+
         $w=$bpsl->nextWindow();
         is($w->{chr},"chr1","test SyncSlider, correct chromosome");
         is($w->{count_covered},2,"test SyncSlider, correct number of sufficiently covered regions");
@@ -91,7 +91,7 @@
         is($w->{window},3,"test SyncSlider, correct window length");
         is(scalar(@{$w->{data}}),3,"Correct number of data entries");
 
-        
+
         # switch to new chromosome
         $w=$bpsl->nextWindow();
         is($w->{chr},"chr2","test SyncSlider, correct chromosome");
@@ -101,10 +101,10 @@
         is($w->{end},3,"test SyncSlider, correct end position");
         is($w->{middle},2,"test SyncSlider, correct end position");
         is($w->{window},3,"test SyncSlider, correct window length");
-        
+
         is(scalar(@{$w->{data}}),1,"Correct number of data entries");
 
-        
+
         $w=$bpsl->nextWindow();
         is($w->{chr},"chr3","test SyncSlider, correct chromosome");
         is($w->{count_covered},1,"test SyncSlider, correct number of sufficiently covered regions");
@@ -115,7 +115,7 @@
         is($w->{window},3,"test SyncSlider, correct window length");
         is(scalar(@{$w->{data}}),2,"Correct number of data entries");
 
-        
+
         $w=$bpsl->nextWindow();
         is($w->{chr},"chr4","test SyncSlider, correct chromosome");
         is($w->{count_covered},0,"test SyncSlider, correct number of sufficiently covered regions");
@@ -125,7 +125,7 @@
         is($w->{middle},2,"test SyncSlider, correct end position");
         is($w->{window},3,"test SyncSlider, correct window length");
         is(scalar(@{$w->{data}}),0,"Correct number of data entries");
-        
+
         $w=$bpsl->nextWindow();
         is($w->{chr},"chr4","test SyncSlider, correct chromosome");
         is($w->{count_covered},1,"test SyncSlider, correct number of sufficiently covered regions");
@@ -135,13 +135,13 @@
         is($w->{middle},3,"test SyncSlider, correct end position");
         is($w->{window},3,"test SyncSlider, correct window length");
         is(scalar(@{$w->{data}}),1,"Correct number of data entries");
-        
+
         $w=$bpsl->nextWindow();
         not_exists($w,"correct end of file reached");
         $w=$bpsl->nextWindow();
         not_exists($w,"correct end of file reached");
-        
-        
+
+
         # weired characters
         $teststr=
         "chr1\t1\tN\t0:0:6:0:1:0\t0:0:0:7:3:0\t0:0:8:0:2:0\n".
@@ -149,7 +149,7 @@
         "chr1\t3\tN\t0:0:3:0:0:0\t0:0:0:8:0:0\t0:0:13:0:2:2\n";
         $bpsl=_getSyncSliderForString($teststr,3,1,2,4,[10000,10000,10000]);
         #str, window, step, mincount, mincov, maxcov
-        
+
         $w=$bpsl->nextWindow();
         is($w->{chr},"chr1","test SyncSlider, correct chromosome");
         is($w->{count_covered},1,"test SyncSlider, correct number of sufficiently covered regions");
@@ -157,8 +157,8 @@
         is($w->{start},0,"test SyncSlider, correct start position");
         is($w->{end},3,"test SyncSlider, correct end position");
         is($w->{window},3,"test SyncSlider, correct window length");
-          
+
   }
-    
+
 }
 1;

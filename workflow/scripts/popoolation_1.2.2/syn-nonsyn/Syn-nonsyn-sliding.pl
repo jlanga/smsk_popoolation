@@ -14,14 +14,14 @@
     use SynNonSyn;
     use FormatSNP;
     our $verbose=1;
-    
+
     # input files
     my $pileupfile="";
     my $gtf_file="";
     my $codonTableFile="";
     my $nonsynLengthTableFile="";
     my $output="";
-    
+
     # pileup sliding
     my $windowSize= 1000;
     my $stepSize=1000;
@@ -32,7 +32,7 @@
     my $fastqtype="illumina";
     my $minQual=20;
     my $snpfile="";
-    
+
     # general
     my $measure="";
     my $poolSize=0;
@@ -41,10 +41,10 @@
     my $uncorrected=0;
     my $help=0;
     my $test=0;
-    
+
     # --measure pi --pool-size 500 --gtf /Users/robertkofler/dev/testfiles/2R.gff --pileup /Users/robertkofler/dev/testfiles/basepop_2R.pileup --output /Users/robertkofler/dev/testfiles/output/2R-syn-nonsyn.txt --codon-table /Users/robertkofler/dev/PopGenTools/syn-nonsyn/codon-table.txt --nonsyn-length-table /Users/robertkofler/dev/PopGenTools/syn-nonsyn/nsl_p6.txt
-    # --measure D --dissable-corrections --pool-size 500 --gtf /Volumes/Volume_3/analysis/syn-nonsyn/X.gtf --pileup /Volumes/Volume_3/analysis/syn-nonsyn/x.pileup --output /Volumes/Volume_3/analysis/syn-nonsyn/testout.txt --codon-table /Users/robertkofler/dev/popoolation/syn-nonsyn/codon-table.txt --nonsyn-length-table /Users/robertkofler/dev/popoolation/syn-nonsyn/nsl_p6.txt --min-count 1   
-    
+    # --measure D --dissable-corrections --pool-size 500 --gtf /Volumes/Volume_3/analysis/syn-nonsyn/X.gtf --pileup /Volumes/Volume_3/analysis/syn-nonsyn/x.pileup --output /Volumes/Volume_3/analysis/syn-nonsyn/testout.txt --codon-table /Users/robertkofler/dev/popoolation/syn-nonsyn/codon-table.txt --nonsyn-length-table /Users/robertkofler/dev/popoolation/syn-nonsyn/nsl_p6.txt --min-count 1
+
     GetOptions(
         "measure=s"         =>\$measure,
         "pileup=s"          =>\$pileupfile,
@@ -82,8 +82,8 @@
     pod2usage(-msg=>"Min quality not valid. Has to be between 0 and 40",-verbose=>1) if $minQual<0 || $minQual > 40;
     pod2usage(-msg=>"The minimum coverage hast to be at least two times the minimum count",-verbose=>1) unless $minCoverage >= (2*$minCount);
     pod2usage(-msg=>"Measure not provided",-verbose=>1) unless $measure;
-    
-    
+
+
     my $paramfile=$output.".params";
     open my $pfh, ">",$paramfile or die "Could not open $paramfile\n";
     print $pfh "Using measure\t$measure\n";
@@ -116,16 +116,16 @@
     print "Loading gtf file...\n";
     my $chrAnotation=load_cds_gtf($gtf_file);
     print "Parsing pileup file..\n";
-    
-    
+
+
     # gradually building the pileup window slider
     my $pp=get_extended_parser($fastqtype,$minCount,$minCoverage,$maxCoverage,$minQual);
     my $pts=PileupTripletSlider->new($pileupfile,$chrAnotation,$pp);
     my $ptws=PileupTripletWindowSlider->new($pts,$windowSize,$stepSize);
-    
+
     # get measure calculator
     my $meascalc = Utility::get_measure_calculator($minCount,$poolSize,$minCoverage,$maxCoverage,$measure,$nonsynTable,$uncorrected);
-    
+
     # get snp writer
     my $snpwriter;
     $snpwriter =get_syn_nonsyn_SNPFormater($snpfile) if $snpfile;
@@ -144,21 +144,21 @@
         my $winlength=$win->{window};
         my $count_codons=$win->{count_codons};
         print "Processing window: $chr:$win->{lower}-$win->{upper}; Codons in window: $count_codons\n";
-        
+
         # frame is ok (123 654); valid codon (no  'N's); valid coverage of pileup (every base fully covered);
         my $valid_triplets=[grep {$_->{valid}} @$triplets];
-        
+
         # take only triplets with an appropriate number of SNPs and incorporate the codon changes
         my $valid_snptriplets=[grep {$_->{count_snps}<=$maxTripletSNPs} @$valid_triplets];
         get_codon_changes($_,$codonTable) foreach @$valid_snptriplets;
-        
-        
+
+
         $snpwriter->($valid_snptriplets,$chr,$win->{lower},$win->{upper}) if $snpwriter;
-        
+
         # calculate the measure
             # synmeasure, nonsynmeasure, synsnps, nonsynsnps, synlength, nonsynlength, validcodons, codonswithsnps
         my $measure=$meascalc->($valid_snptriplets);
-        
+
         my $usedregions=$measure->{validcodons}*3;
         my $usedfraction=$usedregions/$winlength;
         if($usedfraction<$minCoveredFraction)
@@ -166,7 +166,7 @@
             $measure->{synmeasure}="na";
             $measure->{nonsynmeasure}="na";
         }
-        
+
 
         $usedfraction=sprintf("%.3f",$usedfraction);
         if($measure->{synmeasure} ne "na" or not $suppressNa)
@@ -176,9 +176,9 @@
         }
     }
     close $ofh;
-    
-    
-    
+
+
+
     exit;
 }
 
@@ -193,10 +193,10 @@
     use VarianceUncorrected;
     use Test;
     use SynNonSyn;
-    
-    
-    
-    
+
+
+
+
     sub get_measure_calculator
     {
         my $mincount=shift;
@@ -208,11 +208,11 @@
         my $uncorrected=shift;
         my $vec=VarianceExactCorrection->new($poolsize,$mincount,$minCoverage,$maxCoverage);
         $vec=VarianceUncorrected->new($poolsize,$mincount,$minCoverage,$maxCoverage) if $uncorrected;
-        
+
         return sub
         {
             my $triplets=shift;
-            
+
             my($synlength,$nonsynlength)=(0,0);
             my($synmeasure,$nonsynmeasure)=(0,0);
             my($synsnplist,$nonsynsnplist)=([],[]);
@@ -221,21 +221,21 @@
             foreach my $tr (@$triplets)
             {
                 $count_valid++;
-                
+
                 # calculate the length
                 # chr, pos, ref, strand, cstart, A, T, C, G, eucov, codon, mcodon, aa, maa, syn
                 my ($sl,$nsl)=Utility::_calculate_syn_nonsynlength($tr,$nonsynTable);
                 $synlength+=$sl;
                 $nonsynlength+=$nsl;
-                
+
                 # only proceed with the codons that contain a SNP;
                 next unless $tr->{count_snps};
                 $count_codons_withsnps++;
-                
-                
+
+
                 my $codonchanges =$tr->{cc};
                 my $break;
-                
+
                 foreach my $cc (@$codonchanges)
                 {
                     my $syn=$cc->{syn};
@@ -246,14 +246,14 @@
                     else
                     {
                         push @$nonsynsnplist,$cc;
-                    } 
+                    }
                 }
             }
             my $synsnps=@$synsnplist;
             my $nonsynsnps=@$nonsynsnplist;
             $synmeasure = $vec->calculate_measure($measure,$synsnplist,$synlength);
             $nonsynmeasure=$vec->calculate_measure($measure,$nonsynsnplist,$nonsynlength);
-            
+
             $synmeasure=sprintf("%.8f",$synmeasure);
             $nonsynmeasure=sprintf("%.8f",$nonsynmeasure);
 
@@ -270,8 +270,8 @@
             };
         };
     }
-    
-    
+
+
     sub _calculate_syn_nonsynlength
     {
         my $tr=shift;
@@ -297,8 +297,8 @@
     use Test::PileupParser;
     use Test::TPileupTripletSliding;
     use Test::Variance;
-    
-    
+
+
     sub runTests
     {
         run_PileupParserTests();
@@ -306,10 +306,10 @@
         run_PileupTripletSlidingTests();
         run_VarianceTests();
         exit;
-        
+
     }
-    
-    
+
+
 }
 
 
@@ -319,7 +319,7 @@
     #    "gtf=s"             =>\$gtf_file,
     #    "codon-table=s"     =>\$codonTableFile,
     #    "nonsyn-length-table=s"=>\$nonsynLengthTableFile,
-    
+
     #    "output=s"          =>\$output,
     #    "fastq-type=s"      =>\$fastqtype,
     #    "window-size=i"     =>\$windowSize,
@@ -334,7 +334,7 @@
     #    "test"              =>\$test,
     #    "help"              =>\$help
     #) or die "Invalid arguments";
-    
+
 
 =head1 NAME
 
@@ -382,19 +382,19 @@ Currently, "pi", "theta" and "d" is supported. Mandatory
 The size of the pool which has been sequenced. e.g.: 500; Mandatory
 
 =item B<--fastq-type>
-The encoding of the quality characters; Must either be 'sanger' or 'illumina'; 
+The encoding of the quality characters; Must either be 'sanger' or 'illumina';
 
  Using the notation suggested by Cock et al (2009) the following applies:
  'sanger'   = fastq-sanger: phred encoding; offset of 33
  'solexa'   = fastq-solexa: -> NOT SUPPORTED
  'illumina' = fastq-illumina: phred encoding: offset of 64
- 
+
  See also:
  Cock et al (2009) The Sanger FASTQ file format for sequecnes with quality socres,
- and the Solexa/Illumina FASTQ variants; 
+ and the Solexa/Illumina FASTQ variants;
 
 default=illumina
- 
+
 =item B<--min-count>
 
 The minimum count of the minor allele. This is important for the identification of SNPs; default=2
@@ -438,7 +438,7 @@ flag; If provided the output of fields containing na will be suppressed
 
 =item B<--test>
 
-Run the unit tests for this script. 
+Run the unit tests for this script.
 
 =item B<--help>
 
@@ -479,7 +479,7 @@ Must contain the codons and the resulting amino acids. For example:
  ATT: I
  ATC: I
  ATA: I
- CTT: L 
+ CTT: L
 
 =head2 Input nonsynonymous length
 
@@ -491,7 +491,7 @@ Must contain for every codon its nonsynonymous length; the synonymous length is 
  CGA: 1.66666666666667
 
 
-=head2 Output 
+=head2 Output
 
 Example of output:
 

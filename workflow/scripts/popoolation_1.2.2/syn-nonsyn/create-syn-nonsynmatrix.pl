@@ -14,7 +14,7 @@ my $transversion_penalty=6;
 my $help=0;
 my $test=0;
 
-    
+
 GetOptions(
         "codon-table=s"  => \$codontablefile,
         "output=s"       => \$outputFile,
@@ -64,7 +64,7 @@ sub get_codon_translator
 {
     my $codon_table=shift;
     my $trans_penalty=shift;
-    
+
     my $score_matrix={
         AG=>$trans_penalty,
         GA=>$trans_penalty,
@@ -72,7 +72,7 @@ sub get_codon_translator
         TC=>$trans_penalty,
         GT=>1,TG=>1,AC=>1,CA=>1,AT=>1,TA=>1,GC=>1,CG=>1
     };
-    
+
     return sub
     {
       my $codon=shift;
@@ -83,7 +83,7 @@ sub get_codon_translator
       {
         my $ori_base=substr($codon,$i,1);
         my $altbases=get_alternative_bases($ori_base);
-        
+
         foreach my $alternat_base(@$altbases)
         {
             my $newtriplet=$codon;
@@ -93,9 +93,9 @@ sub get_codon_translator
             $sumscore+=$score;
             $nonsynsum+=$score if $new_aa ne $ori_aa;
         }
-        
+
       }
-      
+
       my $ns_length=3*$nonsynsum/$sumscore;
       return $ns_length;
     };
@@ -125,7 +125,3 @@ sub get_alternative_bases
         die "do not recognise base";
     }
 }
-
-
-
-

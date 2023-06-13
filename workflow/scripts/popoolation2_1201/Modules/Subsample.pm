@@ -20,7 +20,7 @@ sub get_subsampler
         my $method=shift;
         my $targetcoverage=shift;
         $method=lc($method);
-        
+
         my $subsampler;
         if($method eq "withreplace")
         {
@@ -38,7 +38,7 @@ sub get_subsampler
         {
             die "unknown method for subsampling $method"
         }
-        
+
         return sub
         {
             my $pileupentry=shift;
@@ -55,15 +55,15 @@ sub _withoutreplace
     my($ac,$tc,$cc,$gc,$nc,$dc)=($p->{A},$p->{T},$p->{C},$p->{G},$p->{N},$p->{del});
     my $cov=$ac+$tc+$cc+$gc+$nc+$dc;
     return $p if $cov < $targetcov;
-    
-    
 
-    
-    
+
+
+
+
     my $temp="A"x$ac."T"x$tc."C"x$cc."G"x$gc."N"x$nc."*"x$dc;
     my @ar=split //,$temp;
-    
-    
+
+
     my($an,$tn,$cn,$gn,$nn,$dn)=(0,0,0,0,0,0);
     for my $i (1..$targetcov)
     {
@@ -107,8 +107,8 @@ sub _withoutreplace
         N=>$nn,
         del=>$dn
     };
-    
-    
+
+
 }
 
 
@@ -121,7 +121,7 @@ sub _withreplace
     return $p if $cov < $targetcov;
     # A T C G N del
 
-    
+
     my($af,$tf,$cf,$gf,$nf,$df)=($ac/$cov , $tc/$cov , $cc/$cov , $gc/$cov , $nc/$cov , $dc/$cov);
     my $ab=$af;
     my $tb=$af+$tf;
@@ -129,9 +129,9 @@ sub _withreplace
     my $gb=$af+$tf+$cf+$gf;
     my $nb=$af+$tf+$cf+$gf+$nf;
     my $db=1;
-    
+
     my($an,$tn,$cn,$gn,$nn,$dn)=(0,0,0,0,0,0);
-    
+
     for my $i (1..$targetcov)
     {
         my $r=rand();
@@ -163,9 +163,9 @@ sub _withreplace
         {
             die "not valid random number $r must be 0<= random < 1"
         }
-        
+
     }
-    
+
     return
     {
         A=>$an,
@@ -176,7 +176,7 @@ sub _withreplace
         del=>$dn
     };
 }
-    
+
     sub _exactfraction
     {
         my $p=shift;
@@ -184,12 +184,12 @@ sub _withreplace
         my($ac,$tc,$cc,$gc,$nc,$dc)=($p->{A},$p->{T},$p->{C},$p->{G},$p->{N},$p->{del});
         my $cov=$ac+$tc+$cc+$gc+$nc+$dc;
         return $p if $cov < $targetcov;
-        
-        
+
+
 
         my($af,$tf,$cf,$gf,$nf,$df)=($ac/$cov , $tc/$cov , $cc/$cov , $gc/$cov , $nc/$cov , $dc/$cov);
-        
-        
+
+
         # ingenious, first iteratively increase the coverage until the target is reached, if coverage than is to high iteratively decrease it until targetcoveage is reached
         my $itercoverage=$targetcov;
         my($an,$tn,$cn,$gn,$nn,$dn)=(_intround($af*$itercoverage),_intround($tf*$itercoverage),_intround($cf*$itercoverage),
@@ -209,7 +209,7 @@ sub _withreplace
                                       _intround($gf*$itercoverage),_intround($nf*$itercoverage),_intround($df*$itercoverage));
             $activecoverage=$an+$tn+$cn+$gn+$nn+$dn;
         }
-        
+
         my $tr=
          {
             A=>$an,
@@ -221,16 +221,16 @@ sub _withreplace
         };
         my $nuevocov=$tr->{A}+$tr->{T}+$tr->{C}+$tr->{G}+$tr->{N}+$tr->{del};
         die "calculated coverage is larger than the targetcoverage" if $nuevocov > $targetcov;
-        
+
         # if coverage is still lower than the target fill it up with N
         $tr->{N}+=($targetcov-$nuevocov) if ($nuevocov<$targetcov);
         return $tr;
     }
-    
-    
+
+
     sub _intround
     {
-        
+
         my $i=shift;            #2.5
         my $integer=int($i);    #2
         my $rest=$i-$integer;   #0.5

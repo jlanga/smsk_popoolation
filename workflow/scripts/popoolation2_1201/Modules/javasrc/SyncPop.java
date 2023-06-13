@@ -16,8 +16,8 @@ public class SyncPop {
 		this.countN=countN;
 		this.countDel=countDel;
 	}
-	
-	
+
+
 	public int countA()
 	{
 		return this.countA;

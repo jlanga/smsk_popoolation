@@ -6,8 +6,8 @@
     use lib "$Bin";
     use List::Util qw[min max];
     use Synchronized;
-    
-    
+
+
     sub new
     {
         my $class=shift;
@@ -17,9 +17,9 @@
         my $mincount=shift;
         my $mincov=shift;
         my $maxcov=shift;
-        
+
         open my $fh,"<$file" or die "Could not open file handle";
-        
+
         #get the parser of the synchronized file
         my $sp=get_sumsnp_synparser($mincount,$mincov,$maxcov);
 
@@ -35,7 +35,7 @@
             buffer=>[]
         },__PACKAGE__;
     }
-    
+
     sub count_samples
     {
         my $self=shift;
@@ -46,21 +46,21 @@
         $self->_bufferline($l);
         return $c;
     }
-    
+
     sub nextWindow
     {
         my $self=shift;
         my $sp=$self->{sp}; # get the synchronized parser
 
-        
+
         #get the current window, and the current chromosome
         my $curwin=$self->{curwin};
-        
+
         my $curChr="";
         $curChr=$curwin->[0]{chr} if @$curwin;
-        
+
         my $resetchr=0;
-        
+
         # empty unnecessary entries
         EMPTY: while(@$curwin)
         {
@@ -70,17 +70,17 @@
                 unshift @$curwin, $e;
                 last EMPTY;
             }
-            
+
         }
-        
+
         # fill with novel entries
         my $line;
         FILL:while($line=$self->_nextline)
         {
             my $e=$sp->($line);
             $curChr=$e->{chr} unless $curChr;
-            
-            
+
+
             if($e->{chr} eq $curChr && $e->{pos} <= $self->{upper})
             {
                 push @$curwin,$e;
@@ -92,12 +92,12 @@
                 last FILL;
             }
         }
-        
+
         return undef unless $curChr;
-        
-        
+
+
         my $toret=_annotateWindow($curwin,$curChr,$self->{lower},$self->{upper},$self->{window});
-        
+
         if($resetchr or not defined($line))
         {
             # we transgressed the boundaries to the next chromosome
@@ -117,28 +117,28 @@
 
         return $toret;
     }
-    
-    
-    
+
+
+
     sub _nextline
     {
         my $self=shift;
         my $fh=$self->{fh};
         my $buffer=$self->{buffer};
-        
+
         return shift @$buffer if @$buffer;
         return <$fh>;
     }
-    
+
     sub _bufferline
     {
         my $self=shift;
         my $line=shift;
         push @{$self->{buffer}},$line;
     }
-    
-    
-    
+
+
+
     sub _annotateWindow
     {
         my $curwin=shift;
@@ -146,10 +146,10 @@
         my $start=shift;
         my $end=shift;
         my $window=shift;
-        
+
         my $snps=0;
         my $aboveCoverage=0;
-        
+
         my $avmincov=0;
         foreach(@$curwin)
         {
@@ -172,7 +172,7 @@
             count_covered=>$aboveCoverage,
             window=>$window,
             avmincov=>$avmincov,
-            data=>$curwin      
+            data=>$curwin
         };
     }
 }

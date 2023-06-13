@@ -8,7 +8,7 @@ public class LogFormatter extends java.util.logging.Formatter
 {
     public LogFormatter()
     {}
-    
+
     @Override
     public String format(java.util.logging.LogRecord record)
     {

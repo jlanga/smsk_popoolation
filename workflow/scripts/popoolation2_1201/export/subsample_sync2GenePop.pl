@@ -48,7 +48,7 @@ pod2usage(-msg=>"Please provide an output file",-verbose=>1) unless $output;
 pod2usage(-msg=>"Please provide a maximum coverage",-verbose=>1) unless $usermaxcoverage;
 pod2usage(-msg=>"Please provide a target coverage",-verbose=>1) unless $targetcoverage;
 pod2usage(-msg=>"Please provide a sampling method",-verbose=>1) unless $method;
-pod2usage(-msg=>"Please provide a region which should be converted to a multiple fasta",-verbose=>1) unless $userregion; 
+pod2usage(-msg=>"Please provide a region which should be converted to a multiple fasta",-verbose=>1) unless $userregion;
 
 
 my $paramfile=$output.".params";
@@ -80,11 +80,11 @@ SYNCLINE: while(my $line=<$ifh>)
     chomp $line;
     next unless $line;
     my($chr,$pos)=split /\s+/,$line;
-    
+
     # set activeflag
     if($activeflag)
     {
-        
+
         last SYNCLINE if($pos >$regionend or $chr ne $regionchr)
     }
     unless($activeflag)
@@ -95,7 +95,7 @@ SYNCLINE: while(my $line=<$ifh>)
     next unless $activeflag;
     next unless(exists($region->{$chr}{$pos}));
     die "Unallowed state chromosome not equal to targetchromosome $chr vs $regionchr" unless $chr eq $regionchr;
-    
+
     my $p=$pp->($line);
     next unless $p->{ispuresnp};
     my $samplecount=@{$p->{samples}};
@@ -124,7 +124,7 @@ Utility::print_genepop($output,$genepopar,$userregion,$targetcoverage);
 
     #for(my $i=0; $i<$popcount; $i++)
     #{
-    #    # randomly subsample every sample to the given coverage        
+    #    # randomly subsample every sample to the given coverage
     #    my $subsampled=$subsampler->($p->{samples}[$i]);
     #
     #}
@@ -139,17 +139,17 @@ exit;
     use strict;
     use warnings;
     package Utility;
-    
+
     sub print_genepop
     {
         my $output=shift;
         my $gpa=shift;
         my $region=shift;
         my $coverage=shift;
-        
+
         my $endl="\n";
         open my $ofh, ">", $output or die "Could not open output file";
-        
+
         my $snpcount=@{$gpa->[0]};
         my $toprint=[];
         foreach my $i (1..$snpcount)
@@ -158,7 +158,7 @@ exit;
         }
         print $ofh "Haploid genotypes for region $region, subsampled to a coverage of $coverage; NOTE: haplotype structure is a mere artifact!".$endl;
         print $ofh join(", ",@$toprint).$endl;
-        
+
         foreach my $pop (@$gpa)
         {
             print $ofh "Pop".$endl;
@@ -175,11 +175,11 @@ exit;
             }
         }
     }
-    
+
     sub convert_to_genepopencoding{
         my $e=shift;
         my $diploid=shift;
-        
+
         my $cov=$e->{A}+$e->{T}+$e->{C}+$e->{G}+$e->{N}+$e->{del};
         my $toret;
         if($diploid)
@@ -201,27 +201,27 @@ exit;
             push @$toret,"00" foreach (1..$e->{del});
         }
 
-        
+
         die "improper size"unless @$toret == $cov;
         return $toret;
     }
-    
+
     sub parse_region
     {
         my $region=shift; #2R:123-145
-        
+
         die "Region invalid $region; must be of the form chr:start-end,start-end" unless $region=~m/:/;
         die "Region invalid $region; must be of the form chr:start-end,start-end" unless $region=~m/[-]/;
         my $lowest=undef;
         my $highest=undef;
         my $poscollection={};
-        
+
         my($chr,$temp)=split /:/,$region;
         my @ar=split/,/,$temp;
         push @ar,$temp unless(@ar);# if only a single exon was provided
-        
-        
-        
+
+
+
         foreach my $a (@ar)
         {
             die "Region invalid $region; must be of the form chr:start-end,start-end"unless $region=~m/[-]/;
@@ -231,15 +231,15 @@ exit;
             $highest=$end if(not defined($highest));
             $lowest =$start if $start <$lowest;
             $highest=$end if $end > $highest;
-            
+
             for my $i($start..$end)
             {
                 $poscollection->{$chr}{$i}=[];
             }
-            
+
         }
         return ($chr,$lowest,$highest,$poscollection);
-        
+
     }
 }
 
@@ -253,8 +253,8 @@ exit;
     use Test::TSubsample;
     use Test::TSynchronized;
     use Test::TMaxCoverage;
-    
-    
+
+
     sub runTests
     {
         run_MaxCoverageTests();
@@ -310,7 +310,7 @@ The maximum coverage may be provided as one of the following:
 =item B<--method>
 
 Specify the method for subsampling of the synchronized file. Either: withreplace, withoutreplace, fraction; Mandatory
- 
+
  withreplace: subsample with replacement
  withoutreplace: subsample without replacement
  fraction: calculate the exact fraction of the allele frequencies and linearly scale them to the C<--target-coverage> and rounding to an integer;
@@ -363,6 +363,3 @@ NOTE: during pooling and sequencing the haplotype information is lost. Thus any 
 Do not use this GenePop file for any analysis involving haplotypes. However, it may be used to measure differentiation between populations/subpopualtions or to calculate Tajima's D, Pi etc
 
 =cut
-
-
-

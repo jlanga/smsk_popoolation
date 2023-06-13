@@ -41,7 +41,7 @@ print $ofh format_header($header)."\n";
 
 while(my $e=$reader->())
 {
-    
+
     $e=set_start_end($e,$windowsize);
     $e=log_transform($e) if $logtransform;
     my $toprint=format_data($e);
@@ -54,7 +54,7 @@ exit;
 {
     use strict;
     use warnings;
-    
+
     sub set_start_end
     {
         my $e=shift;
@@ -70,7 +70,7 @@ exit;
         $e->{end}=$end;
         return $e;
     }
-    
+
     sub format_data
     {
         my $e=shift;
@@ -85,7 +85,7 @@ exit;
         }
         return join("\t",@a);
     }
-    
+
     sub format_header
     {
         my $header=shift;
@@ -95,20 +95,20 @@ exit;
         push @toprint,"Start";
         push @toprint,"End";
         push @toprint,"Feature";
-        
+
         foreach my $t (@$header)
         {
             push @toprint,$t;
         }
-        
+
         return join("\t",@toprint);
     }
-    
+
     sub log_transform
     {
         my $e=shift;
         my $samples=$e->{samples};
-        
+
         for (my $i=0;$i<@$samples; $i++)
         {
             next if $samples->[$i]==0;
@@ -116,11 +116,11 @@ exit;
         }
         return $e;
     }
-    
+
     sub get_pwc_reader
     {
         my $file=shift;
-        
+
         # get the header information
     # 2R	2358	1	1.000	88.0	1:2=0.00434153	1:3=0.00000000	1:4=0.00434153	2:3=0.00434153	2:4=0.00000000	3:4=0.00434153
     # 2R	2364	1	1.000	94.0	1:2=0.00180180	1:3=0.00000000	1:4=0.00180180	2:3=0.00180180	2:4=0.00000000	3:4=0.00180180
@@ -132,14 +132,14 @@ exit;
         chomp $line;
         my @a=split /\t/,$line;
         shift @a; shift @a; shift @a; shift @a; shift @a;
-        
+
         my $header=[];
         foreach my $e(@a)
         {
             my($th)=$e=~m/^([^=]+)/;
             push @$header,$th;
         }
-        
+
         open $ifh,"<",$file or die "Could not open input file";
         return ($header,sub
         {
@@ -158,7 +158,7 @@ exit;
                 my($temp)=$e=~m/=(.+)/;
                 push @$samples,$temp;
             }
-            
+
             return {
                 chr=>$chr,
                 pos=>$pos,
@@ -169,10 +169,10 @@ exit;
             };
         })
     }
-    
+
     sub _intround
     {
-        
+
         my $i=shift;            #2.5
         my $integer=int($i);    #2
         my $rest=$i-$integer;   #0.5
@@ -192,7 +192,7 @@ pwc2igv - convert the results of pairwise comparisions (Fst, fisher-test) into t
 
 =head1 SYNOPSIS
 
- pwc2igv.pl --input fisher.results --output fisher.results.igv --log-transform 
+ pwc2igv.pl --input fisher.results --output fisher.results.igv --log-transform
 
 =head1 OPTIONS
 
@@ -216,7 +216,7 @@ flag; log transform the measure (-log10). This may be especially useful for the 
 
 =item B<--test>
 
-Run the unit tests for this script. 
+Run the unit tests for this script.
 
 =item B<--help>
 
@@ -236,7 +236,7 @@ The input needs to be a file created either by C<fisher-test.pl> or by C<--fst-s
 
  col1: reference contig (chromosome)
  col2: mean position of the sliding window
- col3: number of SNPs found in the window (not considering sites with a deletion) 
+ col3: number of SNPs found in the window (not considering sites with a deletion)
  col4: fraction of the window which has a sufficient coverage (min. coverage <= cov <= max. coverage) in every population;
  col5: average minimum coverage in all populations
 

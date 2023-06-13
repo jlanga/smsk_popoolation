@@ -46,7 +46,7 @@ pod2usage(-msg=>"Please provide an output file",-verbose=>1) unless $output;
 pod2usage(-msg=>"Please provide a maximum coverage",-verbose=>1) unless $usermaxcoverage;
 pod2usage(-msg=>"Please provide a target coverage",-verbose=>1) unless $targetcoverage;
 pod2usage(-msg=>"Please provide a sampling method",-verbose=>1) unless $method;
-pod2usage(-msg=>"Please provide a region which should be converted to a multiple fasta",-verbose=>1) unless $userregion; 
+pod2usage(-msg=>"Please provide a region which should be converted to a multiple fasta",-verbose=>1) unless $userregion;
 $regionid=$userregion unless $regionid;
 
 
@@ -77,11 +77,11 @@ SYNCLINE: while(my $line=<$ifh>)
     chomp $line;
     next unless $line;
     my($chr,$pos)=split /\s+/,$line;
-    
+
     # set activeflag
     if($activeflag)
     {
-        
+
         last SYNCLINE if($pos >$regionend or $chr ne $regionchr)
     }
     unless($activeflag)
@@ -92,23 +92,23 @@ SYNCLINE: while(my $line=<$ifh>)
     next unless $activeflag;
     next unless(exists($region->{$chr}{$pos}));
     die "Unallowed state chromosome not equal to targetchromosome $chr vs $regionchr" unless $chr eq $regionchr;
-    
+
 
     my $p=$pp->($line);
     next unless $p->{iscov};
     my $samplecount=@{$p->{samples}};
     die "Numbers of populations is not consistent within the file  $samplecount vs $popcount" unless $samplecount eq $popcount;
-    
+
     my $tostr="";
     for(my $i=0; $i<$popcount; $i++)
     {
-        # randomly subsample every sample to the given coverage        
+        # randomly subsample every sample to the given coverage
         my $subsampled=$subsampler->($p->{samples}[$i]);
         $tostr.=syncsample2string($subsampled);
     }
-    
+
     my @strar=split //,$tostr;
-    
+
     $region->{$chr}{$pos}=\@strar;
 }
 close $ifh;
@@ -137,10 +137,10 @@ FASTA: while(1)
     my $samplecount=$counter % $targetcoverage;
     $samplecount++;
     $popcount++;
-    
+
     for my $i ($regionstart..$regionend)
     {
-        
+
         next unless(exists($region->{$regionchr}{$i}));
         my $tar=$region->{$regionchr}{$i};
         unless(scalar(@$tar))
@@ -150,9 +150,9 @@ FASTA: while(1)
         my $char=shift @$tar;
         push @$fasta,$char;
     }
-    
+
     Utility::write_fasta_entry($ofh,$regionid,$popcount,$samplecount,$fasta);
-    $counter++;  
+    $counter++;
 }
 
 
@@ -165,7 +165,7 @@ exit;
     use strict;
     use warnings;
     package Utility;
-    
+
     sub write_fasta_entry{
         my $ofh=shift;
         my $regionid=shift;
@@ -173,27 +173,27 @@ exit;
         my $samplecount=shift;
         my $fasta=shift;
         my $topr=join("",@$fasta);
-        
+
         print $ofh ">$regionid"."_pop$popcount"."_sample$samplecount\n";
         print $ofh $topr."\n";
     }
-    
+
     sub parse_region
     {
         my $region=shift; #2R:123-145
-        
+
         die "Region invalid $region; must be of the form chr:start-end,start-end" unless $region=~m/:/;
         die "Region invalid $region; must be of the form chr:start-end,start-end" unless $region=~m/[-]/;
         my $lowest=undef;
         my $highest=undef;
         my $poscollection={};
-        
+
         my($chr,$temp)=split /:/,$region;
         my @ar=split/,/,$temp;
         push @ar,$temp unless(@ar);# if only a single exon was provided
-        
-        
-        
+
+
+
         foreach my $a (@ar)
         {
             die "Region invalid $region; must be of the form chr:start-end,start-end"unless $region=~m/[-]/;
@@ -203,15 +203,15 @@ exit;
             $highest=$end if(not defined($highest));
             $lowest =$start if $start <$lowest;
             $highest=$end if $end > $highest;
-            
+
             for my $i($start..$end)
             {
                 $poscollection->{$chr}{$i}=[];
             }
-            
+
         }
         return ($chr,$lowest,$highest,$poscollection);
-        
+
     }
 }
 
@@ -225,8 +225,8 @@ exit;
     use Test::TSubsample;
     use Test::TSynchronized;
     use Test::TMaxCoverage;
-    
-    
+
+
     sub runTests
     {
         run_MaxCoverageTests();
@@ -278,7 +278,7 @@ The maximum coverage may be provided as one of the following:
 =item B<--method>
 
 Specify the method for subsampling of the synchronized file. Either: withreplace, withoutreplace, fraction; Mandatory
- 
+
  withreplace: subsample with replacement
  withoutreplace: subsample without replacement
  fraction: calculate the exact fraction of the allele frequencies and linearly scale them to the C<--target-coverage> and rounding to an integer;
@@ -325,6 +325,3 @@ NOTE: during pooling and sequencing the haplotype information is lost. Thus any 
 Do not use this multifasta file for any analysis involving haplotypes. However, it may be used to measure differentiation between populations/subpopualtions or to calculate Tajima's D, Pi etc
 
 =cut
-
-
-

@@ -53,7 +53,7 @@ _printRCode($tempr,$infile,$outfile,\@chromosomes,$scale_equal,$lab,$ymin,$ymax,
 system "R --vanilla <$tempr";
 unlink $tempr;
 
-    
+
 
 
 exit;
@@ -69,14 +69,14 @@ sub _printRCode
     my $ymin=shift;
     my $ymax=shift;
     my $outps=shift;
-    
+
     my $c=@$tc;
     my $columnes=3;
     my $rows= int(($c+2)/3);
     my $chromosomes=join "\",\"",@$tc;
     $chromosomes="c(\"".$chromosomes."\")";
 
-    
+
 open my $tfh,">$tempr" or die "Could not open output file";
 print $tfh <<PERLSUCKS;
 scale=$scalequal
@@ -129,7 +129,7 @@ for(chr in chroms)
     else{
         xmax=xmaxindiv
     }
-    plot(t[t\$V1==chr,2],t[t\$V1==chr,5],type="l",xlab="position",ylab="$ylab",main=chr,xlim=c(0,xmax),ylim=c(minval,maxval))    
+    plot(t[t\$V1==chr,2],t[t\$V1==chr,5],type="l",xlab="position",ylab="$ylab",main=chr,xlim=c(0,xmax),ylim=c(minval,maxval))
 }
 dev.off()
 PERLSUCKS
@@ -141,14 +141,14 @@ close $tfh;
 #plot(dat)
 #l<-lm(dat[,2]~dat[,1])
 #abline(l,lty=1,lwd=2)
-#abline(a=0,b=1, lty=2,lwd=2)  
+#abline(a=0,b=1, lty=2,lwd=2)
 #x<-as.character(summary(l))
 #text(x[8],y=0.2,x=0.8)
 #dev.off()
 #PERLSUCKS
 
-    
-    
+
+
 #    > t<-read.table("/Volumes/Macintosh HD/Users/robertkofler/analysis/martin/comparison_simvsmel/heterozygousity.sim-si3",sep="\t")
 #> t$V3[t$V3=="na"]=NA
 #> t$V3=as.numeric(as.character(t$V3))
@@ -163,8 +163,8 @@ close $tfh;
 #> dev.copy2eps(file="/Volumes/Macintosh HD/Users/robertkofler/tmp/sim-sim.eps")
 }
 
-    
-    
+
+
 =head1 NAME
 
 perl Visualise-output.pl - A script to create a pdf displaying the extent of a population genetics measure along the selected chromosomes

@@ -24,12 +24,9 @@ def get_min_count(wildcards):
 
 def compose_population_sizes(wildcards):
     pool_sizes = (
-        samples
-        [["population", "pool_size"]]
-        .drop_duplicates()
-        ["pool_size"]
-        .values
-        .tolist()
+        samples[["population", "pool_size"]]
+        .drop_duplicates()["pool_size"]
+        .values.tolist()
     )
     return ":".join(map(str, pool_sizes))
 
@@ -41,22 +38,22 @@ rule fst_sliding:
     Note: fst-sliding requires a true file
     """
     input:
-        sync = SYNC_SUB + "{chromosome}.sync"
+        sync=SYNC_SUB + "{chromosome}.sync",
     output:
-        tsv = temp(TABLE_FST + "{chromosome}.tsv"),
-        tsv_gz = protected(TABLE_FST + "{chromosome}.tsv.gz")
+        tsv=temp(TABLE_FST + "{chromosome}.tsv"),
+        tsv_gz=protected(TABLE_FST + "{chromosome}.tsv.gz"),
     params:
-        sync = SYNC_SUB + "{chromosome}.sync",
-        tsv = TABLE_FST + "{chromosome}.tsv",
-        window_size = get_window_size,
-        step_size = get_step_size,
-        min_covered_fraction = get_min_covered_fraction,
-        min_coverage = get_min_coverage,
-        max_coverage = get_max_coverage,
-        pool_size = compose_population_sizes,
-        min_count = get_min_count
+        sync=SYNC_SUB + "{chromosome}.sync",
+        tsv=TABLE_FST + "{chromosome}.tsv",
+        window_size=get_window_size,
+        step_size=get_step_size,
+        min_covered_fraction=get_min_covered_fraction,
+        min_coverage=get_min_coverage,
+        max_coverage=get_max_coverage,
+        pool_size=compose_population_sizes,
+        min_count=get_min_count,
     log:
-        TABLE_FST + "{chromosome}.log"
+        TABLE_FST + "{chromosome}.log",
     benchmark:
         TABLE_FST + "{chromosome}.json"
     conda:
@@ -78,22 +75,17 @@ rule fst_sliding:
         gzip --best --keep {params.tsv} 2>> {log}
         """
 
+
 rule fst_merge:
     input:
-        tsvs = expand(
-            TABLE_FST + "{chromosome}.tsv",
-            chromosome=CHROMOSOMES
-        )
+        tsvs=expand(TABLE_FST + "{chromosome}.tsv", chromosome=CHROMOSOMES),
     output:
-        tsv_gz = protected(
-            PLOT_FST + "all.tsv.gz"
-        )
+        tsv_gz=protected(PLOT_FST + "all.tsv.gz"),
     log:
-        PLOT_FST + "merge.log"
+        PLOT_FST + "merge.log",
     benchmark:
         PLOT_FST + "merge.json"
-    threads:
-        24
+    threads: 24
     conda:
         "../envs/fst.yml"
     shell:
@@ -103,16 +95,16 @@ rule fst_merge:
 rule fst_split_table:
     """Split fst table into a pair"""
     input:
-        merged_tsv_gz = PLOT_FST + "all.tsv.gz"
+        merged_tsv_gz=PLOT_FST + "all.tsv.gz",
     output:
-        fst_tsv = PLOT_FST + "{pop1}_{pop2}.fst.tsv"
+        fst_tsv=PLOT_FST + "{pop1}_{pop2}.fst.tsv",
     # log:
     #     PLOT_FST + "split_{pop1}_{pop2}.log"
     # benchmark:
     #     PLOT_FST + "split_{pop1}_{pop2}.json"
     params:
-        pop1 = "{pop1}",
-        pop2 = "{pop2}"
+        pop1="{pop1}",
+        pop2="{pop2}",
     conda:
         "../envs/fst.yml"
     shell:
@@ -128,11 +120,11 @@ rule fst_split_table:
 rule fst_plot:
     """Plot pairwise F_ST distributions over a genome"""
     input:
-        fst_tsv = PLOT_FST + "{pop1}_{pop2}.fst.tsv"
+        fst_tsv=PLOT_FST + "{pop1}_{pop2}.fst.tsv",
     output:
-        pdf = PLOT_FST + "{pop1}_{pop2}.pdf"
+        pdf=PLOT_FST + "{pop1}_{pop2}.pdf",
     log:
-        PLOT_FST + "plot_{pop1}_{pop2}.log"
+        PLOT_FST + "plot_{pop1}_{pop2}.log",
     benchmark:
         PLOT_FST + "plot_{pop1}_{pop2}.json"
     conda:
@@ -154,4 +146,4 @@ rule fst:
             PLOT_FST + str(i) + "_" + str(j) + ".pdf"
             for i in range(1, len(POPULATIONS))
             for j in range(i + 1, len(POPULATIONS) + 1)
-        ]
+        ],

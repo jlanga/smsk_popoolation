@@ -16,7 +16,7 @@ use MaxCoverage;
 
 
 # --pool-size 500 --min-count 2 --min-coverage 4 --window-size 1000 --step-size 1000 --input test/snp.merge --output test/test.fst
-# --pool-size 500 --min-count 2 --min-coverage 4 --window-size 1000 --step-size 1000 --input /Users/robertkofler/dev/PopGenTools/test/trmod.sync --output /Users/robertkofler/dev/PopGenTools/test/test.fst 
+# --pool-size 500 --min-count 2 --min-coverage 4 --window-size 1000 --step-size 1000 --input /Users/robertkofler/dev/PopGenTools/test/trmod.sync --output /Users/robertkofler/dev/PopGenTools/test/test.fst
 
 my $input;
 my $output="";
@@ -89,7 +89,7 @@ my $popcount=$reader->count_samples();
 
 # handle the poolsize
 my $poolAr=Utility::_getPoolSize($poolsize,$popcount);
- 
+
 my $fstCalculator;
 if($asunbiased)
 {
@@ -113,20 +113,20 @@ while(my $window=$reader->nextWindow())
         my $data=$window->{data};
         next unless @$data;
         my $coveredFrac=$above/$win;
-        
+
         my $fsth=$fstCalculator->($window);
-        
+
         my $sufficientCovered = $coveredFrac>=$minCoverageFraction;
         next if(not $sufficientCovered and $suppressna);
         next if(not $snpcount and $suppressna);
-        
+
         $coveredFrac=sprintf("%.3f",$coveredFrac);
         $avmincov=sprintf("%.1f",$avmincov);
-        
+
         my $str=Utility::formatOutput($fsth,$popcount,$sufficientCovered);
 
         print $ofh "$chr\t$pos\t$snpcount\t$coveredFrac\t$avmincov\t$str\n";
-        
+
 
 }
 close $ofh;
@@ -148,15 +148,15 @@ exit;
     use lib "$RealBin/Modules";
 
 
-    
-    
+
+
     sub formatOutput
     {
         my $fsth=shift;
         my $popcount=shift;
         my $sufcovered=shift;
-        
-        
+
+
         my $e=[];
         for(my $i=0; $i<$popcount; $i++)
         {
@@ -165,7 +165,7 @@ exit;
                 my $key=$i.":".$k;
                 my $val=$fsth->{$key};
                 $val="na" unless $sufcovered;
-                
+
                 $val=sprintf("%.8f",$val) unless $val eq "na";
                 my $str=($i+1).":".($k+1)."=".$val;
                 push @$e,$str;
@@ -174,17 +174,17 @@ exit;
         my $toret=join("\t",@$e);
         return $toret;
     }
-    
-    
- 
-    
 
 
-    
-   
-    
 
-    
+
+
+
+
+
+
+
+
     sub _getPoolSize
     {
         my $poolsize=shift;
@@ -204,7 +204,7 @@ exit;
         die "provide poolsize does not fit with input file" if scalar(@$poolAr) != $popCount;
         return $poolAr;
     }
- 
+
 }
 
 {
@@ -217,7 +217,7 @@ exit;
     use Test::TFstCalculation;
     use Test::TSynchronized;
     use Test::TMaxCoverage;
-    
+
 
     sub runTests
     {
@@ -227,7 +227,7 @@ exit;
         run_FstCalculationTests();
         exit;
     }
-    
+
 }
 
     #"input=s"	    =>\$input,
@@ -308,7 +308,7 @@ Suppress output for windows with no SNPs or insufficient coverage; default=off
 
 =item B<--test>
 
-Run the unit tests for this script. 
+Run the unit tests for this script.
 
 =item B<--help>
 
@@ -329,14 +329,14 @@ A synchronized file, for example
  Unknown_group_104	5945	N	0:0:0:8:0:0	0:0:0:8:0:0	0:0:0:8:0:0
  Unknown_group_104	5946	N	0:0:9:0:0:0	0:0:9:0:0:0	0:0:9:0:0:0
  Unknown_group_104	5947	N	0:7:0:0:0:0	0:7:0:0:0:0	0:7:0:0:0:0
- 
+
  col1: reference contig (chromosome)
  col2: position in the reference contig
  col3: reference character
  col4: population 1
  col5: population 2
  coln: population n
- 
+
  population data are in the form
  A:T:C:G:N:*
  A: count of character A
@@ -359,7 +359,7 @@ The output will be given for every sliding window, e.g.:
 
  col1: reference contig (chromosome)
  col2: mean position of the sliding window
- col3: number of SNPs found in the window (not considering sites with a deletion) 
+ col3: number of SNPs found in the window (not considering sites with a deletion)
  col4: fraction of the window which has a sufficient coverage (min. coverage <= cov <= max. coverage) in every population;
  col5: average minimum coverage in all populations
 
@@ -375,7 +375,7 @@ Only positions which are sufficiently covered are considered.
 =head2 Fst calculation
 
 By default Fst is calculated from the allele-frequencies (not from the allele-counts) using the standard equation as shown in "Hartl and Clark (2007): Principles of Population Genetics"
- 
+
  Fst = (Pi_total - Pi_within) / Pi_total
  Pi_within = (Pi_population1 + Pi_population2)/ 2
  Pi: 1 - fA ^ 2 - fT ^ 2 -fC ^ 2 - fG ^ 2
@@ -384,7 +384,7 @@ By default Fst is calculated from the allele-frequencies (not from the allele-co
      populations are averaged and Pi is calculated as shown above
 
 if the alternative method C<--karlsson-fst> is used, Fst is calculated  from the allele-counts according to:
-Karlsson et al. (2007): Efficient mapping of mendelian traits in dogs through genome-wide association, Nature genetics 
+Karlsson et al. (2007): Efficient mapping of mendelian traits in dogs through genome-wide association, Nature genetics
 
 
 =head1 AUTHORS
@@ -394,4 +394,3 @@ Robert Kofler
 Christian Schloetterer
 
 =cut
-

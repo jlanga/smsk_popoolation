@@ -2,11 +2,11 @@ import java.io.*;
 public class BatchWriter {
 	private  BufferedWriter bw;
 	private final String outputFile;
-	
-	
+
+
 	public BatchWriter(String outputFile)
 	{
-	
+
 		try
 		{
 			this.bw = new BufferedWriter(new FileWriter(outputFile));
@@ -19,14 +19,14 @@ public class BatchWriter {
 
 		this.outputFile=outputFile;
 	}
-	
+
 	public void writeBatch(String[] batch)
 	{
 		try{
 			for(String s: batch)
 			{
 				bw.write(s+"\n");
-			}			
+			}
 		}
 		catch(IOException e)
 		{
@@ -35,7 +35,7 @@ public class BatchWriter {
 		}
 
 	}
-	
+
 	public void close()
 	{
 		try

@@ -3,11 +3,11 @@ rule hp_table_population_chromosome:
     Build the hp table for a population in a chromosome.
     """
     input:
-        snps_gz = PLOT_POPOOLATION + "D/{population}.D.snps.gz"
+        snps_gz=PLOT_POPOOLATION + "D/{population}.D.snps.gz",
     output:
-        hp_gz = protected(TABLE_HP + "{population}.tsv.gz")
+        hp_gz=protected(TABLE_HP + "{population}.tsv.gz"),
     log:
-        TABLE_HP + "{population}.log"
+        TABLE_HP + "{population}.log",
     benchmark:
         TABLE_HP + "{population}.json"
     conda:
@@ -25,11 +25,11 @@ rule hp_plot_population:
     Plot the genome-wide H_p distribution of a population
     """
     input:
-        hp_gz = TABLE_HP + "{population}.tsv.gz"
+        hp_gz=TABLE_HP + "{population}.tsv.gz",
     output:
-        pdf = PLOT_HP + "{population}.pdf"
+        pdf=PLOT_HP + "{population}.pdf",
     log:
-        PLOT_HP + "{population}.log"
+        PLOT_HP + "{population}.log",
     benchmark:
         PLOT_HP + "{population}.json"
     conda:
@@ -46,4 +46,4 @@ rule hp_plot_population:
 
 rule hp:
     input:
-        [PLOT_HP + population + ".pdf" for population in POPULATIONS]
+        [PLOT_HP + population + ".pdf" for population in POPULATIONS],

@@ -78,7 +78,7 @@ while(my $l=<$ifh>)
 {
     chomp $l;
     my($chr,$pos,undef,undef,$measure)=split /\t/,$l;
-    
+
     if($filt)
     {
         next unless exists($filt->{$chr});
@@ -91,7 +91,7 @@ while(my $l=<$ifh>)
         $chrHash->{$chr}=1;
         $activechr=$chr;
     }
-    
+
     next if $measure eq "na";
     my $start=$pos-$offset;
     my $end=$pos+int($windowsize/2);
@@ -103,7 +103,7 @@ while(my $l=<$ifh>)
 #2L	pi	5702..5801	score=0.003530197
 #2L	pi	5802..5901	score=0.003165151
 #2L	pi	5902..6001	score=0.002726609
-    print $ofh "$chr\tvar\t$start..$end\tscore=$measure\n";   
+    print $ofh "$chr\tvar\t$start..$end\tscore=$measure\n";
 }
 
 
@@ -115,15 +115,15 @@ exit;
     package Utility;
     use strict;
     use warnings;
-    
+
     sub infer_window_size
     {
         my $file=shift;
-        
+
         print "Infering window size (~span in wiggle file)\n";
         print "Please not that wiggle only allows for non overlapping windows. This window size here will thus correspond to the step-size\n";
         open my $ifh , "<", $file or die "Could not open input file";
-        
+
         while(1)
         {
             my $l1=<$ifh>;
@@ -138,14 +138,14 @@ exit;
                 return $insertsize;
             }
         }
-        
+
         die "unable to infer insert size";
 
 
     }
-    
-    
-    
+
+
+
 }
 
 =head1 NAME
@@ -182,7 +182,7 @@ Display the help pages.
 =head2 Input
 
 Input will be the output of the variance slider. For example
- 
+
  2L      5500    30      0.916   -0.003390146
  2L      6500    10      1.000   -0.001091447
  2L      7500    8       1.000   0.000033510
@@ -197,7 +197,7 @@ A Flybase formated output file:
  fgcolor = black
  bgcolor = red
  height=200
- min_score=na 
+ min_score=na
 
  max_score=na
 
@@ -216,5 +216,3 @@ A Flybase formated output file:
  2L	pi	5602..5701	score=0.003701141
 
 =cut
-
-

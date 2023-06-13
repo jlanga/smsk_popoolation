@@ -112,16 +112,16 @@ exit(0);
 	use Synchronized;
 	use SynchronizeUtility;
 	use MajorAlleles; # get the two major allele
-	
+
 	sub write_output
 	{
 		my $routput=shift;
 		my $output=shift;
 		my $minpvalue=shift;
-		
+
 		open my $ifh,"<", $routput or die "Could not open input file\n";
 		open my $ofh,">",$output or die "Could not open output file\n";
-		
+
 		while(1)
 		{
 			#[1] "2R\t2296\tN\t90:10:0:0:0:0\t100:0:0:0:0:0\t100:0:0:0:0:0\t100:0:0:0:0:0"
@@ -141,14 +141,14 @@ exit(0);
 		close $ofh;
 		close $ifh;
 	}
-	
+
 	sub resolve_population
 	{
 		my $userpopulation=shift;
 		die "At least two pairwise comparisions need to be specified, e.g.: 1-2,3-4" unless $userpopulation=~m/,/;
 		die "At least two pairwise comparisions need to be specified, e.g.: 1-2,3-4" unless $userpopulation=~m/-/;
-		
-		
+
+
 		my $populations=[];
 		my @temp=split /,/,$userpopulation;
 		foreach my $t (@temp)
@@ -158,21 +158,21 @@ exit(0);
 			push @$populations,$a[0];
 			push @$populations,$a[1];
 		}
-		
+
 		die "Pairwise comparisions must be an even number (user provided $userpopulation)" if(scalar(@$populations) % 2);
 		return $populations;
 	}
-	
+
 	sub write_Rinput
 	{
 		my $syncfile=shift;
 		my $rinput=shift;
 		my $syncparser=shift;
 		my $populations=shift;
-		
+
 		my $third_dim =int(scalar(@$populations)/2);
 		my $dim_str="c(2,2,$third_dim)";
-		
+
 		open my $ifh, "<", $syncfile or die "Could not open input file";
 		open my $ofh, ">", $rinput or die "Could not open routput file";
 		while(my $line=<$ifh>)
@@ -180,7 +180,7 @@ exit(0);
 			chomp $line;
 			my $e=$syncparser->($line);
 			next unless $e->{ispuresnp};
-			
+
 			my $pop_str=_get_populationstring($e->{samples},$populations);
 			my $ar_str="array($pop_str,dim=$dim_str)";
 			my $mantel_str="mantelhaen.test($ar_str,alternative=c(\"two.sided\"))\$p.value";
@@ -190,13 +190,13 @@ exit(0);
 		close $ofh;
 		close $ifh;
 	}
-	
-	
+
+
 	sub _get_populationstring
 	{
 		my $samples=shift;
 		my $populations=shift;
-		
+
 		my ($major,$minor) = MajorAlleles::get_major_minor_alleles($samples);
 		my @ar=();
 		for(my $i=1; $i<@$populations; $i+=2)
@@ -206,7 +206,7 @@ exit(0);
 			$basenr--; $derivednr--;
 			my $base=$samples->[$basenr];
 			my $derived=$samples->[$derivednr];
-			
+
 			push @ar,$base->{$major};
 			push @ar,$derived->{$major};
 			push @ar,$base->{$minor};
@@ -216,9 +216,9 @@ exit(0);
 		my $popstring="c($string_all_allele)";
 		return $popstring;
 	}
-    
-	
-    
+
+
+
 }
 
 
@@ -233,7 +233,7 @@ exit(0);
     use Test::TSynchronized;
     use Test::TMaxCoverage;
     use MajorAlleles;
-    
+
 
     sub runTests
     {
@@ -243,37 +243,37 @@ exit(0);
 
         exit;
     }
-    
+
     sub run_majorminor
     {
 	my($maj,$min);
-	
+
 	($maj,$min)=get_major_minor_alleles([{A=>11,T=>0,C=>0,G=>0},{A=>0,T=>10,C=>0,G=>0},{A=>0,T=>0,C=>9,G=>0},{A=>0,T=>0,C=>0,G=>9}]);
 	is($maj,"A","identification of major allele; correct allele");
 	is($min,"T","identification of minor allele; correct allele");
-	
+
 	($maj,$min)=get_major_minor_alleles([{A=>3,T=>0,C=>0,G=>0},{A=>3,T=>10,C=>0,G=>0},{A=>3,T=>0,C=>9,G=>0},{A=>2,T=>0,C=>0,G=>9}]);
 	is($maj,"A","identification of major allele; correct allele");
-	is($min,"T","identification of minor allele; correct allele");	
-	
+	is($min,"T","identification of minor allele; correct allele");
+
 	($maj,$min)=get_major_minor_alleles([{A=>3,T=>0,C=>0,G=>0},{A=>3,T=>10,C=>0,G=>0},{A=>3,T=>2,C=>9,G=>0},{A=>2,T=>0,C=>0,G=>9}]);
 	is($maj,"T","identification of major allele; correct allele");
-	is($min,"A","identification of minor allele; correct allele");		
-	
+	is($min,"A","identification of minor allele; correct allele");
+
 	($maj,$min)=get_major_minor_alleles([{A=>3,T=>0,C=>4,G=>0},{A=>3,T=>10,C=>0,G=>0},{A=>3,T=>2,C=>9,G=>0},{A=>2,T=>0,C=>0,G=>9}]);
 	is($maj,"C","identification of major allele; correct allele");
-	is($min,"T","identification of minor allele; correct allele");	
-	    
+	is($min,"T","identification of minor allele; correct allele");
+
     }
 
-    
+
 }
 
 
 
 =head1 NAME
 
-cmh-test.pl - This script calculates the Cochran-Mantel-Haenszel test for each SNP  
+cmh-test.pl - This script calculates the Cochran-Mantel-Haenszel test for each SNP
 
 =head1 SYNOPSIS
 
@@ -307,7 +307,7 @@ The maximum coverage may be provided as one of the following:
  '500' a maximum coverage of 500 will be used for all populations
  '300,400,500' a maximum coverage of 300 will be used for the first population, a maximum coverage of 400 for the second population and so on
  '2%' the 2% highest coverages will be ignored, this value is independently estimated for every population
-  
+
 =item B<--min-pvalue>
 
 the minimum p-value cut off  to filter all snp with > min-pvalue cutoff [Optional parameter]
@@ -324,7 +324,7 @@ flag; remove the temporary files at the end; default=off
 
 =item B<--test>
 
-Run the unit tests for this script. 
+Run the unit tests for this script.
 
 =item B<--help>
 
@@ -342,14 +342,14 @@ Every pileup file represents a population and will be parsed into a list of A-co
  2L	5002	G	0:0:0:17:0:0	0:0:0:28:0:0	0:0:0:31:0:0	0:0:0:35:0:0	0:1:0:33:0:0	0:3:0:31:0:0
  2L	5009	A	16:0:0:0:0:0	26:0:0:0:0:0	29:0:1:0:0:0	36:0:0:0:0:0	34:0:0:0:0:0	32:0:1:0:0:0
  2L	5233	G	0:0:5:46:0:0	0:0:0:43:0:0	0:0:0:60:0:0	0:0:3:61:0:0	0:0:0:56:0:0	0:0:0:48:0:0
- 
+
  col 1: reference chromosome
  col 2: position in the reference chromosome
  col 3: reference genome base
  col 4: population 1
  col 5: population 2
  col n: population n-3
- 
+
  population data are in the form
  A:T:C:G:N:*
  A: count of character A
@@ -358,7 +358,7 @@ Every pileup file represents a population and will be parsed into a list of A-co
  G: count of character G
  N: count of character N
  *: deletion, count of deletion
- 
+
 =head2 Output
 
  2L	5002	G	0:0:0:17:0:0	0:0:0:28:0:0	0:0:0:31:0:0	0:0:0:35:0:0	0:1:0:33:0:0	0:3:0:31:0:0	0.609

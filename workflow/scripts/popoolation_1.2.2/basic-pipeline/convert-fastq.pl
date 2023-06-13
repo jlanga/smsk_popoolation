@@ -16,7 +16,7 @@ use BasicUtility;
     my $help=0;
     my $test=0;
     my $verbose=1;
-    
+
     GetOptions(
         "input=s"               =>\$input,
         "output=s"              =>\$output,
@@ -26,15 +26,15 @@ use BasicUtility;
         "test"                  =>\$test,
         "help"                  =>\$help
     ) or pod2usage(-msg=>"Options not valid $!",-verbose=>1);
-    
+
     # dive into the alternative branches (if requested)
     pod2usage(-verbose=>2) if $help;
     pod2usage(-msg=>"At least one input file has to be provided", -verbose=>1) unless -e $input;
     pod2usage(-msg=>"An output file has to be provided", -verbose=>1) unless $output;
     $inencoding=lc($inencoding);
     $outencoding=lc($outencoding);
-    
-    
+
+
     my $paramfile=$output.".params";
     open my $pfh, ">",$paramfile or die "Could not open $paramfile\n";
     print $pfh "Using input\t$input\n";
@@ -45,15 +45,15 @@ use BasicUtility;
     print $pfh "Using test\t$test\n";
     print $pfh "Using help\t$help\n";
     close $pfh;
-    
+
     $inencoding =Utility::get_encoding($input,$inencoding);
     if($inencoding eq $outencoding)
     {
         die "Stoping Conversion\nEncoding of the input equals the encoding of the output: $inencoding = $outencoding\n" unless $forceconversion;
     }
-    
 
-    
+
+
     my $fqr=get_fastq_reader($input);
     my $fqw=get_fastq_writer($output);
     my $dec=Utility::get_qual_decoder($inencoding);
@@ -65,8 +65,8 @@ use BasicUtility;
         my $qual=$fq->{qual};
         my @ar= split  //,$qual;
         my @con=();
-        
-  
+
+
         foreach my $q (@ar)
         {
             my $t=$dec->($q);
@@ -78,12 +78,12 @@ use BasicUtility;
         $fqw->($fq);
     }
     print "Finished conversion\n";
-    
+
 }
 
-    
-    
-    
+
+
+
 {
     package Utility;
     use strict;
@@ -91,12 +91,12 @@ use BasicUtility;
     use FindBin qw($RealBin);
     use lib "$RealBin/../Modules";
     use BasicUtility;
-    
-    
+
+
     sub get_qual_decoder
     {
         my $encoding=shift;
-        
+
         if($encoding eq "phred")
         {
             return sub
@@ -118,7 +118,7 @@ use BasicUtility;
             die "unknown encoding $encoding";
         }
     }
-    
+
     sub  get_qual_encoder
     {
         my $encoding=shift;
@@ -144,7 +144,7 @@ use BasicUtility;
             die "unknown encoding $encoding";
         }
     }
-    
+
     sub get_encoding
     {
         my $infile=shift;
@@ -167,7 +167,7 @@ use BasicUtility;
         }
 
     }
-    
+
     sub _autodetect_encoding
     {
         my $file=shift;
@@ -189,14 +189,14 @@ use BasicUtility;
                     return "illumina";
                 }
             }
-            
+
         }
         return undef;
-    } 
-    
+    }
+
 }
 
-    
+
 
 
 
@@ -211,7 +211,7 @@ convert-fastq.pl - Convert the quality string of fastq files
 
 
  convert-fastq.pl --input input.fastq --output output.fastq
- 
+
 
 
 =head1 OPTIONS
@@ -240,7 +240,7 @@ the script automatically stops when the input-encoding equals to the output-enco
 
 =item B<--test>
 
-Run the unit tests for this script. 
+Run the unit tests for this script.
 
 =item B<--help>
 

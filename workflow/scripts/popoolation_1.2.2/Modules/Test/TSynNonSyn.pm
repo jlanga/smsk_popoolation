@@ -11,16 +11,16 @@
     require Exporter;
     our @ISA = qw(Exporter);
     our @EXPORT  =qw(run_SynNonSynTests);
-    
-    
-    
-    
+
+
+
+
     sub run_SynNonSynTests
     {
         test_load_cds();
         test_get_codon_changes();
     }
-    
+
     sub test_get_codon_changes
     {
         my $gtfstr;
@@ -30,9 +30,9 @@
         my $pts;
         my $pustr;
         my $tr;
-        
+
         my $codonTable=_getcodontable();
-        
+
         $gtfstr=
         "2R\tmaker\tCDS\t3\t5\t.\t+\t0\n".
         "2R\tmaker\tCDS\t8\t10\t.\t-\t0\n";
@@ -78,7 +78,7 @@
         is($tr->{cc}[0]{maa},"P","calculating amino acid change; modified amino acid correct");
         is($tr->{cc}[0]{strand},"-","calculating amino acid change; strand ok");
         is($tr->{cc}[0]{syn},0,"calculating amino acid change; synonymous determination ok");
-        
+
         # syn change
         $pustr=
         "2R\t1\tN\t9\tAAAA\taaaa\n".
@@ -98,8 +98,8 @@
         is($tr->{cc}[0]{maa},"T","calculating amino acid change; modified amino acid correct");
         is($tr->{cc}[0]{strand},"+","calculating amino acid change; strand ok");
         is($tr->{cc}[0]{syn},1,"calculating amino acid change; synonymous determination ok");
-        
-        
+
+
         ##
         ## double SNP
         ##
@@ -127,10 +127,10 @@
         is($tr->{cc}[1]{maa},"T","calculating amino acid change; modified amino acid correct");
         is($tr->{cc}[1]{strand},"+","calculating amino acid change; strand ok");
         is($tr->{cc}[1]{syn},1,"calculating amino acid change; synonymous determination ok");
-        
+
         ##
         ## triple snp
-        ## 
+        ##
         $pustr=
         "2R\t1\tN\t9\tAAAA\taaaa\n".
         "2R\t2\tN\t9\tTTTT\taaaa\n".
@@ -161,9 +161,9 @@
         is($tr->{cc}[2]{maa},"T","calculating amino acid change; modified amino acid correct");
         is($tr->{cc}[2]{strand},"+","calculating amino acid change; strand ok");
         is($tr->{cc}[2]{syn},1,"calculating amino acid change; synonymous determination ok");
-        
-        
-        
+
+
+
         ##
         ## triple SNP minus strand
         ##
@@ -196,11 +196,11 @@
         is($tr->{cc}[2]{strand},"-","calculating amino acid change; strand ok");
         is($tr->{cc}[2]{syn},0,"calculating amino acid change; synonymous determination ok");
     }
-    
-    
+
+
     sub test_load_cds
     {
-        
+
         # illuminator:
         # 1.. fwd strand, first base of frame
         # 2.. fwd strand, second base of frame
@@ -211,7 +211,7 @@
         # 7.. invalid frame, due to overlapping frames
         my $str;
         my $res;
-        
+
         $str=
         "2R\tmaker\tCDS\t3\t5\t.\t+\t0\n".
         "2L\tmaker\tCDS\t3\t5\t.\t-\t0\n".
@@ -226,7 +226,7 @@
         is($res->{'2L'}{'5'},4,"CDS loader; frame correct");
         is($res->{'2L'}{'4'},5,"CDS loader; frame correct");
         is($res->{'2L'}{'3'},6,"CDS loader; frame correct");
-        
+
         not_exists($res->{'3R'}{'3'},"CDS loader correct, no frame at position");
         is($res->{'3R'}{'4'},1,"CDS loader; frame correct");
         is($res->{'3R'}{'5'},2,"CDS loader; frame correct");
@@ -237,7 +237,7 @@
         is($res->{'3L'}{'4'},5,"CDS loader; frame correct");
         is($res->{'3L'}{'3'},6,"CDS loader; frame correct");
         not_exists($res->{'3L'}{'2'},"CDS loader correct, no frame at position");
-        
+
         not_exists($res->{'2R'}{'10'},"CDS loader correct, no frame at position");
         is($res->{'2R'}{'11'},1,"CDS loader; frame correct");
         is($res->{'2R'}{'12'},2,"CDS loader; frame correct");
@@ -248,7 +248,7 @@
         is($res->{'2L'}{'12'},5,"CDS loader; frame correct");
         is($res->{'2L'}{'11'},6,"CDS loader; frame correct");
         not_exists($res->{'2L'}{'10'},"CDS loader correct, no frame at position");
-        
+
         #longer frames
         $str=
         "2R\tmaker\tCDS\t3\t8\t.\t+\t0\n".
@@ -271,7 +271,7 @@
         is($res->{'2L'}{'4'},5,"CDS loader; frame correct");
         is($res->{'2L'}{'3'},6,"CDS loader; frame correct");
         not_exists($res->{'2L'}{'9'},"CDS loader correct, no frame at position");
-        
+
         #overlapping frames - in frame
         $str=
         "2R\tmaker\tCDS\t3\t8\t.\t+\t0\n".
@@ -285,7 +285,7 @@
         is($res->{'2R'}{'7'},2,"CDS loader; frame correct");
         is($res->{'2R'}{'8'},3,"CDS loader; frame correct");
         not_exists($res->{'2R'}{'9'},"CDS loader correct, no frame at position");
-        
+
         $str=
         "2L\tmaker\tCDS\t3\t8\t.\t-\t0\n".
         "2L\tmaker\tCDS\t6\t8\t.\t-\t0\n";
@@ -298,8 +298,8 @@
         is($res->{'2L'}{'4'},5,"CDS loader; frame correct");
         is($res->{'2L'}{'3'},6,"CDS loader; frame correct");
         not_exists($res->{'2L'}{'9'},"CDS loader correct, no frame at position");
-        
-        
+
+
         #overlapping frames - out of frame
         $str=
         "2R\tmaker\tCDS\t3\t11\t.\t+\t0\n".
@@ -317,7 +317,7 @@
         is($res->{'2R'}{'10'},7,"CDS loader; frame correct");
         is($res->{'2R'}{'11'},7,"CDS loader; frame correct");
         not_exists($res->{'2R'}{'12'},"CDS loader correct, no frame at position");
-        
+
         $str=
         "2R\tmaker\tCDS\t3\t11\t.\t+\t0\n".
         "2R\tmaker\tCDS\t3\t7\t.\t+\t2\n";
@@ -333,10 +333,10 @@
         is($res->{'2R'}{'10'},2,"CDS loader; frame correct");
         is($res->{'2R'}{'11'},3,"CDS loader; frame correct");
         not_exists($res->{'2R'}{'12'},"CDS loader correct, no frame at position");
-        
+
 
     }
-    
+
     sub _getcodontable
     {
         return {

@@ -59,9 +59,9 @@ while(my $line=<$ifh>)
 
     # prefilter, without proper parsing of the pileup
     my($chr,$pos)=split/\t/,$line;
-    
+
     my $ispresent=$chrhash->{$chr}{$pos};
-    
+
     if($discardmode)
     {
         # discard everything in the gtf
@@ -92,8 +92,8 @@ exit;
     package Utility;
     use strict;
     use warnings;
-    
-    
+
+
     sub _parsegtf
     {
         my $line=shift;
@@ -102,12 +102,12 @@ exit;
         my $start=$a[3];
         my $end=$a[4];
         my $tfeat=$a[8];
-            
+
         unless($ref or $start or $end or $tfeat)
         {
             die "the following line is not valid";
         }
-        
+
         return
         {
             ref=>$ref,
@@ -116,25 +116,25 @@ exit;
             length=>$end-$start+1
         };
     }
-    
-    
+
+
     sub read_gtf
     {
         my $file=shift;
         open my $ifh,"<",$file or die "Could not open gtf-file";
         my $chrhash={};
-        
+
         print "Parsing gtf file..\n";
         while(my $line=<$ifh>)
         {
             chomp $line;
             next if $line=~m/^##/;
             my $ge=_parsegtf($line);
-        
+
             # update the chromosome hash
             my($chr,$start,$end)=($ge->{ref},$ge->{start},$ge->{end});
-            
-            
+
+
             for(my $i=$start; $i<=$end; $i++)
             {
                 $chrhash->{$chr}{$i}++;
@@ -220,8 +220,5 @@ Per default the discard mode is activated, i.: all regions specified in the gtf-
 
 The memory usage scales linearly with the number of bases covered by gtf-entries. If you get an out of memory exception (eg. malloc) split your gtf file and run the script several times.
 Alternatively if your gtf-file, for example, covers most of the reference genome, you could invert the gtf-file and switch the mode of this script (eg.: from discard to keep)!
-  
+
 =cut
-
-
-

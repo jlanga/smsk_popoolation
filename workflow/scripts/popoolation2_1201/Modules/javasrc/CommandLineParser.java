@@ -2,12 +2,12 @@ import java.util.Arrays;
 import java.util.LinkedList;
 
 
-public class CommandLineParser 
+public class CommandLineParser
 {
-	
+
 	public static void parseArguments(String[] arguments,java.util.logging.Logger logger)
 	{
-	
+
 
     LinkedList<String> args=new LinkedList<String>(Arrays.asList(arguments));
     String input="";
@@ -18,7 +18,7 @@ public class CommandLineParser
     int blockSize=50000;
     boolean help=false;
 
-    
+
     // Parse the command line arguments
     // order does not matter
     while(args.size()>0)
@@ -31,7 +31,7 @@ public class CommandLineParser
         else if(cu.equals("--output"))
         {
             output=args.remove(0);
-        }        
+        }
         else if(cu.equals("--fastq-type"))
         {
             String rawQualEncoding=args.remove(0);
@@ -54,22 +54,22 @@ public class CommandLineParser
         	throw new IllegalArgumentException("Do not recognise argument "+cu);
         }
     }
-        
+
         // If help was requested -> show help message and exit
        if(help)
        {
         	System.out.print(getHelpMessage());
         	System.exit(1);
        }
-        
-        
+
+
         Mpileup2SyncFramework frame= new Mpileup2SyncFramework(input,output,qualEncoding,minimumQual,blockSize,threads,logger);
         frame.run();
-        
-        
+
+
     }
 
-	
+
 	private static QualityEncoding translateQualityEncoding(String rawQuality)
 	{
 		if(rawQuality.toLowerCase().equals("sanger")){
@@ -84,7 +84,7 @@ public class CommandLineParser
 			throw new IllegalArgumentException("Do not recognise quality encoding "+ rawQuality);
 		}
 	}
-	
+
 	private static String getHelpMessage(){
 		StringBuilder sb=new StringBuilder();
 		sb.append("mpileup2sync: converts a mpileup file into a synchronized file\n");
@@ -96,5 +96,5 @@ public class CommandLineParser
 		sb.append("--help					display the help pages\n");
 		return sb.toString();
 	}
-	
+
 }

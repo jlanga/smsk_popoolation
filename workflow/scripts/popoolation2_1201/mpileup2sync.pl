@@ -80,7 +80,7 @@ while(my $l=<$ifh>)
         run_PileupParserTests();
         exit;
     }
-    
+
 }
 
 
@@ -110,22 +110,22 @@ the minimum quality of a base to be reported; default=20
 
 =item B<--fastq-type>
 
-The encoding of the quality characters; Must either be 'sanger' or 'illumina'; 
+The encoding of the quality characters; Must either be 'sanger' or 'illumina';
 
  Using the notation suggested by Cock et al (2009) the following applies:
  'sanger'   = fastq-sanger: phred encoding; offset of 33
  'solexa'   = fastq-solexa: -> NOT SUPPORTED
  'illumina' = fastq-illumina: phred encoding: offset of 64
- 
+
  See also:
  Cock et al (2009) The Sanger FASTQ file format for sequecnes with quality socres,
- and the Solexa/Illumina FASTQ variants; 
+ and the Solexa/Illumina FASTQ variants;
 
 default=illumina
 
 =item B<--test>
 
-Run the unit tests for this script. 
+Run the unit tests for this script.
 
 =item B<--help>
 
@@ -140,7 +140,7 @@ Combine different pileup files
 =head2 INPUT
 
 a mpileup file as produced by samtools, for example:
- 
+
  YHet    4067    N       9       ttttTtttt       aaab_Za_b       2       tt      `b      2       tt      \b
  YHet    4068    N       9       c$cccCcccc      a_a_a]a_`       2       cc      ab      2       cc      `b
  YHet    4069    N       8       aaaAaaaa        ]aaa_^__        2       aa      ab      2       aa      \b
@@ -150,21 +150,21 @@ a mpileup file as produced by samtools, for example:
 
 Output is a single tab delimited file which contains a lightwight representation of every mpileup file.
 Every pileup file represents a population and will be parsed into a list of A-count:T-count:C-count:G-count:N-count:*-count
-The order of samples as in the mpileup file will be preserved, i.e.: the first population in the mpileup file will be the first population in the synchronized file and so on. 
+The order of samples as in the mpileup file will be preserved, i.e.: the first population in the mpileup file will be the first population in the synchronized file and so on.
 
  Unknown_group_104	5943	N	0:0:10:0:0:0	0:0:10:0:0:0	0:0:10:0:0:0
  Unknown_group_104	5944	N	0:8:0:0:0:0	0:8:0:0:0:0	0:8:0:0:0:0
  Unknown_group_104	5945	N	0:0:0:8:0:0	0:0:0:8:0:0	0:0:0:8:0:0
  Unknown_group_104	5946	N	0:0:9:0:0:0	0:0:9:0:0:0	0:0:9:0:0:0
  Unknown_group_104	5947	N	0:7:0:0:0:0	0:7:0:0:0:0	0:7:0:0:0:0
- 
+
  col1: reference contig (chromosome)
  col2: position in the reference contig
  col3: reference character
  col4: population 1
  col5: population 2
  coln: population n
- 
+
  population data are in the form
  A:T:C:G:N:*
  A: count of character A

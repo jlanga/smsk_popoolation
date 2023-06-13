@@ -67,18 +67,18 @@ open my $ofh, ">",$output or die "Could not open output file";
 while(my $line=<$ifh>)
 {
     chomp $line;
-    
+
     # $p=pos, chr, refc, totcov, eucov, A, T, C, G, del, N, iscov, issnp, ispuresnp
     my $p=$pp->($line);
-    
+
     # check for coverage mincoverage, maxcoverage
     next unless $p->{iscov};
-    
+
     # subsample
     my $newnucs=$subs->($p);
     next unless $newnucs;
     my $newqual=$qualc x length($newnucs);
-    
+
     my @toprint=($p->{chr},$p->{pos},$p->{refc},length($newnucs),$newnucs,$newqual);
     print $ofh join("\t",@toprint)."\n";
 }
@@ -92,12 +92,12 @@ exit;
     package Utility;
     use strict;
     use warnings;
-    
+
     sub get_subsampler
     {
         my $mode=shift;
         my $targetcoverage=shift;
-    
+
         my $freqcalculator;
         if($mode eq "withreplace")
         {
@@ -115,29 +115,29 @@ exit;
         {
             die die "unknown mode $mode";
         }
-        
-        
+
+
         return sub
         {
             my $p=shift;
 
- 
+
             # calculate the new frequencies using the preset frequency calculator (random sampling method)
             my $toret=$freqcalculator->($targetcoverage,$p->{A},$p->{T},$p->{C},$p->{G},$p->{del},$p->{N});
             return $toret;
         }
-        
+
     }
-    
+
     sub _freq_withoutreplacement
     {
         my($targetcoverage,$a,$t,$c,$g,$del,$n)=@_;
         my $temp="A"x$a."T"x$t."C"x$c."G"x$g."*"x$del."N"x$n;
         my $cov=length($temp);
         die "Coverage $cov smaller than targetcoverage $targetcoverage" if $cov < $targetcoverage;
-        
+
         my @ar=split //,$temp;
-        
+
         my @novel=();
         for my $i (1..$targetcoverage)
         {
@@ -147,28 +147,28 @@ exit;
             my $element=splice(@ar,$index,1);
             push @novel,$element;
         }
-        
+
         my $toret=join("",@novel);
         return $toret;
     }
-    
+
     sub _freq_withreplacement
     {
         my($targetcoverage,$a,$t,$c,$g,$del,$n)=@_;
         my $cov=$a+$t+$c+$g+$del+$n;
         die"Coverage $cov is smaller than the $targetcoverage\n"if $cov < $targetcoverage;
         my($af,$tf,$cf,$gf,$delf,$nf)=($a/$cov,$t/$cov,$c/$cov,$g/$cov,$del/$cov,$n/$cov);
-        
-        
+
+
             my $ab=$af;
             my $tb=$af+$tf;
             my $cb=$af+$tf+$cf;
             my $gb=$af+$tf+$cf+$gf;
             my $nb=$af+$tf+$cf+$gf+$nf;
             my $db=1;
-            
+
             my($an,$tn,$cn,$gn,$nn,$dn)=(0,0,0,0,0,0);
-            
+
             for my $i (1..$targetcoverage)
             {
                 my $r=rand();
@@ -200,26 +200,26 @@ exit;
                 {
                     die "not valid random number $r must be 0<= random < 1"
                 }
-                
+
             }
             return "A"x$an."T"x$tn."C"x$cn."G"x$gn."*"x$dn."N"x$nn;
     }
-    
-    
+
+
     sub _get_fraction_sample
     {
         my($targetcoverage,$a,$t,$c,$g,$del,$n)=@_;
         my $cov=$a+$t+$c+$g+$del+$n;
         die"Coverage $cov is smaller than the $targetcoverage\n"if $cov < $targetcoverage;
-        
+
         my($af,$tf,$cf,$gf,$delf,$nf)=($a/$cov,$t/$cov,$c/$cov,$g/$cov,$del/$cov,$n/$cov);
-        
+
         my $itercoverage=$targetcoverage;
         my ($an,$tn,$cn,$gn,$deln,$nn)=(_intround($af*$itercoverage), _intround($tf*$itercoverage), _intround($cf*$itercoverage),
                                              _intround($gf*$itercoverage), _intround($delf*$itercoverage), _intround($nf*$itercoverage));
         my  $activecoverage=$an+$tn+$cn+$gn+$deln+$nn;
-        
-        
+
+
         # ingenious first increase the coverage, than try to decrease it, in case it is to small fill it up with N
         while($activecoverage<$targetcoverage)
         {
@@ -241,14 +241,14 @@ exit;
         {
             $str.="N";
         }
-        
-        
-        return $str; 
+
+
+        return $str;
     }
 
 
-    
-    
+
+
     sub get_quality_char
     {
         my $encoding=shift;
@@ -257,15 +257,15 @@ exit;
             "illumina"      =>  sub{chr(shift(@_)+64)},
             "sanger"        =>  sub{chr(shift(@_)+33)}
         };
-        
+
         my $conv=$qualhash->{$encoding};
         die "No quality converter for $encoding" unless $conv;
         return $conv->($minqual);
     }
-    
+
     sub _intround
     {
-        
+
         my $i=shift;            #2.5
         my $integer=int($i);    #2
         my $rest=$i-$integer;   #0.5
@@ -277,8 +277,8 @@ exit;
             return $integer+1;  #3
         }
     }
-    
-    
+
+
 }
 
 
@@ -313,16 +313,16 @@ Reduce the coverage of the pileup-file to the here provided value; Is also actin
 The maximum coverage; Entries having a larger coverage than this will be ignored (without subsampling); Mandatory
 
 =item B<--fastq-type>
-The encoding of the quality characters; Must either be 'sanger' or 'illumina'; 
+The encoding of the quality characters; Must either be 'sanger' or 'illumina';
 
  Using the notation suggested by Cock et al (2009) the following applies:
  'sanger'   = fastq-sanger: phred encoding; offset of 33
  'solexa'   = fastq-solexa: -> NOT SUPPORTED
  'illumina' = fastq-illumina: phred encoding: offset of 64
- 
+
  See also:
  Cock et al (2009) The Sanger FASTQ file format for sequecnes with quality socres,
- and the Solexa/Illumina FASTQ variants; 
+ and the Solexa/Illumina FASTQ variants;
 
 default=illumina
 
@@ -333,10 +333,10 @@ The minimum quality; Bases in the pileup having a lower quality than this will b
 =item B<--method>
 
 Specify the method for subsampling of the synchronized file. Either: withreplace, withoutreplace, fraction; Mandatory
- 
+
  withreplace: subsample with replacement
  withoutreplace: subsample without replacement
- fraction: calculate the exact fraction of the allele frequencies and linearly scale them to the targetcoverage with rounding to the next integer; 
+ fraction: calculate the exact fraction of the allele frequencies and linearly scale them to the targetcoverage with rounding to the next integer;
 
 =item B<--help>
 
@@ -371,8 +371,5 @@ The script proceeds in the following ways. First the pileup is filtered for qual
 Second pileup position having a coverage higher than the maximum coverage are entirely discarded. In the third step the coverage is reduced to the targetcoverage by one of the three supported methods
 Note that the base quality of the output will be the minimum-quality for all bases!
 
-  
+
 =cut
-
-
-

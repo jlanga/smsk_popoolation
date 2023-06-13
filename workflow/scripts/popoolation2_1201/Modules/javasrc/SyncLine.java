@@ -14,7 +14,7 @@ public class SyncLine {
 		this.refChar=refChar;
 		this.populations=new ArrayList<SyncPop>(populations);
 	}
-	
+
 	public String chromosome()
 	{
 		return this.chromosome;
@@ -32,4 +32,3 @@ public class SyncLine {
 		return new ArrayList<SyncPop>(this.populations);
 	}
 }
-

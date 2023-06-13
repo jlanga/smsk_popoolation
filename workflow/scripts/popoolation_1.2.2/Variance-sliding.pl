@@ -32,7 +32,7 @@ my $uncorrected=0;
 
 # --measure pi --help --pool-size 100 --fastq-type sanger --min-count 1 --min-coverage 4 --max-coverage 400 --min-covered-fraction 0.7 --window-size 100 --step-size 100 --input /Users/robertkofler/dev/testfiles/2R_sim_1000000.pileup --output /Users/robertkofler/dev/testfiles/output/test.pi --snp-output /Users/robertkofler/dev/testfiles/output/test.snps
 # --measure theta --pool-size 100 --fastq-type sanger --min-count 1 --min-coverage 2 --max-coverage 400 --min-covered-fraction 0.5 --window-size 100 --step-size 100 --input /Volumes/Volume_4/pablo/Sakton_Merged_MQ20-resorted.pileup --output /Volumes/Volume_4/pablo/sakto-out
-#--measure pi --region 2R:150-500 --pool-size 100 --fastq-type sanger --min-count 1 --min-coverage 4 --max-coverage 400 --min-covered-fraction 0.7 --window-size 100 --step-size 100 --input /Users/robertkofler/dev/testfiles/2R_sim_1000000.pileup --output /Users/robertkofler/dev/testfiles/output/test.pi 
+#--measure pi --region 2R:150-500 --pool-size 100 --fastq-type sanger --min-count 1 --min-coverage 4 --max-coverage 400 --min-covered-fraction 0.7 --window-size 100 --step-size 100 --input /Users/robertkofler/dev/testfiles/2R_sim_1000000.pileup --output /Users/robertkofler/dev/testfiles/output/test.pi
 
 my $measure="";
 
@@ -119,14 +119,14 @@ while(my $win=$pileslider->nextWindow())
     my $data=$win->{data};
     my $snpcount=$win->{count_snp};
     my $covercount=$win->{count_covered};
-    
+
     print "Processing window: $chr:$win->{start}-$win->{end}\n";
     # writer snps
     $snpwriter->($win) if $snpwriter;
-    
-    
+
+
     my $coveredFraction=$covercount/$window;
-    
+
     my $snps=[];
     foreach(@$data)
     {
@@ -134,15 +134,15 @@ while(my $win=$pileslider->nextWindow())
     }
 
     my $meas=0;
-    
+
     $meas=$varianceCalculator->calculate_measure($measure,$snps,$covercount);
     $meas=sprintf("%.9f",$meas);
-    
+
     $meas="na" if $coveredFraction < $minCoveredFraction;
-    
+
     $coveredFraction=sprintf("%.3f",$coveredFraction);
     print $ofh "$chr\t$middle\t$snpcount\t$coveredFraction\t$meas\n";
-    
+
 }
 
 close $ofh;
@@ -152,17 +152,17 @@ exit;
     use warnings;
     use strict;
     package PileupRegionSlider;
-    
+
     sub new
     {
         my $class=shift;
         my $pileupslider=shift;
         my $region=shift;
-        
-        
+
+
         die "Region $region wrong format; has to be chr:start-end" unless $region=~m/^(\w+):(\d+)-(\d+)$/;
         my($chr,$start,$end) = ($1,$2,$3);
-        
+
         my $item=
         {
             ps=>$pileupslider,
@@ -170,52 +170,52 @@ exit;
             start=>$start,
             end=>$end
         };
-        
+
         my $self= bless $item, __PACKAGE__;
         $self->_spoolForward();
-        
+
         return $self;
-        
-        
+
+
     }
-    
+
     sub _spoolForward
     {
         my $self=shift;
         my $fh=$self->{ps}{fh};
         my $chr=$self->{chr};
         my $start=$self->{start};
-        
-        
+
+
         while(my $l=<$fh>)
         {
             my ($achr,$apos)=split /\t/,$l;
-            
+
             if($achr eq $chr and $apos>=$start)
             {
                 $self->{ps}->_bufferline($l);
                 last;
             }
         }
-        
+
         $self->{ps}{lower}=$start;
         $self->{ps}{upper}=$start+$self->{ps}{window};
     }
-    
 
-    
+
+
     sub nextWindow
     {
         my $self=shift;
         my $win=$self->{ps}->nextWindow();
-        
+
         return undef unless $win;
         return undef unless $win->{chr} eq $self->{chr};
         return undef if $win->{start} >$self->{end};
         return $win;
     }
-    
-    
+
+
 }
 
 
@@ -234,9 +234,9 @@ exit;
         my $window=shift;
         my $step=shift;
         my $pp=shift;
-        
+
         open my $fh,"<$file" or die "Could not open file handle";
-        
+
         return bless {
             lower=>0,
             upper=>$window,
@@ -249,21 +249,21 @@ exit;
             buffer=>[]
         },__PACKAGE__;
     }
-    
-    
+
+
     sub nextWindow
     {
         my $self=shift;
         my $pp=$self->{pp};
-        
+
         #get the current window, and the current chromosome
         my $curwin=$self->{curwin};
-        
+
         my $curChr="";
         $curChr=$curwin->[0]{chr} if @$curwin;
-        
+
         my $resetchr=0;
-        
+
         # empty unnecessary entries
         EMPTY: while(@$curwin)
         {
@@ -273,17 +273,17 @@ exit;
                 unshift @$curwin, $e;
                 last EMPTY;
             }
-            
+
         }
-        
+
         # fill with novel entries
         my $line;
         FILL:while($line=$self->_nextline)
         {
             my $e=$pp->($line);
             $curChr=$e->{chr} unless $curChr;
-            
-            
+
+
             if($e->{chr} eq $curChr && $e->{pos} <= $self->{upper})
             {
                 push @$curwin,$e;
@@ -295,12 +295,12 @@ exit;
                 last FILL;
             }
         }
-        
+
         return undef unless $curChr;
-        
-        
+
+
         my $toret=_annotateWindow($curwin,$curChr,$self->{lower},$self->{upper},$self->{window});
-        
+
         if($resetchr or not defined($line))
         {
             # we transgressed the boundaries to the next chromosome
@@ -320,9 +320,9 @@ exit;
 
         return $toret;
     }
-    
-    
-    
+
+
+
     sub _annotateWindow
     {
         my $curwin=shift;
@@ -330,7 +330,7 @@ exit;
         my $start=shift;
         my $end=shift;
         my $window=shift;
-        
+
         my $snps=0;
         my $aboveCoverage=0;
         foreach(@$curwin)
@@ -348,22 +348,22 @@ exit;
             count_snp=>$snps,
             count_covered=>$aboveCoverage,
             window=>$window,
-            data=>$curwin      
+            data=>$curwin
         };
     }
-    
-    
-    
+
+
+
     sub _nextline
     {
         my $self=shift;
         my $fh=$self->{fh};
         my $buffer=$self->{buffer};
-        
+
         return shift @$buffer if @$buffer;
         return <$fh>;
     }
-    
+
     sub _bufferline
     {
         my $self=shift;
@@ -386,8 +386,8 @@ exit;
     use Test::PileupParser;
     use Pileup;
     use Test;
-    
-    
+
+
     sub runTests
     {
         run_PileupParserTests();
@@ -396,8 +396,8 @@ exit;
         run_VarianceTests();
         exit;
     }
-    
-    
+
+
     sub _getPileupSliderForString
     {
         my $str=shift;
@@ -407,14 +407,14 @@ exit;
         my $mincov=shift;
         my $minqual=shift;
         my $maxcov=shift;
-        
+
         $maxcov||=1000000;
-        
+
         # qualencoding,mincount,mincov,maxcov,minqual
         my $pp=get_pileup_parser("illumina",$mincount,$mincov,$maxcov,$minqual);
-        
+
         open my $ofh,"<",\$str or die "could not open string filehandle";
-        
+
         my $cr=bless {
             lower=>0,
             upper=>$window,
@@ -427,9 +427,9 @@ exit;
         },"PileupSlider";
         return $cr;
     }
-    
 
-    
+
+
     sub testPileupSlider
     {
         my $str;
@@ -451,7 +451,7 @@ exit;
 
         $pilsl=_getPileupSliderForString($str,3,1,2,4,20);
         $win=$pilsl->nextWindow();
-        
+
         is($win->{chr},"2L","PileupSlider; chromosome ok");
         is($win->{window},3,"PileupSlider; window ok");
         is($win->{count_covered},3,"PileupSlider; coverage count ok");
@@ -464,7 +464,7 @@ exit;
         is($win->{data}[2]{T},0,"PileupSlider; allele count is ok");
         is($win->{data}[2]{issnp},0,"PileupSlider; issnp is ok");
         is($win->{data}[2]{iscov},1,"PileupSlider; iscov is ok");
-        
+
         $win=$pilsl->nextWindow();
         is($win->{window},3,"PileupSlider; window ok");
         is($win->{chr},"2L","PileupSlider; chromosome ok");
@@ -473,12 +473,12 @@ exit;
         is($win->{start},1,"PileupSlider; start position is ok");
         is($win->{end},4,"PileupSlider; end position is ok");
         is($win->{middle},3,"PileupSlider; end position is ok");
-        
+
         is($win->{data}[1]{G},4,"PileupSlider; allele count is ok");
         is($win->{data}[1]{T},0,"PileupSlider; allele count is ok");
         is($win->{data}[2]{C},2,"PileupSlider; allele count is ok");
         is($win->{data}[2]{A},0,"PileupSlider; allele count is ok");
-        
+
         $win=$pilsl->nextWindow();
         is($win->{window},3,"PileupSlider; window ok");
         is($win->{chr},"2L","PileupSlider; chromosome ok");
@@ -488,7 +488,7 @@ exit;
         is($win->{end},5,"PileupSlider; end position is ok");
         is($win->{data}[0]{G},4,"PileupSlider; allele count is ok");
         is($win->{data}[0]{T},0,"PileupSlider; allele count is ok");
-        
+
         $win=$pilsl->nextWindow();
         is($win->{window},3,"PileupSlider; window ok");
         is($win->{chr},"chr1","PileupSlider; chromosome ok");
@@ -500,7 +500,7 @@ exit;
         is($win->{data}[0]{T},0,"PileupSlider; allele count is ok");
         is($win->{data}[0]{issnp},0,"PileupSlider; issnp is ok");
         is($win->{data}[0]{iscov},1,"PileupSlider; iscov is ok");
-        
+
         $win=$pilsl->nextWindow();
         is($win->{chr},"chr2","PileupSlider; chromosome ok");
         is($win->{count_covered},2,"PileupSlider; coverage count ok");
@@ -511,17 +511,17 @@ exit;
         is($win->{data}[1]{T},0,"PileupSlider; allele count is ok");
         is($win->{data}[1]{G},2,"PileupSlider; allele count is ok");
         is($win->{data}[1]{A},3,"PileupSlider; allele count is ok");
-        
+
         $win=$pilsl->nextWindow();
         is($win->{chr},"chr4","PileupSlider; chromosome ok");
         is($win->{count_covered},1,"PileupSlider; coverage count ok");
         is($win->{count_snp},1,"PileupSlider; SNP count is ok");
-        
+
         $win=$pilsl->nextWindow();
         not_exists($win,"PileupSlider; final window is emtpy");
         $win=$pilsl->nextWindow();
         not_exists($win,"PileupSlider; final window is still emtpy");
-        
+
         # weird cases; * = deletion and N
         $str=
         "2L\t1\tA\t9\tCCCCCAAAA\tTTTTTTTTT\n".
@@ -531,7 +531,7 @@ exit;
         ;
         $pilsl=_getPileupSliderForString($str,3,1,2,4,20);  # win, step, mincount, mincov, minqual
         $win=$pilsl->nextWindow();
-        
+
         is($win->{chr},"2L","PileupSlider; chromosome ok");
         is($win->{window},3,"PileupSlider; window ok");
         is($win->{count_covered},3,"PileupSlider; coverage count ok");
@@ -550,8 +550,8 @@ exit;
         is($win->{data}[0]{ispuresnp},1,"PileupSlider; pure snp-identification is ok");
         is($win->{data}[1]{ispuresnp},0,"PileupSlider; pure snp-identification is ok");
         is($win->{data}[2]{ispuresnp},1,"PileupSlider; pure snp-identification is ok");
-        
-        
+
+
         $win=$pilsl->nextWindow();
         is($win->{chr},"2L","PileupSlider; chromosome ok");
         is($win->{window},3,"PileupSlider; window ok");
@@ -568,7 +568,7 @@ exit;
         is($win->{data}[0]{totcov},8,"PileupSlider; total coverage is ok");
         is($win->{data}[1]{totcov},8,"PileupSlider; total coverage is ok");
         is($win->{data}[2]{totcov},10,"PileupSlider; total coverage is ok");
-        
+
     }
 }
 
@@ -613,19 +613,19 @@ Provide a subregion in which the measure should be calculated using a sliding wi
 The size of the pool which has been sequenced. e.g.: 500; Mandatory
 
 =item B<--fastq-type>
-The encoding of the quality characters; Must either be 'sanger' or 'illumina'; 
+The encoding of the quality characters; Must either be 'sanger' or 'illumina';
 
  Using the notation suggested by Cock et al (2009) the following applies:
  'sanger'   = fastq-sanger: phred encoding; offset of 33
  'solexa'   = fastq-solexa: -> NOT SUPPORTED
  'illumina' = fastq-illumina: phred encoding: offset of 64
- 
+
  See also:
  Cock et al (2009) The Sanger FASTQ file format for sequecnes with quality socres,
- and the Solexa/Illumina FASTQ variants; 
+ and the Solexa/Illumina FASTQ variants;
 
 default=illumina
- 
+
 =item B<--min-count>
 
 The minimum count of the minor allele. This is important for the identification of SNPs; default=2
@@ -664,7 +664,7 @@ Flag; Dissable correction factors; Calculates Pi/Theta/Tajima's D in the classic
 
 =item B<--test>
 
-Run the unit tests for this script. 
+Run the unit tests for this script.
 
 =item B<--help>
 
@@ -745,7 +745,7 @@ The pileup file may contain deletions which can be recognised by the symbol '*'.
 The sum of the bases A,T,C,G is used as coverage (ignoring N's).
 
 The script will be slow at the beginning but speed up steadily. Calculating the correction factors for Tajima's Pi, Watterson's Theta and Tajima's D is computationally intense.
-However, it needs only to be done a single time. The once calculated correction factors will be stored in hashes where they can be reused when required, this speeds up computation. 
- 
- 
+However, it needs only to be done a single time. The once calculated correction factors will be stored in hashes where they can be reused when required, this speeds up computation.
+
+
 =cut

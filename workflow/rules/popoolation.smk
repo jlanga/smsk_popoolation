@@ -20,23 +20,17 @@ def get_popoolation_min_coverage(wildcards):
 
 def get_pool_size(wildcards):
     return (
-        samples
-        [samples["population"] == wildcards.population]
-        [["pool_size"]]
+        samples[samples["population"] == wildcards.population][["pool_size"]]
         .drop_duplicates()
-        .values
-        .tolist()[0][0]
+        .values.tolist()[0][0]
     )
 
 
 def get_popoolation_max_coverage(wildcards):
     return (
-        samples
-        [samples["population"] == wildcards.population]
-        [["max_coverage"]]
+        samples[samples["population"] == wildcards.population][["max_coverage"]]
         .drop_duplicates()
-        .values
-        .tolist()[0]
+        .values.tolist()[0]
     )
 
 
@@ -45,28 +39,23 @@ rule popoolation_variance_sliding:
     Run popoolation's Variance sliding script: Tajima's D, Tajima's Theta or Pi
     """
     input:
-        mpileup_gz = MPILEUP_SUB \
-            + "{population}/{population}.{chromosome}.mpileup.gz"
+        mpileup_gz=MPILEUP_SUB + "{population}/{population}.{chromosome}.mpileup.gz",
     output:
-        snps = TABLE_POPOOLATION \
-            + "{analysis}/{population}.{chromosome}.{analysis}.snps",
-        vs = TABLE_POPOOLATION \
-            + "{analysis}/{population}.{chromosome}.{analysis}.tsv"
+        snps=TABLE_POPOOLATION + "{analysis}/{population}.{chromosome}.{analysis}.snps",
+        vs=TABLE_POPOOLATION + "{analysis}/{population}.{chromosome}.{analysis}.tsv",
     params:
-        measure = "{analysis}",
-        min_count = get_popoolation_min_count,
-        min_coverage = get_popoolation_min_coverage,
-        max_coverage = get_popoolation_max_coverage,
-        min_covered_fraction = get_popoolation_min_covered_fraction,
-        pool_size = get_pool_size,
-        step_size = get_popoolation_step_size,
-        window_size = get_popoolation_window_size
+        measure="{analysis}",
+        min_count=get_popoolation_min_count,
+        min_coverage=get_popoolation_min_coverage,
+        max_coverage=get_popoolation_max_coverage,
+        min_covered_fraction=get_popoolation_min_covered_fraction,
+        pool_size=get_pool_size,
+        step_size=get_popoolation_step_size,
+        window_size=get_popoolation_window_size,
     log:
-        TABLE_POPOOLATION \
-            + "{analysis}/{population}.{chromosome}.{analysis}.log"
+        TABLE_POPOOLATION + "{analysis}/{population}.{chromosome}.{analysis}.log",
     benchmark:
-        TABLE_POPOOLATION \
-            + "{analysis}/{population}.{chromosome}.{analysis}.json"
+        TABLE_POPOOLATION + "{analysis}/{population}.{chromosome}.{analysis}.json"
     conda:
         "../envs/popoolation.yml"
     shell:
@@ -92,22 +81,18 @@ rule popoolation_merge_variance_sliding:
     """Merge results across chromosomes"""
     input:
         expand(
-            TABLE_POPOOLATION +
-            "{analysis}/{population}.{chromosome}.{analysis}.tsv",
+            TABLE_POPOOLATION + "{analysis}/{population}.{chromosome}.{analysis}.tsv",
             chromosome=CHROMOSOMES,
             population=["{population}"],
-            analysis=["{analysis}"]
-        )
+            analysis=["{analysis}"],
+        ),
     output:
-        protected(
-            PLOT_POPOOLATION + "{analysis}/{population}.{analysis}.tsv.gz"
-        )
+        protected(PLOT_POPOOLATION + "{analysis}/{population}.{analysis}.tsv.gz"),
     log:
-        PLOT_POPOOLATION + "{analysis}/{population}.{analysis}.merge_vs.log"
+        PLOT_POPOOLATION + "{analysis}/{population}.{analysis}.merge_vs.log",
     benchmark:
         PLOT_POPOOLATION + "{analysis}/{population}.{analysis}.merge_vs.json"
-    threads:
-        8
+    threads: 8
     conda:
         "../envs/popoolation.yml"
     shell:
@@ -120,18 +105,14 @@ rule popoolation_merge_snps:
     """Merge snps"""
     input:
         expand(
-            TABLE_POPOOLATION +
-            "{analysis}/{population}.{chromosome}.{analysis}.snps",
+            TABLE_POPOOLATION + "{analysis}/{population}.{chromosome}.{analysis}.snps",
             chromosome=CHROMOSOMES,
             population=["{population}"],
-            analysis=["{analysis}"]
-        )
+            analysis=["{analysis}"],
+        ),
     output:
-        protected(
-            PLOT_POPOOLATION + "{analysis}/{population}.{analysis}.snps.gz"
-        )
-    threads:
-        8
+        protected(PLOT_POPOOLATION + "{analysis}/{population}.{analysis}.snps.gz"),
+    threads: 8
     conda:
         "../envs/popoolation.yml"
     shell:
@@ -141,13 +122,11 @@ rule popoolation_merge_snps:
 rule popoolation_plot:
     """Plot a genome-wide result's from variance sliding"""
     input:
-        tsv_gz = PLOT_POPOOLATION + "{analysis}/{population}.{analysis}.tsv.gz"
+        tsv_gz=PLOT_POPOOLATION + "{analysis}/{population}.{analysis}.tsv.gz",
     output:
-        pdf = protected(
-            PLOT_POPOOLATION + "{analysis}/{population}.{analysis}.pdf"
-        )
+        pdf=protected(PLOT_POPOOLATION + "{analysis}/{population}.{analysis}.pdf"),
     log:
-        PLOT_POPOOLATION + "{analysis}/{population}.{analysis}.plot.log"
+        PLOT_POPOOLATION + "{analysis}/{population}.{analysis}.plot.log",
     benchmark:
         PLOT_POPOOLATION + "{analysis}/{population}.{analysis}.plot.json"
     conda:
@@ -163,30 +142,23 @@ rule popoolation_plot:
 
 rule popoolation_d:
     input:
-        expand(
-            PLOT_POPOOLATION + "D/{population}.D.pdf",
-            population=POPULATIONS
-        )
+        expand(PLOT_POPOOLATION + "D/{population}.D.pdf", population=POPULATIONS),
 
 
 rule popoolation_pi:
     input:
-        expand(
-            PLOT_POPOOLATION + "pi/{population}.pi.pdf",
-            population=POPULATIONS
-        )
+        expand(PLOT_POPOOLATION + "pi/{population}.pi.pdf", population=POPULATIONS),
 
 
 rule popoolation_theta:
     input:
         expand(
-            PLOT_POPOOLATION + "theta/{population}.theta.pdf",
-            population=POPULATIONS
-        )
+            PLOT_POPOOLATION + "theta/{population}.theta.pdf", population=POPULATIONS
+        ),
 
 
 rule popoolation:
     input:
         rules.popoolation_d.input,
         rules.popoolation_pi.input,
-        rules.popoolation_theta.input
+        rules.popoolation_theta.input,

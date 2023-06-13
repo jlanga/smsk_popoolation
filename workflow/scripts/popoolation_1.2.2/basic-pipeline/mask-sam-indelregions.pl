@@ -59,20 +59,20 @@ while(my $line=<$ifh>)
         next;
     }
     $count_total++;
-    
+
     my @a=split /\t/,$line;
     unless($a[5]=~/[DI]/)
     {
         print $ofh "$line\n";
         next;
     }
-    
+
     my $cigar=$a[5];
     my $seq=$a[9];
-    
+
     my $maskedseq=Utility::mask_sequence($cigar,$seq,$maskregion);
     $count_indel++;
-    
+
     $a[9]=$maskedseq;
     my $newline=join("\t",@a);
     print $ofh "$newline\n";
@@ -89,18 +89,18 @@ exit;
     package Utility;
     use strict;
     use warnings;
-    
+
     sub mask_sequence
     {
         my $cigar=shift;
         my $seq=shift;
         my $maskregion=shift;
-        
+
         my $orileng=length($seq);
-    
+
         # indelpositions
         my $indelpositions=Utility::get_indel_positions($cigar);
-        
+
         # masking and control
         my $maskedseq=Utility::_mask_sequence_from_indels($seq,$indelpositions,$maskregion);
         my $maskleng=length($maskedseq);
@@ -115,7 +115,7 @@ exit;
         my $indels=shift;
         my $tomask=shift;
         my $last=length($seq)-1;
-    
+
         my $masked=$seq;
         foreach my $id(@$indels)
         {
@@ -127,15 +127,15 @@ exit;
             $start=0 if $start<0;
             $end=$last if $end>$last;
             my $leng=$end-$start+1;
-            
+
             my $toreplace ="N"x$leng;
-            
+
             substr($masked,$start,$leng,$toreplace);
-            
+
         }
-    return $masked;        
+    return $masked;
     }
-    
+
     sub get_indel_positions
     {
         my $cigar=shift;
@@ -143,7 +143,7 @@ exit;
         my (@e)=$cigar=~/(\d+[MSDIN])/g;
         my $indels=[];
         my $runningcounter=0;
-        
+
         foreach my $p (@e)
         {
             if($p=~/^(\d+)[SM]$/)
@@ -190,48 +190,48 @@ exit;
         test_masking_from_cigar();
         exit;
     }
-    
+
     sub test_masking_from_cigar
     {
 
         my $masked;
-        
+
         $masked=Utility::mask_sequence("3M","AAA",1);
         is($masked,"AAA","masking algorithm: masking ok");
-        
+
         $masked=Utility::mask_sequence("2M3D2M","AAAA",1);
         is($masked,"ANNA","masking algorithm: masking ok");
-        
+
         $masked=Utility::mask_sequence("2M2I2M","AAAAAA",1);
         is($masked,"ANNNNA","masking algorithm: masking ok");
-        
+
         $masked=Utility::mask_sequence("3D4M","AAAA",1);
         is($masked,"NAAA","masking algorithm: masking ok");
-        
+
         $masked=Utility::mask_sequence("4M1D","AAAA",1);
         is($masked,"AAAN","masking algorithm: masking ok");
-        
+
         $masked=Utility::mask_sequence("1I3M","AAAA",1);
         is($masked,"NNAA","masking algorithm: masking ok");
-        
+
         $masked=Utility::mask_sequence("3M1I","AAAA",1);
         is($masked,"AANN","masking algorithm: masking ok");
-        
+
         $masked=Utility::mask_sequence("5M1D5M","AAAAATTTTT",2);
         is($masked,"AAANNNNTTT","masking algorithm: masking ok");
-        
+
         $masked=Utility::mask_sequence("5M1D1M1D4M","AAAAATTTTT",2);
         is($masked,"AAANNNNNTT","masking algorithm: masking ok");
-        
+
         $masked=Utility::mask_sequence("5M1D1M1I3M","AAAAATTTTT",2);
         is($masked,"AAANNNNNNT","masking algorithm: masking ok");
-        
+
         $masked=Utility::mask_sequence("4M1I1M1D4M","AAAAATTTTT",2);
         is($masked,"AANNNNNNTT","masking algorithm: masking ok");
-        
-        
+
+
         my $bla=0;
-        
+
     }
 
 }
@@ -277,8 +277,5 @@ Display help for this script
 
 =head2 Output sam
 
-  
+
 =cut
-
-
-

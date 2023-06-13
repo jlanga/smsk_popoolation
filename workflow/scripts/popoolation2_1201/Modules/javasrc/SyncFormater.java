@@ -1,6 +1,6 @@
 
 public class SyncFormater {
-	
+
 	public static String formatSync(SyncLine sl)
 	{
 		StringBuilder sb=new StringBuilder();

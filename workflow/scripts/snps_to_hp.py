@@ -14,7 +14,7 @@ def get_blocks(stdin):
     """
     block = []
     for line in stdin:
-        if block and line.startswith('>'):
+        if block and line.startswith(">"):
             yield block
             block = []
         block.append(line.strip())
@@ -34,7 +34,6 @@ def compute_hp(block):
     sum_minor = 0
 
     for line in block:
-
         if not line:
             break
 
@@ -48,7 +47,7 @@ def compute_hp(block):
     pooledh = "NA"
 
     if sum_major > 0 and sum_minor > 0:
-        pooledh = 2 * sum_major * sum_minor / (sum_major + sum_minor)**2
+        pooledh = 2 * sum_major * sum_minor / (sum_major + sum_minor) ** 2
 
     result_string = f"{chromosome}\t{position}\t{pooledh}\n"
 

@@ -12,18 +12,18 @@
     use SynNonSyn;
     use PileupTripletSlider;
     use Pileup;
-    
-    
-    
+
+
+
     sub run_PileupTripletSlidingTests
     {
         test_PileupTripletSlider();
     }
-    
-    
+
+
     sub test_PileupTripletSlider
     {
-        
+
         my $gtfstr;
         my $anno;
         # fastqtype, mincount, mincoverage, maxcoverage, minquality
@@ -31,7 +31,7 @@
         my $pts;
         my $pustr;
         my $e;
-        
+
         $gtfstr=
         "2R\tmaker\tCDS\t3\t5\t.\t+\t0\n".
         "2R\tmaker\tCDS\t8\t10\t.\t-\t0\n";
@@ -65,7 +65,7 @@
         is($e->{pileup}[1]{pos},"4","PileupTriplet slider; Position is ok");
         is($e->{pileup}[2]{pos},"5","PileupTriplet slider; Position is ok");
         is($e->{count_snps},"0","PileupTriplet slider; SNP count is ok");
-        
+
         $e=$pts->next();
         is($e->{chr},"2R","PileupTriplet slider; chromosome ok");
         is($e->{start},"8","PileupTriplet slider; start ok");
@@ -82,10 +82,10 @@
         is($e->{pileup}[1]{pos},"9","PileupTriplet slider; Position is ok");
         is($e->{pileup}[2]{pos},"10","PileupTriplet slider; Position is ok");
         is($e->{count_snps},"0","PileupTriplet slider; SNP count is ok");
-        
+
         $e=$pts->next();
         not_exists($e, "PileupTriplet slider; correct no more codons");
-        
+
         # longer codon
         $gtfstr=
         "2R\tmaker\tCDS\t3\t8\t.\t+\t0\n";
@@ -101,8 +101,8 @@
         is($e->{codon},"AAA","PileupTriplet slider; codon ok");
         $e=$pts->next();
         not_exists($e, "PileupTriplet slider; correct no more codons");
-        
-        
+
+
         # invalid codon in between
         $gtfstr=
         "2R\tmaker\tCDS\t3\t5\t.\t+\t0\n".
@@ -116,7 +116,7 @@
         is($e->{codon},"AAA","PileupTriplet slider; codon ok");
         $e=$pts->next();
         not_exists($e, "PileupTriplet slider; correct no more codons");
-        
+
         $gtfstr=
         "2R\tmaker\tCDS\t3\t11\t.\t+\t0\n".
         "2R\tmaker\tCDS\t5\t7\t.\t-\t0\n";
@@ -156,8 +156,8 @@
         is($e->{codon},"CAT","PileupTriplet slider; codon ok");
         $e=$pts->next();
         not_exists($e, "PileupTriplet slider; correct no more codons");
-        
-        
+
+
         # invalid triplets
         $gtfstr=
         "2R\tmaker\tCDS\t3\t5\t.\t+\t0\n";
@@ -177,7 +177,7 @@
         is($e->{valid_coverage},"0","PileupTriplet slider; Validity is ok");
         is($e->{valid_consensus},"0","PileupTriplet slider; Validity is ok");
         is($e->{count_snps},"1","PileupTriplet slider; SNP count is ok");
-        
+
         $gtfstr=
         "2R\tmaker\tCDS\t3\t5\t.\t-\t0\n";
         $anno=load_cds_gtf(\$gtfstr);
@@ -192,12 +192,12 @@
         is($e->{valid_coverage},"0","PileupTriplet slider; Validity is ok");
         is($e->{valid_consensus},"0","PileupTriplet slider; Validity is ok");
         is($e->{count_snps},"1","PileupTriplet slider; SNP count is ok");
-        
+
     }
-    
-    
-    
-    
+
+
+
+
 }
 
 1;

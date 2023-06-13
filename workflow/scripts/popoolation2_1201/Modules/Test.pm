@@ -18,8 +18,8 @@ sub is
         my $b=shift;
         my $msg=shift;
         $testcounter=1 unless $testcounter;
-        
-        
+
+
         if($a eq $b)
         {
             print "$testcounter - OK: $a = $b; $msg\n";
@@ -30,14 +30,14 @@ sub is
         }
         $testcounter++;
     }
-    
+
     sub not_exists
     {
         my $a=shift;
         my $msg=shift;
         $testcounter=1 unless $testcounter;
-        
-        
+
+
         if($a)
         {
             print "$testcounter - FAILED: $msg\n";
@@ -54,7 +54,7 @@ sub is
         my $a=shift;
         my $msg=shift;
         $testcounter=1 unless $testcounter;
-        
+
         if($a)
         {
             print "$testcounter - OK: $msg\n";
@@ -65,7 +65,7 @@ sub is
         }
         $testcounter++;
     }
-    
+
 
 
 

@@ -2,39 +2,39 @@ import java.util.ArrayList;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-public class BatchProcessor 
+public class BatchProcessor
 {
 	private final String[] batch;
 	private final ExecutorService executor;
 	private final MpileupParser parser;
-	
+
 	public BatchProcessor(String[] batch,MpileupParser parser, ExecutorService executor){
 		this.batch=batch;
 		this.executor=executor;
 		this.parser=parser;
 	}
-	
+
 	public String[] processBatch(){
-		
+
 		SyncBatchCollector batchCol=new SyncBatchCollector(this.batch.length);
-		
+
 		ArrayList<Callable<Object>> call=new ArrayList<Callable<Object>>();
 		for(int i=0; i < this.batch.length; i++)
 		{
 			call.add(Executors.callable(new ProcessSingleEntry(this.batch[i],i,batchCol, parser)));
 		}
-		
+
 		try
-		{	
+		{
 			// Run them all!
-			executor.invokeAll(call);	
+			executor.invokeAll(call);
 		}
 		catch(InterruptedException e)
 		{
 			e.printStackTrace();
 			System.exit(0);
 		}
-		
+
 		return batchCol.getBatch();
 	}
 
@@ -53,7 +53,7 @@ class SyncBatchCollector
 	{
 		batch=new String[blockSize];
 	}
-	
+
 	public synchronized void addEntry(String entry, int index)
 	{
 		this.batch[index]=entry;
@@ -82,7 +82,7 @@ class ProcessSingleEntry implements Runnable
 		this.batchCol=batchCol;
 		this.parser =parser;
 	}
-	
+
 	@Override
 	public void run()
 	{

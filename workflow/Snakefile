@@ -13,6 +13,7 @@ params = yaml.load(open("config/params.yml", "r"), Loader=yaml.SafeLoader)
 features = yaml.load(open("config/features.yml", "r"), Loader=yaml.SafeLoader)
 samples = pd.read_table("config/samples.tsv")
 
+
 singularity: "docker://continuumio/miniconda3:4.4.10"
 
 
@@ -21,6 +22,7 @@ POPULATIONS = samples["population"].drop_duplicates().values.tolist()
 PAIRS = ["pe_pe", "pe_se"]
 CHROMOSOMES = features["chromosomes"].split(" ")
 ENDS = "1 2 u".split(" ")
+
 
 include: "rules/folders.smk"
 include: "rules/generic.smk"
@@ -43,12 +45,9 @@ rule all:
         rules.popoolation_d.input,
         rules.popoolation_pi.input,
         rules.popoolation_theta.input,
-        expand(
-            PLOT_HP + "{population}.pdf",
-            population=POPULATIONS
-        ),
+        expand(PLOT_HP + "{population}.pdf", population=POPULATIONS),
         rules.fst.input,
-        rules.reports.input
+        rules.reports.input,
 
 
 rule clean:

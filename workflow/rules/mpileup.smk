@@ -1,16 +1,10 @@
 def get_library_files_from_sample(wildcards):
-    """ TODO: needs improvement/simplification
+    """TODO: needs improvement/simplification
     Return the list of libraries corresponding to a population and chromosome.
     """
     chromosome = wildcards.chromosome
     population = wildcards.population
-    libraries = (
-        samples
-        [samples["population"] == population]
-        ["library"]
-        .values
-        .tolist()
-    )
+    libraries = samples[samples["population"] == population]["library"].values.tolist()
     files = [
         MAP_FILT + population + "." + library + "." + chromosome + ".cram"
         for library in libraries
@@ -21,14 +15,13 @@ def get_library_files_from_sample(wildcards):
 rule mpileup_convert:
     """Compute the mpileup and compress it"""
     input:
-        cram = get_library_files_from_sample,
-        fa = RAW + "genome.fa",
-        fai = RAW + "genome.fa.fai"
+        cram=get_library_files_from_sample,
+        fa=RAW + "genome.fa",
+        fai=RAW + "genome.fa.fai",
     output:
-        mpileup_gz = MPILEUP_RAW \
-            + "{population}/{population}.{chromosome}.mpileup.gz"
+        mpileup_gz=MPILEUP_RAW + "{population}/{population}.{chromosome}.mpileup.gz",
     log:
-        MPILEUP_RAW + "{population}/{population}.{chromosome}.log"
+        MPILEUP_RAW + "{population}/{population}.{chromosome}.log",
     benchmark:
         MPILEUP_RAW + "{population}/{population}.{chromosome}.json"
     conda:
@@ -66,15 +59,14 @@ rule mpileup_popoolation_identify_indels:
     Get a GTF with the indels present.
     """
     input:
-        mpileup_gz = MPILEUP_RAW \
-            + "{population}/{population}.{chromosome}.mpileup.gz"
+        mpileup_gz=MPILEUP_RAW + "{population}/{population}.{chromosome}.mpileup.gz",
     output:
-        gtf = temp(MPILEUP_FILT + "{population}/{population}.{chromosome}.gtf")
+        gtf=temp(MPILEUP_FILT + "{population}/{population}.{chromosome}.gtf"),
     params:
-        indel_window = get_indel_window,
-        min_count = get_indel_min_count
+        indel_window=get_indel_window,
+        min_count=get_indel_min_count,
     log:
-        MPILEUP_FILT + "{population}/{population}.{chromosome}.gtf.log"
+        MPILEUP_FILT + "{population}/{population}.{chromosome}.gtf.log",
     benchmark:
         MPILEUP_FILT + "{population}/{population}.{chromosome}.gtf.json"
     conda:
@@ -99,18 +91,17 @@ rule mpileup_popoolation_filter_indels:
     Both fifo and fifo.gz will be deleted.
     """
     input:
-        mpileup_gz = MPILEUP_RAW \
-            + "{population}/{population}.{chromosome}.mpileup.gz",
-        gtf = MPILEUP_FILT + "{population}/{population}.{chromosome}.gtf"
+        mpileup_gz=MPILEUP_RAW + "{population}/{population}.{chromosome}.mpileup.gz",
+        gtf=MPILEUP_FILT + "{population}/{population}.{chromosome}.gtf",
     output:
-        mpileup_fifo = temp(
+        mpileup_fifo=temp(
             MPILEUP_FILT + "{population}/{population}.{chromosome}.mpileup"
         ),
-        mpileup_gz = temp(
+        mpileup_gz=temp(
             MPILEUP_FILT + "{population}/{population}.{chromosome}.mpileup.gz"
-        )
+        ),
     log:
-        MPILEUP_FILT + "{population}/{population}.{chromosome}.mpileup.log"
+        MPILEUP_FILT + "{population}/{population}.{chromosome}.mpileup.log",
     benchmark:
         MPILEUP_FILT + "{population}/{population}.{chromosome}.mpileup.json"
     conda:
@@ -138,13 +129,9 @@ def get_subsample_method(wildcards):
 
 
 def get_subsample_max_coverage(wildcards):
-    return (
-        samples
-        [samples["population"] == wildcards.population]
-        ["max_coverage"]
-        .tolist()
-        [0]
-    )
+    return samples[samples["population"] == wildcards.population][
+        "max_coverage"
+    ].tolist()[0]
 
 
 def get_subsample_target_coverage(wildcards):
@@ -157,22 +144,21 @@ rule mpileup_popoolation_subsample:
     through a FIFO
     """
     input:
-        mpileup = MPILEUP_FILT \
-            + "{population}/{population}.{chromosome}.mpileup.gz"
+        mpileup=MPILEUP_FILT + "{population}/{population}.{chromosome}.mpileup.gz",
     output:
-        mpileup_fifo = temp(
+        mpileup_fifo=temp(
             MPILEUP_SUB + "{population}/{population}.{chromosome}.mpileup"
         ),
-        mpileup_gz = protected(
+        mpileup_gz=protected(
             MPILEUP_SUB + "{population}/{population}.{chromosome}.mpileup.gz"
-        )
+        ),
     params:
-        min_qual = get_subsample_min_qual,
-        method = get_subsample_method,
-        max_coverage = get_subsample_max_coverage,
-        target_coverage = get_subsample_target_coverage
+        min_qual=get_subsample_min_qual,
+        method=get_subsample_method,
+        max_coverage=get_subsample_max_coverage,
+        target_coverage=get_subsample_target_coverage,
     log:
-        MPILEUP_SUB + "{population}/{population}.{chromosome}.log"
+        MPILEUP_SUB + "{population}/{population}.{chromosome}.log",
     benchmark:
         MPILEUP_SUB + "{population}/{population}.{chromosome}.json"
     conda:
@@ -199,8 +185,13 @@ rule mpileup_popoolation_subsample:
 rule mpileup:
     input:
         [
-            MPILEUP_SUB + population + "/" + population + "." + chromosome +
-            ".mpileup.gz"
+            MPILEUP_SUB
+            + population
+            + "/"
+            + population
+            + "."
+            + chromosome
+            + ".mpileup.gz"
             for population in POPULATIONS
             for chromosome in CHROMOSOMES
-        ]
+        ],

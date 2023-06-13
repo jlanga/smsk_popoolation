@@ -13,4 +13,3 @@ for population in "${populations[@]}"; do
     | awk '{print $2"\t"$1}' \
     > depths/"$population".depths.tsv) &
 done; wait
-

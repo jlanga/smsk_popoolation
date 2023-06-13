@@ -9,31 +9,31 @@
     require Exporter;
     our @ISA = qw(Exporter);
     our @EXPORT  =qw(run_MaxCoverageTests);
-    
-    
+
+
     sub run_MaxCoverageTests
     {
         test_maxcoverage();
     }
-    
-    
+
+
     sub test_maxcoverage
     {
         my $file;
         my $mc;
-        
+
         $file="chr1\t1\tN\t0:0:6:0:0:0\t0:0:0:7:0:0\t0:0:8:0:0:0\n";
         $mc=get_max_coverage(\$file,"500");
         is($mc->[0],500,"test maximum coverage method; maximum coverage is ok");
         is($mc->[1],500,"test maximum coverage script; maximum coverage is ok");
         is($mc->[2],500,"test maximum coverage script; maximum coverage is ok");
-        
+
         $file="chr1\t1\tN\t0:0:6:0:0:0\t0:0:0:7:0:0\t0:0:8:0:0:0\n";
         $mc=get_max_coverage(\$file,"300,400,500");
         is($mc->[0],300,"test maximum coverage method; maximum coverage is ok");
         is($mc->[1],400,"test maximum coverage script; maximum coverage is ok");
         is($mc->[2],500,"test maximum coverage script; maximum coverage is ok");
-        
+
         $file=
         "chr1\t1\tN\t1:0:0:0:0:0\t0:1:0:0:0:0\t1:0:0:0:0:0\n".
         "chr1\t2\tN\t2:0:0:0:0:0\t0:1:0:0:0:0\t1:0:0:0:0:0\n".
@@ -49,7 +49,7 @@
         is($mc->[0],9,"test maximum coverage method; maximum coverage is ok");
         is($mc->[1],1,"test maximum coverage script; maximum coverage is ok");
         is($mc->[2],1,"test maximum coverage script; maximum coverage is ok");
-        
+
         $file=
         "chr1\t1\tN\t10:0:0:0:0:0\t0:1:0:0:0:0\t1:0:0:0:0:0\n".
         "chr1\t2\tN\t9:0:0:0:0:0\t0:1:0:0:0:0\t1:0:0:0:0:0\n".
@@ -65,7 +65,7 @@
         is($mc->[0],9,"test maximum coverage method; maximum coverage is ok");
         is($mc->[1],1,"test maximum coverage script; maximum coverage is ok");
         is($mc->[2],1,"test maximum coverage script; maximum coverage is ok");
-        
+
         $file=
         "chr1\t1\tN\t10:0:0:0:0:0\t0:11:0:0:0:0\t21:0:0:0:0:0\n".
         "chr1\t2\tN\t9:0:0:0:0:0\t0:12:0:0:0:0\t22:0:0:0:0:0\n".
@@ -81,9 +81,9 @@
         is($mc->[0],9,"test maximum coverage method; maximum coverage is ok");
         is($mc->[1],19,"test maximum coverage script; maximum coverage is ok");
         is($mc->[2],29,"test maximum coverage script; maximum coverage is ok");
-        
+
     }
 
-    
+
 }
 1;

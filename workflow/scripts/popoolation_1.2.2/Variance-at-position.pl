@@ -116,29 +116,29 @@ while(my $line=<$ifh>)
     chomp $line;
     $counter++;
     print "Processed $counter pileup entries\n" unless($counter % $makeNoise);
-    
+
     # prefilter, without proper parsing of the pileup
     my($chr,$pos)=split/\s+/,$line;
     my $entries=$chrdec->($chr,$pos);
     next unless $entries;
-    
-    # proper parsing; 
+
+    # proper parsing;
     my $pu=$pp->($line);
 
-    
+
     foreach my $gene (@$entries)
     {
         die "problem could not find gene" unless exists($genehash->{$gene});
-        
+
         $genehash->{$gene}{covered}++ if $pu->{iscov};
         push @{$genehash->{$gene}{snps}}, $pu if $pu->{issnp};
-        
-        # in case this is the last position of the gene, handle it immediately; print it         
+
+        # in case this is the last position of the gene, handle it immediately; print it
         if($pos==$genehash->{$gene}{last})
         {
             Utility::handle_completed_gene($ofh,$genehash,$gene,$varianceCalculator,$measure,$snpwriter);
         }
-        
+
     }
 }
 print "Finished parsing the pileup file; Processing features\n";
@@ -159,7 +159,7 @@ exit;
     use strict;
     use warnings;
 
-    
+
     sub handle_completed_gene
     {
         my $ofh=shift;
@@ -168,33 +168,33 @@ exit;
         my $varianceCalculator=shift;
         my $measure=shift;
         my $snpwriter=shift;
-        
+
         my $temp=$genehash->{$geneid};
-        
+
         #erase the entry from the hash -> very important memory issue
         delete($genehash->{$geneid});
-        
+
         my $length=$temp->{length};
-    
+
         my $snps=$temp->{snps};
         my $covered=$temp->{covered};
-        
+
         # write the snps to the output file if the snpwriter is available
         $snpwriter->($geneid,$snps) if $snpwriter;
-        
+
         my $snpcount=@$snps;
         my $coveredFraction=$covered/$length;
         my $meas=0;
         $meas=$varianceCalculator->calculate_measure($measure,$snps,$covered);
         $meas=sprintf("%.9f",$meas);
-        
+
         $meas="na" if $coveredFraction < $minCoveredFraction;
-        
+
         $coveredFraction=sprintf("%.3f",$coveredFraction);
         print $ofh "$geneid\t$snpcount\t$coveredFraction\t$meas\n";
     }
-    
-    
+
+
     sub _parsegtf
     {
         my $line=shift;
@@ -203,7 +203,7 @@ exit;
         my $start=$a[3];
         my $end=$a[4];
         my $tfeat=$a[8];
-            
+
         unless($ref or $start or $end or $tfeat)
         {
             die "the following line is not valid";
@@ -217,7 +217,7 @@ exit;
         {
             die "the following entry does not have a valid gene id: $line";
         }
-        
+
         return
         {
             ref=>$ref,
@@ -227,7 +227,7 @@ exit;
             gi=>$gene_id
         };
     }
-    
+
     sub _getdefaultgenecoll
     {
         return
@@ -235,10 +235,10 @@ exit;
             length=>0,
             last=>0,
             snps=>[],
-            covered=>0   
+            covered=>0
         }
     }
-    
+
     sub _getgeneint
     {
         my $geneid=shift;
@@ -253,14 +253,14 @@ exit;
             $lastcounter++;
             $genemap->{$geneid}=$lastcounter;
             return ($lastcounter,$genemap->{$geneid});
-            
+
         }
     }
-    
+
     sub _getDecodedGenemap
     {
         my $genemap=shift;
-        
+
         my $decode=[];
         while(my($gene,$num)=each(%$genemap))
         {
@@ -268,7 +268,7 @@ exit;
         }
         return $decode;
     }
-    
+
     sub read_gtf
     {
         my $file=shift;
@@ -278,27 +278,27 @@ exit;
         my $genemap={};
         my $lastcounter=0;
 
-        
+
         print "Parsing gtf file..\n";
         while(my $line=<$ifh>)
         {
             chomp $line;
             my $ge=_parsegtf($line);
-            
+
             my $gid=$ge->{gi};
             $genecoll->{$gid}=_getdefaultgenecoll unless exists($genecoll->{$gid});
-            
+
             my $geneint;
             ($lastcounter,$geneint)=_getgeneint($gid,$genemap,$lastcounter);
-            
+
             # update the chromosome hash
             my($start,$end,$ref)=($ge->{start},$ge->{end},$ge->{ref});
-            
+
             # set the new end if it is larger than the previous one
             $genecoll->{$gid}{last} = $end if $end > $genecoll->{$gid}{last};
-            
+
             #print "$ref $start $end\n";
-            
+
             for(my $i=$start; $i<=$end; $i++)
             {
                 if(exists($chrhash->{$ref}{$i}))
@@ -307,7 +307,7 @@ exit;
                     push @$ar,$geneint;
                     $ar=uniq($ar);
                     $chrhash->{$ref}{$i}=$ar;
-                    
+
                 }
                 else
                 {
@@ -316,10 +316,10 @@ exit;
             }
         }
 
-        
+
         my $decodeGeneMap=_getDecodedGenemap($genemap);
 
-################################################################################        
+################################################################################
         # bless the beauty of a closure
         my $chrdecocer=sub {
             my $ref=shift;
@@ -334,8 +334,8 @@ exit;
             return $dec;
         };
 ################################################################################
-            
-            
+
+
         #calculate the length of the features
         while(my($chr,$t)=each(%$chrhash))
         {
@@ -348,18 +348,18 @@ exit;
                 }
             }
         }
-            
-        
-        
-        
+
+
+
+
         return ($chrdecocer,$genecoll);
         #chr1 Twinscan  exon         501   650   .   +   .  gene_id "AB000381.000"; transcript_id "AB000381.000.1";
     }
-    
+
     sub uniq
     {
         my $ar=shift;
-        
+
         my $h={};
         foreach my $a (@$ar)
         {
@@ -380,17 +380,17 @@ exit;
     use Test::TClassicalVariance;
     use Test::PileupParser;
     use Test;
-    
+
     sub runTests
     {
-        run_PileupParserTests(); 
+        run_PileupParserTests();
         run_classicalVarianceTests();
         run_VarianceTests();
         test_read_gtf();
         exit;
     }
-    
-    
+
+
     sub test_read_gtf
     {
         my $str=
@@ -399,22 +399,22 @@ exit;
         "2L\tFlyBase\texon\t9\t12\t.\t+\t.\tgene_id \"g2\"; transcript_id \"whadeva\";\n".
         "2R\tFlyBase\texon\t1\t5\t.\t+\t.\tgene_id \"g3\"; transcript_id \"whadeva\";\n".
         "2R\tFlyBase\texon\t11\t15\t.\t+\t.\tgene_id \"g4\"; transcript_id \"whadeva\";\n";
-        
+
         my($dec,$gh)=Utility::read_gtf(\$str);
         is($gh->{g1}{covered},0,"test gtf_reader; covered is ok");
         is(scalar(@{$gh->{g1}{snps}}),0,"test gtf_reader; length of snps is ok");
         is($gh->{g1}{last},10,"test gtf_reader: last position is ok");
         is($gh->{g1}{length},10,"test gtf_reader: length is ok");
-        
+
         is($gh->{g2}{last},12,"test gtf_reader: last position is ok");
         is($gh->{g2}{length},4,"test gtf_reader: length is ok");
-        
+
         is($gh->{g3}{last},5,"test gtf_reader: last position is ok");
         is($gh->{g3}{length},5,"test gtf_reader: length is ok");
 
         is($gh->{g4}{last},15,"test gtf_reader: last position is ok");
         is($gh->{g4}{length},5,"test gtf_reader: length is ok");
-        
+
         is($dec->("2L","1")[0],"g1","test gtf_reader: correct gene at given position");
         is($dec->("2L","2")[0],"g1","test gtf_reader: correct gene at given position");
         is($dec->("2L","3")[0],"g1","test gtf_reader: correct gene at given position");
@@ -431,13 +431,13 @@ exit;
         is($dec->("2L","10")[1],"g2","test gtf_reader: correct gene at given position");
         not_exists($dec->("2L","13"),"test gtf_reader: correct no gene at given position");
         not_exists($dec->("2L","14"),"test gtf_reader: correct no gene at given position");
-        
+
         is($dec->("2R","1")[0],"g3","test gtf_reader: correct gene at given position");
         is($dec->("2R","2")[0],"g3","test gtf_reader: correct gene at given position");
         is($dec->("2R","3")[0],"g3","test gtf_reader: correct gene at given position");
         is($dec->("2R","4")[0],"g3","test gtf_reader: correct gene at given position");
         is($dec->("2R","5")[0],"g3","test gtf_reader: correct gene at given position");
-        
+
         not_exists($dec->("2R","6"),"test gtf_reader: correct no gene at given position");
         not_exists($dec->("2R","7"),"test gtf_reader: correct no gene at given position");
         not_exists($dec->("2R","8"),"test gtf_reader: correct no gene at given position");
@@ -449,8 +449,8 @@ exit;
         is($dec->("2R","13")[0],"g4","test gtf_reader: correct gene at given position");
         is($dec->("2R","14")[0],"g4","test gtf_reader: correct gene at given position");
         is($dec->("2R","15")[0],"g4","test gtf_reader: correct gene at given position");
-        
-        
+
+
     }
 }
 
@@ -511,19 +511,19 @@ Currently, "pi", "theta" and "D" is supported. This stands for Tajima's Pi, Watt
 The size of the pool which has been sequenced. e.g.: 500; Mandatory
 
 =item B<--fastq-type>
-The encoding of the quality characters; Must either be 'sanger' or 'illumina'; 
+The encoding of the quality characters; Must either be 'sanger' or 'illumina';
 
  Using the notation suggested by Cock et al (2009) the following applies:
  'sanger'   = fastq-sanger: phred encoding; offset of 33
  'solexa'   = fastq-solexa: -> NOT SUPPORTED
  'illumina' = fastq-illumina: phred encoding: offset of 64
- 
+
  See also:
  Cock et al (2009) The Sanger FASTQ file format for sequecnes with quality socres,
- and the Solexa/Illumina FASTQ variants; 
+ and the Solexa/Illumina FASTQ variants;
 
 default=illumina
- 
+
 =item B<--min-count>
 
 The minimum count of the minor allele. This is important for the identification of SNPs; default=2
@@ -554,7 +554,7 @@ Flag; Dissable correction factors; Calculates Pi/Theta/Tajima's D in the classic
 
 =item B<--test>
 
-Run the unit tests for this script. 
+Run the unit tests for this script.
 
 =item B<--help>
 
@@ -591,7 +591,7 @@ A gtf-file as described here http://mblab.wustl.edu/GTF2.html
 The script is grouping evertying with the same C<gene_id>! The feature field is not considered, so any feature may be used. The strand is not considered;
 The tag C<transcript_id> will be ignored.
 Attention: Do not mix the features exon with transcript/gene since the transcripts span exons and introns!!
-In case features (eg. genes) are overlapping the respective SNP is considered for every feature at a certain position once; 
+In case features (eg. genes) are overlapping the respective SNP is considered for every feature at a certain position once;
 
 =head2 Output
 
@@ -644,8 +644,5 @@ The pileup file may contain deletions which can be recognised by the symbol '*'.
 The sum of the bases A,T,C,G is used as coverage (ignoring N)
 
 The memory usage scales linearly with the amount of gtf entries provided. If you get an out of memory exception (eg. malloc) split your gtf file and run the script several times.
-  
+
 =cut
-
-
-

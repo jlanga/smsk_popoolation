@@ -73,7 +73,7 @@ while(my $l=<$ifh>)
 {
     chomp $l;
     my($chr,$pos,undef,undef,$measure)=split /\t/,$l;
-    
+
     if($ucfilt)
     {
         next unless exists($ucfilt->{$chr});
@@ -86,10 +86,10 @@ while(my $l=<$ifh>)
         $chrHash->{$chr}=1;
         $activechr=$chr;
     }
-    
+
     next if $measure eq "na";
     $pos-=$offset;
-    print $ofh "$pos\t$measure\n";   
+    print $ofh "$pos\t$measure\n";
 }
 
 
@@ -101,15 +101,15 @@ exit;
     package Utility;
     use strict;
     use warnings;
-    
+
     sub infer_window_size
     {
         my $file=shift;
-        
+
         print "Infering window size (~span in wiggle file)\n";
         print "Please not that wiggle only allows for non overlapping windows. This window size here will thus correspond to the step-size\n";
         open my $ifh , "<", $file or die "Could not open input file";
-        
+
         while(1)
         {
             my $l1=<$ifh>;
@@ -124,14 +124,14 @@ exit;
                 return $insertsize;
             }
         }
-        
+
         die "unable to infer insert size";
 
 
     }
-    
-    
-    
+
+
+
 }
 
 =head1 NAME
@@ -183,7 +183,7 @@ Display the help pages.
 =head2 Input
 
 Input will be the output of the variance slider. For example
- 
+
  2L      5500    30      0.916   -0.003390146
  2L      6500    10      1.000   -0.001091447
  2L      7500    8       1.000   0.000033510
@@ -220,5 +220,3 @@ b.) convert the chromosome id's into the format required by ucsc (use C<--ucsc-p
 
 
 =cut
-
-

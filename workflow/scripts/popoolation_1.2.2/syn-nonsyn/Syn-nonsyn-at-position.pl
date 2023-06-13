@@ -16,14 +16,14 @@
     our $verbose=1;
     my $shoutinterval=1_000;
     my $tripletcount=0;
-    
+
     # input files
     my $pileupfile="";
     my $gtf_file="";
     my $codonTableFile="";
     my $nonsynLengthTableFile="";
     my $output="";
-    
+
     # pileup sliding
     my $minCount=2;
     my $minCoverage=4;
@@ -32,7 +32,7 @@
     my $minQual=20;
     my $snpfile="";
     my $usedregionfile="";
-    
+
     # general
     my $measure="";
     my $poolSize=0;
@@ -40,7 +40,7 @@
     my $uncorrected=0;
     my $help=0;
     my $test=0;
-    
+
     # --region-output /Users/robertkofler/dev/testfiles/output/2R-region.txt  --measure pi --pool-size 500 --gtf /Users/robertkofler/dev/testfiles/small-2R-cds.gff --pileup /Users/robertkofler/dev/testfiles/2R_sim_100000.pileup --output /Users/robertkofler/dev/testfiles/output/2R-syn-nonsyn.txt --codon-table /Users/robertkofler/dev/PopGenTools/syn-nonsyn/codon-table.txt  --snp-output /Users/robertkofler/dev/testfiles/output/2R-syn-nonsyn-snp-gene.txt --nonsyn-length-table /Users/robertkofler/dev/PopGenTools/syn-nonsyn/nsl_p6.txt
 
     GetOptions(
@@ -77,8 +77,8 @@
     pod2usage(-msg => "Min quality not valid. Has to be between 0 and 40",-verbose=>1) if $minQual<0 || $minQual > 40;
     pod2usage(-msg => "The minimum coverage hast to be at least two times the minimum count",-verbose=>1) unless $minCoverage >= (2*$minCount);
     pod2usage(-msg => "Measure not provided",-verbose=>1) unless $measure;
-    
-    
+
+
     my $paramfile=$output.".params";
     open my $pfh, ">",$paramfile or die "Could not open $paramfile\n";
     print $pfh "Using measure\t$measure\n";
@@ -109,21 +109,21 @@
     my $chrFrames = load_cds_gtf($gtf_file);
     print "Loading gene annotation from gtf file...\n";
     my $geneassigner = get_codon_to_gene_assigner($chrFrames, $gtf_file);
-    
-    
+
+
     # gradually building the pileup window slider
     my $pp=get_extended_parser($fastqtype,$minCount,$minCoverage,$maxCoverage,$minQual);
     my $pts=PileupTripletSlider->new($pileupfile,$chrFrames,$pp);
-     
+
     my $vec=VarianceExactCorrection->new($poolSize,$minCount,$minCoverage,$maxCoverage);
     $vec=VarianceUncorrected->new($poolSize,$minCount,$minCoverage,$maxCoverage) if $uncorrected;
-    
+
     # get snp writer
     my $snpwriter;
     $snpwriter =get_synnonsyngene_SNPFormater($snpfile) if $snpfile;
-    
-    
-    
+
+
+
     my $genecollection={};
     open my $ofh, ">", $output or die "Could not open output file";
     print "Parsing pileup file...\n";
@@ -132,25 +132,25 @@
         # TRIPLET definition
         # frame, pileup, chr, start, strand, valid, valid_frame, valid_coverage, valid_codon, count_snps, codon
         my($chr,$start,$valid,$count_snps)=($tr->{chr},$tr->{start},$tr->{valid},$tr->{count_snps});
-        
+
         $tripletcount++;
         # shout out loud
         print "Processed $tripletcount triplets\n" if($tripletcount % $shoutinterval ==0);
-        
+
         next unless ($valid);
         next unless ($count_snps <= $maxTripletSNPs);
-        
+
         # get genelist, nonsynlength and update the gene-info
         # for all triplets no matter if they contain snps or not
         my $genelist=$geneassigner->($chr,$start);
         my ($sl,$nsl)=Utility::calculate_syn_nonsynlength($tr,$nonsynTable);
         Utility::basicupdate_genelist($genecollection,$_,$chr,$start,$sl,$nsl) foreach (@$genelist);
-        
+
         # from here procede only with triplets containing SNPs
         next unless ($count_snps>0);
         get_codon_changes($tr,$codonTable);
         $snpwriter->($tr,$genelist) if $snpfile;
-        
+
 
         foreach my $geneid (@$genelist)
         {
@@ -167,24 +167,24 @@
                 else
                 {
                     push @{$gene->{nonsynsnplist}},$cc;
-                    $gene->{nonsynsnps}++;                
+                    $gene->{nonsynsnps}++;
                 }
             }
-        
+
         }
     }
     # a gene has
     # synsnplist, nonsynsnplist, synsnps,nonsynsnps,synlen,nonsynlen ,countcodon, coveredreg
-    
+
     print "Finished parsing pielup file...\n";
-    
+
     my $regpr = undef;
     $regpr=Utility::get_region_printer($usedregionfile) if $usedregionfile;
-    
+
     print "Writing results to output file...\n";
     while(my($geneid,$t)=each(%$genecollection))
     {
-        
+
         $regpr->($t) if $usedregionfile;
         #
         # synsnplist, nonsynsnplist, synsnps,nonsynsnps,synlen,nonsynlen ,countcodon, coveredreg
@@ -198,10 +198,10 @@
         #$vec->calculate_measure($measure,$synsnplist,$synlength);
         my $synmeasure=$vec->calculate_measure($measure,$t->{synsnplist},$synlen);
         my $nonsynmeasure=$vec->calculate_measure($measure,$t->{nonsynsnplist},$nonsynlen);
-        
+
         $synmeasure     =   sprintf("%.8f",$synmeasure);
         $nonsynmeasure  =   sprintf("%.8f",$nonsynmeasure);
-        
+
         print $ofh "$t->{geneid}\t$nonsynlen\t$synlen\t$nonsynsnps\t$synsnps\t$nonsynmeasure\t$synmeasure\n";
     }
     print "DONE\n";
@@ -220,7 +220,7 @@
     use VarianceUncorrected;
     use Test;
     use SynNonSyn;
-    
+
     sub get_region_printer
     {
         my $output=shift;
@@ -238,13 +238,13 @@
                 my $start=$cr->{start};
                 my $end=$cr->{end};
                 print $ofh "$chr:$start-$end\n";
-                
+
             }
             print $ofh "\n";
         }
     }
-    
-    
+
+
     sub basicupdate_genelist
     {
         my $genecoll=shift;
@@ -253,7 +253,7 @@
         my $start=shift;
         my $synlength=shift;
         my $nonsynlength=shift;
-        
+
         if(exists($genecoll->{$gene}))
         {
             # the gene already exists, only update the list of covered regions
@@ -274,18 +274,18 @@
             my $defe=get_default_geneentry($gene,$chr);
             push @{$defe->{coveredreg}},{start=>$start,end=>$start+2};
             $genecoll->{$gene}=$defe;
-            
+
         }
         $genecoll->{$gene}{nonsynlen}   += $nonsynlength;
         $genecoll->{$gene}{synlen}      +=$synlength;
         $genecoll->{$gene}{countcodon}  ++;
         # coveredreg, nonsynlen,synlen,countcodon
     }
-    
+
     sub get_default_geneentry{
         my $geneid=shift;
         my $chr=shift;
-        
+
         # geneid, chr, synlen, nonsynlen, synmeasure, nonsynmeasure, synsnps, nonsynsnps, coveredreg
         return
         {
@@ -303,7 +303,7 @@
           nonsynsnplist =>[]
         };
     }
-    
+
     sub calculate_syn_nonsynlength
     {
         my $tr=shift;
@@ -329,18 +329,18 @@
     use Test::PileupParser;
     use Test::TPileupTripletSliding;
     use Test::Variance;
-    
-    
+
+
     sub runTests
     {
         run_PileupParserTests();
         run_SynNonSynTests();
         run_VarianceTests();
         exit;
-        
+
     }
-    
-    
+
+
 }
 
 =head1 NAME
@@ -393,19 +393,19 @@ Currently, "pi", "theta" and "d" is supported. Mandatory
 The size of the pool which has been sequenced. e.g.: 500; Mandatory
 
 =item B<--fastq-type>
-The encoding of the quality characters; Must either be 'sanger' or 'illumina'; 
+The encoding of the quality characters; Must either be 'sanger' or 'illumina';
 
  Using the notation suggested by Cock et al (2009) the following applies:
  'sanger'   = fastq-sanger: phred encoding; offset of 33
  'solexa'   = fastq-solexa: -> NOT SUPPORTED
  'illumina' = fastq-illumina: phred encoding: offset of 64
- 
+
  See also:
  Cock et al (2009) The Sanger FASTQ file format for sequecnes with quality socres,
- and the Solexa/Illumina FASTQ variants; 
+ and the Solexa/Illumina FASTQ variants;
 
 default=illumina
- 
+
 =item B<--min-count>
 
 The minimum count of the minor allele. This is important for the identification of SNPs; default=2
@@ -433,7 +433,7 @@ Flag; Dissable correction factors; Calculates Pi/Theta/Tajima's D in the classic
 
 =item B<--test>
 
-Run the unit tests for this script. 
+Run the unit tests for this script.
 
 =item B<--help>
 
@@ -474,7 +474,7 @@ Must contain the codons and the resulting amino acids. For example:
  ATT: I
  ATC: I
  ATA: I
- CTT: L 
+ CTT: L
 
 =head2 Input nonsynonymous length
 
@@ -486,11 +486,11 @@ Must contain for every codon its nonsynonymous length; the synonymous length is 
  CGA: 1.66666666666667
 
 
-=head2 Output 
+=head2 Output
 
 Example of output:
 
- schokicraving	    683.375	1599.625    10	28	0.00631134	0.00317790 
+ schokicraving	    683.375	1599.625    10	28	0.00631134	0.00317790
  sleepless	    71.625	180.375	    2	9	0.00872667	0.01651562
  sneezeless	    137.5	309.5	    7	23	0.01495735	0.02248795
  senseless	    223.875	547.125	    3	13	0.00360575	0.00641439

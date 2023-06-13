@@ -2,7 +2,7 @@ package VarMath;
 use strict;
 use warnings;
 
-use Math::BigRat; 
+use Math::BigRat;
 
 require Exporter;
 our @ISA = qw(Exporter);
@@ -43,7 +43,7 @@ sub get_an_buffer
     {
 	my $n=shift;
 	return $an_buffer->{$n} if(exists($an_buffer->{$n}));
-	
+
 	my $an=0;
 	foreach my $i (1..($n-1))
 	{
@@ -61,7 +61,7 @@ sub get_bn_buffer
     {
 	my $n=shift;
 	return $bn_buffer->{$n} if(exists($bn_buffer->{$n}));
-	
+
 	my $bn=0;
 	foreach my $i (1..($n-1))
 	{
@@ -79,7 +79,7 @@ sub get_D_calculator
     my $thetacalc=get_theta_calculator();
     my $picalc=get_pi_calculator();
     my $ddivisor=get_ddivisor();
-    
+
     return sub
     {
         my $b=shift;
@@ -87,7 +87,7 @@ sub get_D_calculator
 	my $mincoverage=shift;
         my $snps=shift;
 	return 0 unless @$snps;
-	
+
 	my $pi		=$picalc->($b,$n,$snps);
 	my $theta	=$thetacalc->($b,$n,$snps);
 	my $ddivisor	=$ddivisor->($n,$mincoverage,$snps,$theta);
@@ -95,7 +95,7 @@ sub get_D_calculator
 	my $d = ($pi-$theta)/$ddivisor;
 	return $d;
     }
-    
+
 }
 
 sub get_ddivisor
@@ -110,10 +110,10 @@ sub get_ddivisor
 	my $snps=shift;
 	my $theta=shift;
 	$nbase_buffer=get_nbase_buffer($n) unless $nbase_buffer;
-	
-	
+
+
 	my $snpcount=@$snps;
-	
+
 	#my $n_sum=0;
 	#foreach my $snp (@$snps)
 	#{
@@ -123,7 +123,7 @@ sub get_ddivisor
 	#}
 	#
 	#my $averagen=int($n_sum/$snpcount);
-	
+
 	my $averagen=$nbase_buffer->($n,$mincoverage);
 	my $alphastar=$alphastarcalc->($averagen);
 	my $betastar=$betastarcalc->($averagen);
@@ -148,18 +148,18 @@ sub get_nbase_buffer
 	#die"Poolsize has to be larger than coverage; maybe decreasea maximum coverage" unless $n> $cov;
 	#return $cov;
 	### end shortcut
-	
+
 	my $key="$poolsize:$cov";
 	return $nbase_buffer->{$key} if(exists($nbase_buffer->{$key}));
-	
+
 	my $nbase=0;
 	my $minj=$cov<$poolsize?$cov:$poolsize;
-	
+
 	for my $k(1..$minj)
 	{
 	    $nbase+=$k*$pijresolver->($cov,$k);
 	}
-	
+
 	$nbase_buffer->{$key}=$nbase;
 	return $nbase_buffer->{$key};
     }
@@ -170,9 +170,9 @@ sub _get_pij_matrix
 {
     my $maxcoverage=shift;
     my $poolsize=shift;
-    
+
     my $jboundary=$maxcoverage < $poolsize ? $maxcoverage : $poolsize;
-    
+
     my $matrix=[];
     for my $i(1..$maxcoverage)
     {
@@ -183,7 +183,7 @@ sub _get_pij_matrix
 	$matrix->[0][$j]=0;
     }
     $matrix->[0][0]=1;
-    
+
     for my $i(1..$maxcoverage)
     {
 	for my $j (1..$jboundary)
@@ -202,7 +202,7 @@ sub get_nbase_matrix_resolver
     my $maxcoverage=shift;
     my $poolsize=shift;
     my $matrix=_get_pij_matrix($maxcoverage,$poolsize);
-    
+
     return sub
     {
 	my $C=shift;
@@ -224,9 +224,9 @@ sub get_alphastar_calculator
     {
 	my $n=shift;
 	die "invalid effective coverage; has to be larger than 1" unless $n>1;
-	
+
 	return $astar_buffer->{$n} if(exists($astar_buffer->{$n}));
-	
+
 	my $an=$anb->($n);
 	my $fs=calculate_fstar($an,$n);
 	# calculate individual terms(t) and subterms(st)
@@ -255,7 +255,7 @@ sub get_betastar_calculator
 	my $an=$anb->($n);
 	my $bn=$bnb->($n);
 	my $fs=calculate_fstar($an,$n);
-	
+
 	my $t1 = ($fs**2) * ($bn - ((2*($n-1)) /(($n-1)**2)));
 	my $st1= $bn * (8/($n-1));
 	my $st2= $an * (4/($n*($n-1)));
@@ -284,7 +284,7 @@ sub calculate_fstar
 
 sub get_theta_calculator
 {
-    
+
     my $thetadb=get_thetadiv_buffer();
     return sub
     {
@@ -304,7 +304,7 @@ sub get_theta_calculator
 
 sub get_pi_calculator
 {
-    
+
     my $pidb=get_pidiv_buffer();
     return sub
     {
@@ -322,7 +322,7 @@ sub get_pi_calculator
 	    $pi_snp-=($snp->{C}/$M)**2;
 	    $pi_snp-=($snp->{G}/$M)**2;
 	    $pi_snp*=$M/($M-1);
-	    
+
 	    $pi_snp/=$pidb->($b,$n,$M);
 	    $pisum+=$pi_snp;
 	}
@@ -339,23 +339,23 @@ sub get_thetadiv_buffer
 {
     $thetadiv_buffer={} unless $thetadiv_buffer;
     my $amnmcalc=get_aMnm_buffer();
-    
+
     return sub
     {
       my $b=shift;
       my $n=shift;
       my $M=shift;
-      
+
       my $key="$b:$n:$M";
       return $thetadiv_buffer->{$key} if exists($thetadiv_buffer->{$key});
-     
+
         my $div=0;
         for my $m ($b..$M-$b)
         {
             my $term1=$amnmcalc->($M,$n,$m);
             $div+=$term1;
         }
-      
+
       $thetadiv_buffer->{$key}=$div;
       return $div;
     };
@@ -366,16 +366,16 @@ sub get_pidiv_buffer
 {
     $pidiv_buffer= {} unless $pidiv_buffer;
     my $amnmcalc=get_aMnm_buffer();
-    
+
     return sub
     {
         my $b=shift;
         my $n=shift;
         my $M=shift;
-        
+
         my $key="$b:$n:$M";
         return $pidiv_buffer->{$key} if exists($pidiv_buffer->{$key});
-        
+
         # calculate the value
         my $div=0;
         for my $m ($b..$M-$b)
@@ -384,7 +384,7 @@ sub get_pidiv_buffer
             $term1*=$amnmcalc->($M,$n,$m);
             $div+=$term1;
         }
-    
+
         $pidiv_buffer->{$key}=$div;
         return $div;
     }
@@ -394,17 +394,17 @@ sub get_pidiv_buffer
 sub get_aMnm_buffer
 {
     $amnm_buffer={} unless $amnm_buffer;
-    
+
     return sub
     {
         my $M=shift;
         my $n=shift;
         my $m=shift;
-        
+
         # calculate the key
         my $key="$M:$n:$m";
         return $amnm_buffer->{$key} if exists($amnm_buffer->{$key});
-        
+
         my $toret=0;
         foreach my $k (1..$n-1)
         {
@@ -412,11 +412,11 @@ sub get_aMnm_buffer
             $t1*=(1/$k);
             $toret+=$t1;
         }
-        
-        #store the value in the buffer and return it 
+
+        #store the value in the buffer and return it
         $amnm_buffer->{$key}=$toret;
         return $toret;
-    } 
+    }
 }
 
 
@@ -427,25 +427,25 @@ sub get_aMnm_buffer_sqr
 # Sum is defined in the following way:
 #              M-b
 #              ---
-#              \                           
-# S(M,b,r,n) = /    (1/r)*choose{M,i}*(r/n)^i*(1-r/n)^{M-i} 
+#              \
+# S(M,b,r,n) = /    (1/r)*choose{M,i}*(r/n)^i*(1-r/n)^{M-i}
 #              ---
 #              i=b
 #
 {
     $amnm_buffer_sqr={} unless $amnm_buffer_sqr;
-    
+
     return sub
     {
         my $M=shift; # coverage -- eucov
         my $b=shift; # min-count
         my $r=shift; # summation index 1..n-1 in get_thetadiv_buffer_sqr
         my $n=shift; # pool size
-        
+
         # calculate the key
         my $key="$M:$b:$r:$n";
         return $amnm_buffer_sqr->{$key} if exists($amnm_buffer_sqr->{$key});
-        
+
         my $sqr=0;
         my $sumBinom=0;
         my $mM = Math::BigRat->new($M);
@@ -454,10 +454,10 @@ sub get_aMnm_buffer_sqr
         	$sumBinom+= noverk($M,$i) * ($r/$n)**($i) * (1-$r/$n)**($M-$i);
         }
         $sqr= ($sumBinom/$r)**2;
-        #store the value in the buffer and return it 
+        #store the value in the buffer and return it
         $amnm_buffer_sqr->{$key}=$sqr;
         return $sqr;
-    } 
+    }
 }
 
 
@@ -467,7 +467,7 @@ sub get_thetadiv_buffer_sqr
 #
 # Sum R is defined in the following way:
 #            n-1
-#            --- 
+#            ---
 #            \
 # R(M,b,n)=  /   S(M,b,r,n)^2
 #            ---
@@ -475,23 +475,23 @@ sub get_thetadiv_buffer_sqr
 {
     $thetadiv_buffer_sqr={} unless $thetadiv_buffer_sqr;
     my $amnmcalc=get_aMnm_buffer_sqr();
-    
+
     return sub
     {
       my $b=shift;
       my $n=shift;
       my $M=shift;
-      
+
       my $key="$M:$b:$n";
       return $thetadiv_buffer_sqr->{$key} if exists($thetadiv_buffer_sqr->{$key});
-     
+
       my $sum=0;
       my $n_sub_1 = $n - 1;
       foreach my $r (1..$n-1)
       {
           $sum+=$amnmcalc->($M,$b,$r,$n);
       }
-      
+
       $thetadiv_buffer_sqr->{$key}=$sum;
       return $sum;
     };
@@ -505,10 +505,10 @@ sub noverk
     die "n over k; n has to be larger than zero" unless $n>0;
     die "n over k; k has to be larger than zero" unless $k>0;
     die "$k mus not be larger than $n" if $k>$n;
-    
+
     my @above=(($n-$k+1)..$n);
     my @below=(1..$k);
-    
+
     my $val=1;
     while(@above and @below)
     {
@@ -521,7 +521,7 @@ sub noverk
             $val/=shift @below;
         }
     }
-    
+
     foreach(@above)
     {
         $val*=$_;
@@ -539,7 +539,7 @@ sub binomial_term
     my $n=shift; # pool size
     my $m=shift; # running variable for $b..$M-$b
     my $k=shift; # running variable for 1..$n-1
-    
+
     my $val=noverk($M,$m);
     die "$val is zero for M: $M and m: $m\n" unless $val;
     my $t1=($k/$n)**$m;
@@ -553,7 +553,7 @@ sub a_Mnm
     my $M=shift;
     my $n=shift;
     my $m=shift;
-    
+
     my $toret=0;
     foreach my $k (1..$n-1)
     {
