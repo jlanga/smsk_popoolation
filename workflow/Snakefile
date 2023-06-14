@@ -52,12 +52,3 @@ rule all:
         expand(HP_PLOTS / "{population}.pdf", population=POPULATIONS),
         rules.fst.input,
         rules.reports.input,
-
-
-rule clean:
-    shell:
-        """
-        if [[ -d results ]]; then
-            rm -r results/
-        fi
-        """
