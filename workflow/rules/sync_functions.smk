@@ -9,7 +9,7 @@ def get_sync_min_count(wildcards):
 def compose_mpileups_comma(wildcards):
     chromosome = wildcards.chromosome
     mpileups = [
-        MPILEUP_RAW / f"{population}/{population}.{chromosome}.mpileup.gz"
+        str(MPILEUP_RAW / f"{population}/{population}.{chromosome}.mpileup.gz")
         for population in POPULATIONS
     ]
     composed = "{" + ",".join(mpileups) + "}"
@@ -34,5 +34,5 @@ def compose_max_coverages(wildcards):
     return ",".join(coverages)
 
 
-def get_SYNC_SUBSAMPLEDsample_method(wildcards):
+def get_sync_subsample_method(wildcards):
     return params["popoolation2"]["subsample"]["method"]

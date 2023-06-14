@@ -78,13 +78,15 @@ rule popoolation_merge_snps:
     output:
         protected(POPOOLATION_PLOTS / "{analysis}/{population}.{analysis}.snps.gz"),
     threads: 8
+    log:
+        POPOOLATION_PLOTS / "{analysis}/{population}.{analysis}.merge_snps.log",
     conda:
         "../envs/popoolation.yml"
     shell:
         "pigz --processes {threads} --best --stdout {input} > {output}"
 
 
-rule POPOOLATION_PLOTS:
+rule popoolation_plots:
     """Plot a genome-wide result's from variance sliding"""
     input:
         tsv_gz=POPOOLATION_PLOTS / "{analysis}/{population}.{analysis}.tsv.gz",

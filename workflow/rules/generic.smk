@@ -4,6 +4,8 @@ rule index_bam:
         "{filename}.bam",
     output:
         "{filename}.bam.bai",
+    log:
+        "{filename}.bam.bai.log",
     conda:
         "../envs/generic.yml"
     shell:
@@ -16,6 +18,8 @@ rule index_cram:
         "{filename}.cram",
     output:
         "{filename}.cram.crai",
+    log:
+        "{filename}.cram.crai.log",
     conda:
         "../envs/generic.yml"
     shell:
@@ -28,6 +32,8 @@ rule index_fasta:
         "{filename}",
     output:
         "{filename}.fai",
+    log:
+        "{filename}.fai.log",
     conda:
         "../envs/generic.yml"
     shell:

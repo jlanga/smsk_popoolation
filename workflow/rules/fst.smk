@@ -31,15 +31,15 @@ rule fst_sliding:
             --window-size {params.window_size} \
             --step-size {params.step_size} \
             --suppress-noninformative \
-            --input {params.sync} \
+            --input {input.sync} \
             --min-covered-fraction {params.min_covered_fraction} \
             --min-coverage {params.min_coverage} \
             --max-coverage {params.max_coverage} \
             --min-count {params.min_count} \
-            --output {params.tsv} \
+            --output {output.tsv} \
             --pool-size {params.pool_size} \
         2> {log} 1>&2
-        gzip --best --keep {params.tsv} 2>> {log}
+        gzip --best --keep {output.tsv} 2>> {log}
         """
 
 
@@ -65,10 +65,10 @@ rule fst_split_table:
         merged_tsv_gz=FST_PLOTS / "all.tsv.gz",
     output:
         fst_tsv=FST_PLOTS / "{pop1}_{pop2}.fst.tsv",
-    # log:
-    #     FST_PLOTS / "split_{pop1}_{pop2}.log"
-    # benchmark:
-    #     FST_PLOTS / "split_{pop1}_{pop2}.bmk"
+    log:
+        FST_PLOTS / "split_{pop1}_{pop2}.log",
+    benchmark:
+        FST_PLOTS / "split_{pop1}_{pop2}.bmk"
     params:
         pop1="{pop1}",
         pop2="{pop2}",

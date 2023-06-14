@@ -109,7 +109,7 @@ rule sync_mpileup2sync:
         """
 
 
-rule SYNC_SUBSAMPLEDsample:
+rule sync_subsample:
     """
     Subsample a sync file.
 
@@ -122,7 +122,7 @@ rule SYNC_SUBSAMPLEDsample:
     params:
         target_coverage=get_sync_target_coverage,
         max_coverage=compose_max_coverages,
-        method=get_SYNC_SUBSAMPLEDsample_method,
+        method=get_sync_subsample_method,
     log:
         SYNC_SUBSAMPLED / "{chromosome}.log",
     benchmark:
@@ -146,6 +146,10 @@ rule sync_compress:
         sync=SYNC_SUBSAMPLED / "{chromosome}.sync",
     output:
         sync_gz=protected(SYNC_SUBSAMPLED / "{chromosome}.sync.gz"),
+    log:
+        SYNC_SUBSAMPLED / "{chromosome}.compressed.log",
+    conda:
+        "../envs/sync.yml"
     threads: 4
     shell:
         "pigz --best --keep {output.sync}"
