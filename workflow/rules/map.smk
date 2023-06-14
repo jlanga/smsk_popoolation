@@ -49,6 +49,7 @@ rule map_bwa_map:
             -o {output.cram} \
             --reference {input.reference} \
             --output-fmt CRAM \
+            -M \
             -@ {threads} \
             `#/dev/stdin` \
         ) 2> {log}
