@@ -7,6 +7,6 @@ channels:
 dependencies:
   - python>=3.5
   - pigz=2.6
-  - r-tidyverse=2
+  - r-tidyverse=2.0.0
   - r-argparse=2.2.2
   - numpy=1.24.3

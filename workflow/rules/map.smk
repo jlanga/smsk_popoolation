@@ -50,7 +50,7 @@ rule map_bwa_map:
             --reference {input.reference} \
             --output-fmt CRAM \
             -@ {threads} \
-            /dev/stdin \
+            `#/dev/stdin` \
         ) 2> {log}
         """
 

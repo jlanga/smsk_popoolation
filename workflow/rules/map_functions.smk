@@ -3,4 +3,4 @@ def compose_rg_tag(wildcards):
     library = f"LB:truseq_{wildcards.library}"
     platform = "PL:Illumina"
     sample = f"SM:{wildcards.population}"
-    return f"@RG\t{identifier}\t{library}\t{platform}\t{sample}"
+    return f"@RG\\t{identifier}\\t{library}\\t{platform}\\t{sample}"

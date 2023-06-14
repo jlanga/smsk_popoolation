@@ -7,5 +7,5 @@ channels:
 dependencies:
   - perl=5.22.0
   - pigz=2.6
-  - r-tidyverse=2.0
-  - r-argparse=2.2
+  - r-tidyverse=2.0.0
+  - r-argparse=2.2.2

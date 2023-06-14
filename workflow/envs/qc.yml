@@ -5,6 +5,6 @@ channels:
   - bioconda
   - nodefaults
 dependencies:
-  - trimmomatic=0.35
-  - gzip=1.10
+  - trimmomatic=0.36  # Greater than 0.36 breaks the process substitution trick
+  - gzip=1.12
   - pigz=2.6
