@@ -5,4 +5,4 @@ channels:
   - bioconda
   - nodefaults
 dependencies:
-  - gzip
+  - gzip=1.10

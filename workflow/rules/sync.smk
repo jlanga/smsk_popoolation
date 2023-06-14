@@ -17,8 +17,6 @@ rule sync_identify_indels:
         mpileups_comma=compose_mpileups_comma,
     log:
         SYNC_FILT / "{chromosome}.identify_indels.log",
-    benchmark:
-        SYNC_FILT / "{chromosome}.identify_indels.bmk"
     conda:
         "../envs/sync.yml"
     shell:
@@ -52,8 +50,6 @@ rule sync_filter_indels:
         mpileups_comma=compose_mpileups_comma,
     log:
         SYNC_FILT / "{chromosome}.filter_indels.log",
-    benchmark:
-        SYNC_FILT / "{chromosome}.filter_indels.bmk"
     conda:
         "../envs/sync.yml"
     shell:
@@ -89,8 +85,6 @@ rule sync_mpileup2sync:
     threads: 1
     log:
         SYNC_MPILEUP2SYNC / "{chromosome}.log",
-    benchmark:
-        SYNC_MPILEUP2SYNC / "{chromosome}.bmk"
     resources:
         memory_gb=params["popoolation2"]["subsample"]["memory_gb"],
     conda:
@@ -125,8 +119,6 @@ rule sync_subsample:
         method=get_sync_subsample_method,
     log:
         SYNC_SUBSAMPLED / "{chromosome}.log",
-    benchmark:
-        SYNC_SUBSAMPLED / "{chromosome}.bmk"
     conda:
         "../envs/sync.yml"
     shell:

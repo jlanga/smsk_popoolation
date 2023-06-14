@@ -16,6 +16,9 @@ samples = pd.read_table("config/samples.tsv", comment="#", dtype="str")
 
 # Other variables
 POPULATIONS = samples["population"].drop_duplicates().values.tolist()
+POPULATION_LIBRARY = (
+    samples[["population", "library"]].drop_duplicates().values.tolist()
+)
 PAIRS = ["pe_pe", "pe_se"]
 CHROMOSOMES = features["chromosomes"].split(" ")
 ENDS = "1 2 u".split(" ")

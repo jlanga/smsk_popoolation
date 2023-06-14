@@ -9,8 +9,6 @@ rule map_bwa_index:
         ),
     log:
         MAP_INDEX / "bwa_index.log",
-    benchmark:
-        MAP_INDEX / "bwa_index.bmk"
     conda:
         "../envs/map.yml"
     shell:
@@ -31,11 +29,9 @@ rule map_bwa_map:
     params:
         extra=params["bwa"]["extra"],
         rg_tag=compose_rg_tag,
-    threads: params["bwa"]["threads"]
+    threads: 24
     log:
         MAP_RAW / "{population}.{library}.bwa_mem.log",
-    benchmark:
-        MAP_RAW / "{population}.{library}.bwa_mem.bmk"
     conda:
         "../envs/map.yml"
     shell:
@@ -79,8 +75,6 @@ rule map_split:
         chromosome="{chromosome}",
     log:
         MAP_SPLIT / "{population}.{library}.{chromosome}.log",
-    benchmark:
-        MAP_SPLIT / "{population}.{library}.{chromosome}.bmk"
     conda:
         "../envs/map.yml"
     shell:
@@ -111,8 +105,6 @@ rule map_filter:  # TODO: java memory, uncompressed bam
         dupstats=MAP_FILT / "{population}.{library}.{chromosome}.dupstats",
     log:
         MAP_FILT / "{population}.{library}.{chromosome}.log",
-    benchmark:
-        MAP_FILT / "{population}.{library}.{chromosome}.bmk"
     resources:
         memory_gb=params["picard_markduplicates"]["memory_gb"],
     conda:
@@ -137,6 +129,7 @@ rule map_filter:  # TODO: java memory, uncompressed bam
             - \
         | samtools sort \
             -l 9 \
+            -@ {threads} \
             -o {output.cram} \
             --reference {input.reference} \
             --output-fmt CRAM \
@@ -149,8 +142,6 @@ rule map:
     input:
         [
             MAP_FILT / f"{population}.{library}.{chromosome}.cram"
-            for population, library in (
-                samples[["population", "library"]].values.tolist()
-            )
+            for population, library in POPULATION_LIBRARY
             for chromosome in CHROMOSOMES
         ],

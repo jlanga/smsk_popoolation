@@ -8,8 +8,6 @@ rule mpileup_convert:
         mpileup_gz=MPILEUP_RAW / "{population}/{population}.{chromosome}.mpileup.gz",
     log:
         MPILEUP_RAW / "{population}/{population}.{chromosome}.log",
-    benchmark:
-        MPILEUP_RAW / "{population}/{population}.{chromosome}.bmk"
     conda:
         "../envs/mpileup.yml"
     shell:
@@ -45,8 +43,6 @@ rule mpileup_popoolation_identify_indels:
         min_count=get_indel_min_count,
     log:
         MPILEUP_FILT / "{population}/{population}.{chromosome}.gtf.log",
-    benchmark:
-        MPILEUP_FILT / "{population}/{population}.{chromosome}.gtf.bmk"
     conda:
         "../envs/mpileup.yml"
     shell:
@@ -80,8 +76,6 @@ rule mpileup_popoolation_filter_indels:
         ),
     log:
         MPILEUP_FILT / "{population}/{population}.{chromosome}.mpileup.log",
-    benchmark:
-        MPILEUP_FILT / "{population}/{population}.{chromosome}.mpileup.bmk"
     conda:
         "../envs/mpileup.yml"
     shell:
@@ -119,8 +113,6 @@ rule mpileup_popoolation_subsample:
         target_coverage=get_subsample_target_coverage,
     log:
         MPILEUP_SUB / "{population}/{population}.{chromosome}.log",
-    benchmark:
-        MPILEUP_SUB / "{population}/{population}.{chromosome}.bmk"
     conda:
         "../envs/mpileup.yml"
     shell:

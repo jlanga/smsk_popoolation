@@ -8,8 +8,6 @@ rule hp_table_population_chromosome:
         hp_gz=protected(HP_TABLES / "{population}.tsv.gz"),
     log:
         HP_TABLES / "{population}.log",
-    benchmark:
-        HP_TABLES / "{population}.bmk"
     conda:
         "../envs/hp.yml"
     shell:
@@ -30,8 +28,6 @@ rule hp_plot_population:
         pdf=HP_PLOTS / "{population}.pdf",
     log:
         HP_PLOTS / "{population}.log",
-    benchmark:
-        HP_PLOTS / "{population}.bmk"
     conda:
         "../envs/hp.yml"
     shell:

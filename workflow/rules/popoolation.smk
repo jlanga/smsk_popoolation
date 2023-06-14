@@ -18,8 +18,6 @@ rule popoolation_variance_sliding:
         window_size=get_popoolation_window_size,
     log:
         POPOOLATION_TABLES / "{analysis}/{population}.{chromosome}.{analysis}.log",
-    benchmark:
-        POPOOLATION_TABLES / "{analysis}/{population}.{chromosome}.{analysis}.bmk"
     conda:
         "../envs/popoolation.yml"
     shell:
@@ -54,9 +52,7 @@ rule popoolation_merge_variance_sliding:
         protected(POPOOLATION_PLOTS / "{analysis}/{population}.{analysis}.tsv.gz"),
     log:
         POPOOLATION_PLOTS / "{analysis}/{population}.{analysis}.merge_vs.log",
-    benchmark:
-        POPOOLATION_PLOTS / "{analysis}/{population}.{analysis}.merge_vs.bmk"
-    threads: 8
+    threads: 24
     conda:
         "../envs/popoolation.yml"
     shell:
@@ -94,8 +90,6 @@ rule popoolation_plots:
         pdf=protected(POPOOLATION_PLOTS / "{analysis}/{population}.{analysis}.pdf"),
     log:
         POPOOLATION_PLOTS / "{analysis}/{population}.{analysis}.plot.log",
-    benchmark:
-        POPOOLATION_PLOTS / "{analysis}/{population}.{analysis}.plot.bmk"
     conda:
         "../envs/popoolation.yml"
     shell:

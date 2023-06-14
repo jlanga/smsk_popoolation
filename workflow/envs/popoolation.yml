@@ -6,6 +6,6 @@ channels:
   - nodefaults
 dependencies:
   - perl=5.22.0
-  - pigz
+  - pigz=2.6
   - r-tidyverse=2.0
   - r-argparse=2.2

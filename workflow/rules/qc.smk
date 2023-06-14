@@ -25,9 +25,7 @@ rule qc_trimmomatic:
         trimmomatic_params=get_trimmomatic_params,
     log:
         QC / "{population}.{library}.trimmomatic_pe.log",
-    benchmark:
-        QC / "{population}.{library}.trimmomatic_pe.bmk"
-    threads: 4
+    threads: params["trimmomatic"]["threads"]
     priority: 50  # Do this and later the mappings
     conda:
         "../envs/qc.yml"
@@ -38,10 +36,10 @@ rule qc_trimmomatic:
             -{params.phred} \
             <(gzip --decompress --stdout {input.forward_}) \
             <(gzip --decompress --stdout {input.reverse_}) \
-            >(gzip --fast > {output.forward_}) \
-            >(gzip --fast > {output.forward_unp}) \
-            >(gzip --fast > {output.reverse_}) \
-            >(gzip --fast > {output.reverse_unp}) \
+            >(pigz --fast > {output.forward_}) \
+            >(pigz --fast > {output.forward_unp}) \
+            >(pigz --fast > {output.reverse_}) \
+            >(pigz --fast > {output.reverse_unp}) \
             ILLUMINACLIP:{params.adaptor}:2:30:10 \
             {params.trimmomatic_params} \
         2> {log} 1>&2
@@ -52,8 +50,6 @@ rule qc:
     input:
         [
             QC / f"{population}.{library}_{end}.fq.gz"
-            for population, library in (
-                samples[["population", "library"]].values.tolist()
-            )
+            for population, library in POPULATION_LIBRARY
             for end in ["1", "2"]
         ],

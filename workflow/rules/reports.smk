@@ -6,8 +6,6 @@ rule reports_fastqc:
         "{filename}_fastqc.zip",
     log:
         "{filename}.fastqc.log",
-    benchmark:
-        "{filename}.fastqc.bmk"
     conda:
         "../envs/reports.yml"
     shell:
@@ -21,8 +19,6 @@ rule reports_samtools_stats:
         "{filename}.stats.tsv",
     log:
         "{filename}.stats.log",
-    benchmark:
-        "{filename}.stats.bmk"
     conda:
         "../envs/reports.yml"
     shell:
@@ -36,8 +32,6 @@ rule reports_samtools_flagstat:
         "{filename}.flagstat.txt",
     log:
         "{filename}.flagstat.log",
-    benchmark:
-        "{filename}.flagstat.bmk"
     conda:
         "../envs/reports.yml"
     shell:
@@ -52,8 +46,6 @@ rule reports_samtools_idxstats:
         "{filename}.idxstats.txt",
     log:
         "{filename}.idxstats.log",
-    benchmark:
-        "{filename}.idxstats.bmk"
     conda:
         "../envs/reports.yml"
     shell:
@@ -64,8 +56,6 @@ rule reports:
     input:
         expand(
             MAP_RAW / f"{population}.{library}.{analysis}"
-            for population, library in (
-                samples[["population", "library"]].values.tolist()
-            )
+            for population, library in POPULATION_LIBRARY
             for analysis in "stats.tsv flagstat.txt idxstats.txt".split(" ")
         ),

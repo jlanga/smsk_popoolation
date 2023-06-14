@@ -6,4 +6,5 @@ channels:
   - nodefaults
 dependencies:
   - trimmomatic=0.35
-  # - gzip  # gzip should be installed
+  - gzip=1.10
+  - pigz=2.6
