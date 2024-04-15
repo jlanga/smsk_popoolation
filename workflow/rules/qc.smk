@@ -12,8 +12,8 @@ rule qc_trimmomatic:
     Sequences will be stored permanently later on on CRAM
     """
     input:
-        forward_=RAW / "{population}.{library}_1.fq.gz",
-        reverse_=RAW / "{population}.{library}_2.fq.gz",
+        forward_=READS / "{population}.{library}_1.fq.gz",
+        reverse_=READS / "{population}.{library}_2.fq.gz",
     output:
         forward_=temp(QC / "{population}.{library}_1.fq.gz"),
         reverse_=temp(QC / "{population}.{library}_2.fq.gz"),

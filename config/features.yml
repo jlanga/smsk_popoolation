@@ -1,7 +1,7 @@
 # Configuration files for reference
 ---
-reference:
-    dna: resources/genome/2R.fa.gz
+references:
+    fly: resources/genome/2R.fa.gz
 
 chromosomes:
     2R

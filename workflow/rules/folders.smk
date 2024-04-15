@@ -4,7 +4,10 @@ Variables to store the folder names
 
 RESULTS = Path("results")
 
-RAW = RESULTS / "raw"
+# RAW = RESULTS / "raw"
+
+READS = RESULTS / "reads"
+REFERENCE = RESULTS / "reference"
 
 # QC
 QC = RESULTS / "qc"

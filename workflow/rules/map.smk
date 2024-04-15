@@ -1,12 +1,14 @@
 rule map_bwa_index:
     """Index with bwa"""
     input:
-        fa=RAW / "genome.fa",
+        fa=REFERENCE / f"{REFERENCE_NAME}.fa.gz",
     output:
-        mock=touch(MAP_INDEX / "genome"),
-        buckets=expand(
-            MAP_INDEX / "genome.{suffix}", suffix="amb ann bwt pac sa".split()
-        ),
+        mock=touch(MAP_INDEX / f"{REFERENCE_NAME}"),
+        buckets=[
+            MAP_INDEX / f"{reference_name}.{suffix}"
+            for reference_name in [REFERENCE_NAME]
+            for suffix in "amb ann bwt pac sa".split()
+        ],
     log:
         MAP_INDEX / "bwa_index.log",
     conda:
@@ -22,8 +24,8 @@ rule map_bwa_map:
         reverse_=QC / "{population}.{library}_2.fq.gz",
         unp_forward=QC / "{population}.{library}_3.fq.gz",
         unp_reverse=QC / "{population}.{library}_4.fq.gz",
-        index=MAP_INDEX / "genome",
-        reference=RAW / "genome.fa",
+        index=MAP_INDEX / f"{REFERENCE_NAME}",
+        reference=REFERENCE / f"{REFERENCE_NAME}.fa.gz",
     output:
         cram=MAP_RAW / "{population}.{library}.cram",
     params:
@@ -69,7 +71,7 @@ rule map_split:
     input:
         cram=MAP_RAW / "{population}.{library}.cram",
         crai=MAP_RAW / "{population}.{library}.cram.crai",
-        reference=RAW / "genome.fa",
+        reference=REFERENCE / f"{REFERENCE_NAME}.fa.gz",
     output:
         bam=temp(MAP_SPLIT / "{population}.{library}.{chromosome}.bam"),
     params:
@@ -100,7 +102,7 @@ rule map_filter:  # TODO: java memory, uncompressed bam
     """
     input:
         bam=MAP_SPLIT / "{population}.{library}.{chromosome}.bam",
-        reference=RAW / "genome.fa",
+        reference=REFERENCE / f"{REFERENCE_NAME}.fa.gz",
     output:
         cram=MAP_FILT / "{population}.{library}.{chromosome}.cram",
         dupstats=MAP_FILT / "{population}.{library}.{chromosome}.dupstats",

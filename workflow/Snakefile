@@ -23,12 +23,14 @@ PAIRS = ["pe_pe", "pe_se"]
 CHROMOSOMES = features["chromosomes"].split(" ")
 ENDS = "1 2 u".split(" ")
 
+REFERENCE_NAME = [x for x in features["references"].keys()][0]
+
 
 include: "rules/folders.smk"
 include: "rules/generic.smk"
 include: "rules/reads/__main__.smk"
-include: "rules/raw_functions.smk"
-include: "rules/raw.smk"
+include: "rules/reference/__main__.smk"
+# include: "rules/raw.smk"
 include: "rules/qc_functions.smk"
 include: "rules/qc.smk"
 include: "rules/map_functions.smk"

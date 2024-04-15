@@ -2,8 +2,8 @@ rule mpileup_convert:
     """Compute the mpileup and compress it"""
     input:
         cram=get_library_files_from_sample,
-        fa=RAW / "genome.fa",
-        fai=RAW / "genome.fa.fai",
+        fa=REFERENCE / f"{REFERENCE_NAME}.fa.gz",
+        fai=REFERENCE / f"{REFERENCE_NAME}.fa.gz.fai",
     output:
         mpileup_gz=MPILEUP_RAW / "{population}/{population}.{chromosome}.mpileup.gz",
     log:
