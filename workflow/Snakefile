@@ -27,7 +27,7 @@ REFERENCE_NAME = [x for x in features["references"].keys()][0]
 
 
 include: "rules/folders.smk"
-include: "rules/generic.smk"
+include: "rules/helpers/__main__.smk"
 include: "rules/reads/__main__.smk"
 include: "rules/reference/__main__.smk"
 # include: "rules/raw.smk"

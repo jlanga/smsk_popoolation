@@ -7,7 +7,7 @@ rule index_bam:
     log:
         "{filename}.bam.bai.log",
     conda:
-        "../envs/generic.yml"
+        "__environment__.yml"
     shell:
         "samtools index {input}"
 
@@ -21,7 +21,7 @@ rule index_cram:
     log:
         "{filename}.cram.crai.log",
     conda:
-        "../envs/generic.yml"
+        "__environment__.yml"
     shell:
         "samtools index {input}"
 
@@ -35,6 +35,6 @@ rule index_fasta:
     log:
         "{filename}.fai.log",
     conda:
-        "../envs/generic.yml"
+        "__environment__.yml"
     shell:
         "samtools faidx {input}"
