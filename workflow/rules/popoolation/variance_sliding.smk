@@ -72,15 +72,14 @@ rule popoolation__variance_sliding__merge_values:
             POP1_PLOTS / analysis / f"{population}.{analysis}.tsv.gz"
             for analysis in ["D", "pi", "theta"]
             for population in POPULATIONS
-        ]
+        ],
 
 
 rule popoolation__variance_sliding__merge_snps__:
     """Merge snps"""
     input:
         expand(
-            POP1_TABLES
-            / "{analysis}/{population}.{chromosome}.{analysis}.snps",
+            POP1_TABLES / "{analysis}/{population}.{chromosome}.{analysis}.snps",
             chromosome=CHROMOSOMES,
             population=["{population}"],
             analysis=["{analysis}"],
@@ -102,8 +101,7 @@ rule popoolation__variance_sliding__merge_snps:
             POP1_PLOTS / analysis / f"{population}.{analysis}.snps.gz"
             for analysis in ["D", "pi", "theta"]
             for population in POPULATIONS
-        ]
-
+        ],
 
 
 rule popoolation__variance_sliding:

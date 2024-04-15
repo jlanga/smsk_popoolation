@@ -1,15 +1,15 @@
-rule hp_table_population_chromosome:
+rule popoolation__hp__compute__:
     """
     Build the hp table for a population in a chromosome.
     """
     input:
-        snps_gz=POPOOLATION_PLOTS / "D/{population}.D.snps.gz",
+        snps_gz=POP1_PLOTS / "D/{population}.D.snps.gz",
     output:
         hp_gz=HP_TABLES / "{population}.tsv.gz",
     log:
         HP_TABLES / "{population}.log",
     conda:
-        "../envs/hp.yml"
+        "__environment__.yml"
     shell:
         "(gzip --decompress --stdout {input.snps_gz} "
         "| python3 workflow/scripts/snps_to_hp.py "
@@ -18,7 +18,7 @@ rule hp_table_population_chromosome:
         "2> {log}"
 
 
-rule hp_plot_population:
+rule popoolation__hp__plot__:
     """
     Plot the genome-wide H_p distribution of a population
     """
@@ -29,7 +29,7 @@ rule hp_plot_population:
     log:
         HP_PLOTS / "{population}.log",
     conda:
-        "../envs/hp.yml"
+        "__environment__.yml"
     shell:
         """
         Rscript workflow/scripts/plot_score.R \
@@ -40,6 +40,6 @@ rule hp_plot_population:
         """
 
 
-rule hp:
+rule popoolation__hp:
     input:
         [HP_PLOTS / f"{population}.pdf" for population in POPULATIONS],
