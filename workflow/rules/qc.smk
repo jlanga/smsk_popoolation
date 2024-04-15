@@ -34,12 +34,12 @@ rule qc_trimmomatic:
         trimmomatic PE \
             -threads {threads} \
             -{params.phred} \
-            <(gzip --decompress --stdout {input.forward_}) \
-            <(gzip --decompress --stdout {input.reverse_}) \
-            >(pigz --fast > {output.forward_}) \
-            >(pigz --fast > {output.forward_unp}) \
-            >(pigz --fast > {output.reverse_}) \
-            >(pigz --fast > {output.reverse_unp}) \
+            {input.forward_} \
+            {input.reverse_} \
+            {output.forward_} \
+            {output.forward_unp} \
+            {output.reverse_} \
+            {output.reverse_unp} \
             ILLUMINACLIP:{params.adaptor}:2:30:10 \
             {params.trimmomatic_params} \
         2> {log} 1>&2
