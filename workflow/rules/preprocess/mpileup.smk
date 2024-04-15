@@ -5,9 +5,9 @@ rule preprocess__mpileup__:
         fa=REFERENCE / f"{REFERENCE_NAME}.fa.gz",
         fai=REFERENCE / f"{REFERENCE_NAME}.fa.gz.fai",
     output:
-        mpileup_gz=MPILEUP_RAW / "{population}" / "{population}.{chromosome}.mpileup.gz",
+        mpileup_gz=PRE_MPILEUP / "{population}" / "{population}.{chromosome}.mpileup.gz",
     log:
-        MPILEUP_RAW / "{population}" /"{population}.{chromosome}.log",
+        PRE_MPILEUP / "{population}" / "{population}.{chromosome}.log",
     conda:
         "__environment__.yml"
     shell:
@@ -30,11 +30,10 @@ rule preprocess__mpileup__:
         """
 
 
-
 rule preprocess__mpileup:
     input:
         [
-            MPILEUP_RAW / population / f"{population}.{chromosome}.mpileup.gz"
+            PRE_MPILEUP / population / f"{population}.{chromosome}.mpileup.gz"
             for population in POPULATIONS
             for chromosome in CHROMOSOMES
         ],

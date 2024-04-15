@@ -3,14 +3,14 @@ rule preprocess__map__index:
     input:
         fa=REFERENCE / f"{REFERENCE_NAME}.fa.gz",
     output:
-        mock=touch(MAP_INDEX / f"{REFERENCE_NAME}"),
+        mock=touch(PRE_INDEX / f"{REFERENCE_NAME}"),
         buckets=[
-            MAP_INDEX / f"{reference_name}.{suffix}"
+            PRE_INDEX / f"{reference_name}.{suffix}"
             for reference_name in [REFERENCE_NAME]
             for suffix in "amb ann bwt pac sa".split()
         ],
     log:
-        MAP_INDEX / "bwa_index.log",
+        PRE_INDEX / "bwa_index.log",
     conda:
         "__environment__.yml"
     shell:
@@ -22,16 +22,16 @@ rule preprocess__map__bwamem__:
     input:
         forward_=READS / "{population}.{library}_1.fq.gz",
         reverse_=READS / "{population}.{library}_2.fq.gz",
-        index=MAP_INDEX / f"{REFERENCE_NAME}",
+        index=PRE_INDEX / f"{REFERENCE_NAME}",
         reference=REFERENCE / f"{REFERENCE_NAME}.fa.gz",
     output:
-        cram=MAP_RAW / "{population}.{library}.cram",
+        cram=PRE_MAP / "{population}.{library}.cram",
     params:
         extra=params["bwa"]["extra"],
         rg_tag=compose_rg_tag,
     threads: 24
     log:
-        MAP_RAW / "{population}.{library}.bwa_mem.log",
+        PRE_MAP / "{population}.{library}.bwa_mem.log",
     conda:
         "__environment__.yml"
     shell:
@@ -67,15 +67,15 @@ rule preprocess__map__split__:
     one.
     """
     input:
-        cram=MAP_RAW / "{population}.{library}.cram",
-        crai=MAP_RAW / "{population}.{library}.cram.crai",
+        cram=PRE_MAP / "{population}.{library}.cram",
+        crai=PRE_MAP / "{population}.{library}.cram.crai",
         reference=REFERENCE / f"{REFERENCE_NAME}.fa.gz",
     output:
-        bam=temp(MAP_SPLIT / "{population}.{library}.{chromosome}.bam"),
+        bam=temp(PRE_SPLIT / "{population}.{library}.{chromosome}.bam"),
     params:
         chromosome="{chromosome}",
     log:
-        MAP_SPLIT / "{population}.{library}.{chromosome}.log",
+        PRE_SPLIT / "{population}.{library}.{chromosome}.log",
     conda:
         "__environment__.yml"
     shell:
@@ -99,14 +99,14 @@ rule preprocess__map__filter__:  # TODO: java memory, uncompressed bam
     Pairs with something unpaired will disappear.
     """
     input:
-        bam=MAP_SPLIT / "{population}.{library}.{chromosome}.bam",
+        bam=PRE_SPLIT / "{population}.{library}.{chromosome}.bam",
         reference=REFERENCE / f"{REFERENCE_NAME}.fa.gz",
         fai=REFERENCE / f"{REFERENCE_NAME}.fa.gz.fai",
     output:
-        cram=MAP_FILT / "{population}.{library}.{chromosome}.cram",
-        dupstats=MAP_FILT / "{population}.{library}.{chromosome}.dupstats",
+        cram=PRE_FILT / "{population}.{library}.{chromosome}.cram",
+        dupstats=PRE_FILT / "{population}.{library}.{chromosome}.dupstats",
     log:
-        MAP_FILT / "{population}.{library}.{chromosome}.log",
+        PRE_FILT / "{population}.{library}.{chromosome}.log",
     resources:
         memory_gb=params["picard_markduplicates"]["memory_gb"],
     conda:
@@ -144,7 +144,7 @@ rule preprocess__map__filter__:  # TODO: java memory, uncompressed bam
 rule preprocess__map:
     input:
         [
-            MAP_FILT / f"{population}.{library}.{chromosome}.cram"
+            PRE_FILT / f"{population}.{library}.{chromosome}.cram"
             for population, library in POPULATION_LIBRARY
             for chromosome in CHROMOSOMES
         ],

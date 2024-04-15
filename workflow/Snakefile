@@ -31,7 +31,7 @@ include: "rules/helpers/__main__.smk"
 include: "rules/reads/__main__.smk"
 include: "rules/reference/__main__.smk"
 include: "rules/preprocess/__main__.smk"
-# include: "rules/popoolation/__main__.smk"
+include: "rules/popoolation/__main__.smk"
 # include: "rules/popoolation2/__main__.smk"
 # include: "rules/reports.smk"
 
@@ -39,6 +39,7 @@ include: "rules/preprocess/__main__.smk"
 rule all:
     input:
         rules.preprocess.input,
+        rules.popoolation.input,
         # rules.popoolation_d.input,
         # rules.popoolation_pi.input,
         # rules.popoolation_theta.input,

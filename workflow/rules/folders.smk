@@ -10,30 +10,27 @@ READS = RESULTS / "reads"
 REFERENCE = RESULTS / "reference"
 
 PRE = RESULTS / "preprocess"
-QC = PRE / "qc"
-MAP = PRE / "map"
-MAP_INDEX = MAP / "index"
-MAP_RAW = MAP / "raw"
-MAP_RAW = MAP / "raw"
-MAP_SPLIT = MAP / "split"
-MAP_FILT = MAP / "filtered"
+PRE_INDEX= PRE / "index"
+PRE_MAP = PRE / "map"
+PRE_SPLIT = PRE / "split"
+PRE_FILT = PRE / "filtered"
 PRE_MPILEUP = PRE / "mpileup"
 
 # mpileup - SNP calling - popoolation
 POP1 = RESULTS / "popoolation1"
-MPILEUP = RESULTS / "mpileup"
-MPILEUP_RAW = MPILEUP / "raw"
-MPILEUP_FILT = MPILEUP / "filt"
-MPILEUP_SUB = MPILEUP / "sub"
+POP1_RAW = POP1 / "raw"
+POP1_FILT = POP1 / "filtered"
+POP1_SUB = POP1 / "subsampled"
+POP1_TABLES = POP1 / "tables"
+POP1_PLOTS = POP1 / "plots"
 
 # sync - popoolation2
 POP2 = RESULTS / "popoolation2"
-SYNC = RESULTS / "sync"
+SYNC = POP2 / "sync"
 SYNC_MPILEUP = SYNC / "mpileup"
 SYNC_FILT = SYNC / "filt"
 SYNC_MPILEUP2SYNC = SYNC / "mpileup2sync"  # rename?
 SYNC_SUBSAMPLED = SYNC / "subsampled"
-
 
 
 # Tables & plots
