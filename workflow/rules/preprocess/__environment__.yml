@@ -1,15 +1,11 @@
-# Environment for map subworkflow
----
 channels:
   - conda-forge
   - bioconda
   - defaults
 dependencies:
-  - bwa=0.7.17
+  - bwa =0.7.18
   - gzip =1.13
-  - perl =5.32.1
-  - picard=3.0.0
+  - picard =3.1.1
   - pigz =2.8
   - python =3.12.2
   - samtools =1.19.2
-  - trimmomatic =0.39

@@ -1,4 +1,4 @@
-rule map_bwa_index:
+rule preprocess__map__index:
     """Index with bwa"""
     input:
         fa=REFERENCE / f"{REFERENCE_NAME}.fa.gz",
@@ -17,13 +17,11 @@ rule map_bwa_index:
         "bwa index -p {output.mock} {input.fa} > {log} 2>&1"
 
 
-rule map_bwa_map:
+rule preprocess__map__bwamem__:
     """Map population with bowtie2, sort with samtools, compress to cram"""
     input:
-        forward_=QC / "{population}.{library}_1.fq.gz",
-        reverse_=QC / "{population}.{library}_2.fq.gz",
-        unp_forward=QC / "{population}.{library}_3.fq.gz",
-        unp_reverse=QC / "{population}.{library}_4.fq.gz",
+        forward_=READS / "{population}.{library}_1.fq.gz",
+        reverse_=READS / "{population}.{library}_2.fq.gz",
         index=MAP_INDEX / f"{REFERENCE_NAME}",
         reference=REFERENCE / f"{REFERENCE_NAME}.fa.gz",
     output:
@@ -58,7 +56,7 @@ rule map_bwa_map:
         """
 
 
-rule map_split:
+rule preprocess__map__split__:
     """Extract chromosome in cram
 
     We use uncompressed bam to accelerate the output. The result of this rule
@@ -92,7 +90,7 @@ rule map_split:
         """
 
 
-rule map_filter:  # TODO: java memory, uncompressed bam
+rule preprocess__map__filter__:  # TODO: java memory, uncompressed bam
     """Remove duplicates from CRAM and filter out sequences.
 
     samtools view | MarkDuplicates | samtools view -f -F | SortSam
@@ -103,6 +101,7 @@ rule map_filter:  # TODO: java memory, uncompressed bam
     input:
         bam=MAP_SPLIT / "{population}.{library}.{chromosome}.bam",
         reference=REFERENCE / f"{REFERENCE_NAME}.fa.gz",
+        fai=REFERENCE / f"{REFERENCE_NAME}.fa.gz.fai",
     output:
         cram=MAP_FILT / "{population}.{library}.{chromosome}.cram",
         dupstats=MAP_FILT / "{population}.{library}.{chromosome}.dupstats",
@@ -114,15 +113,16 @@ rule map_filter:  # TODO: java memory, uncompressed bam
         "__environment__.yml"
     shell:
         """
-        (picard -Xmx{resources.memory_gb}g MarkDuplicates \
-            INPUT={input.bam} \
-            OUTPUT=/dev/stdout \
-            METRICS_FILE={output.dupstats} \
-            ASSUME_SORT_ORDER=coordinate \
-            VALIDATION_STRINGENCY=SILENT \
-            COMPRESSION_LEVEL=0 \
-            REMOVE_DUPLICATES=true \
-            QUIET=false \
+        ( picard MarkDuplicates \
+            --INPUT {input.bam} \
+            --OUTPUT /dev/stdout \
+            --METRICS_FILE {output.dupstats} \
+            --ASSUME_SORT_ORDER coordinate \
+            --VALIDATION_STRINGENCY SILENT \
+            --COMPRESSION_LEVEL 0 \
+            --REMOVE_DUPLICATES true \
+            --QUIET true \
+            --VERBOSITY ERROR \
         | samtools view \
             -q 20 \
             -f 0x0002  `# read mapped in proper pair. Leave only` \
@@ -141,7 +141,7 @@ rule map_filter:  # TODO: java memory, uncompressed bam
         """
 
 
-rule map:
+rule preprocess__map:
     input:
         [
             MAP_FILT / f"{population}.{library}.{chromosome}.cram"
