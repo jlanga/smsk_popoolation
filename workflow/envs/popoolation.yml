@@ -1,11 +1,9 @@
-# Environment for popoolation subworkflow
----
 channels:
   - conda-forge
   - bioconda
   - nodefaults
 dependencies:
-  - perl=5.22.0
-  - pigz=2.6
-  - r-tidyverse=2.0.0
-  - r-argparse=2.2.2
+  - perl =5.32.1
+  - pigz =2.8
+  - r-tidyverse =2.0.0
+  - r-argparse =2.2.3

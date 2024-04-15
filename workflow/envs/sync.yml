@@ -1,10 +1,8 @@
-# Environment for sync subworkflow
----
 channels:
   - conda-forge
   - bioconda
   - nodefaults
 dependencies:
-  - perl=5.22.0
-  - pigz=2.6
-  - openjdk=20.0.0
+  - perl =5.32.1
+  - pigz =2.8
+  - openjdk =21.0.2

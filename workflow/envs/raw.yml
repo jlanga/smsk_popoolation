@@ -1,8 +1,6 @@
-# Environment for raw subworkflow
----
 channels:
   - conda-forge
   - bioconda
   - nodefaults
 dependencies:
-  - gzip=1.12
+  - gzip =1.13
