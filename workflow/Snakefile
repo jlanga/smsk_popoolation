@@ -26,6 +26,7 @@ ENDS = "1 2 u".split(" ")
 
 include: "rules/folders.smk"
 include: "rules/generic.smk"
+include: "rules/reads/__main__.smk"
 include: "rules/raw_functions.smk"
 include: "rules/raw.smk"
 include: "rules/qc_functions.smk"
