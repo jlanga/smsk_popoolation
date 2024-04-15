@@ -32,17 +32,13 @@ include: "rules/reads/__main__.smk"
 include: "rules/reference/__main__.smk"
 include: "rules/preprocess/__main__.smk"
 include: "rules/popoolation/__main__.smk"
-# include: "rules/popoolation2/__main__.smk"
-# include: "rules/reports.smk"
+include: "rules/popoolation2/__main__.smk"
+include: "rules/report/__main__.smk"
 
 
 rule all:
     input:
         rules.preprocess.input,
         rules.popoolation.input,
-        # rules.popoolation_d.input,
-        # rules.popoolation_pi.input,
-        # rules.popoolation_theta.input,
-        # expand(HP_PLOTS / "{population}.pdf", population=POPULATIONS),
-        # rules.fst.input,
-        # rules.reports.input,
+        rules.popoolation2.input,
+        rules.report.input,

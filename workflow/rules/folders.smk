@@ -10,7 +10,7 @@ READS = RESULTS / "reads"
 REFERENCE = RESULTS / "reference"
 
 PRE = RESULTS / "preprocess"
-PRE_INDEX= PRE / "index"
+PRE_INDEX = PRE / "index"
 PRE_MAP = PRE / "map"
 PRE_SPLIT = PRE / "split"
 PRE_FILT = PRE / "filtered"
@@ -26,22 +26,21 @@ POP1_PLOTS = POP1 / "plots"
 
 # sync - popoolation2
 POP2 = RESULTS / "popoolation2"
-SYNC = POP2 / "sync"
-SYNC_MPILEUP = SYNC / "mpileup"
-SYNC_FILT = SYNC / "filt"
-SYNC_MPILEUP2SYNC = SYNC / "mpileup2sync"  # rename?
-SYNC_SUBSAMPLED = SYNC / "subsampled"
-
+POP2_MPILEUP = POP2 / "mpileup"
+POP2_FILT = POP2 / "filt"
+POP2_SYNC = POP2 / "sync"  # rename?
+POP2_SUB = POP2 / "subsampled"
+POP2_TABLES = POP2 / "tables"
+POP2_PLOTS = POP2 / "plots"
 
 # Tables & plots
-POPOOLATION = RESULTS / "popoolation"
-POPOOLATION_TABLES = POPOOLATION / "tables"
-POPOOLATION_PLOTS = POPOOLATION / "plots"
+# POPOOLATION = RESULTS / "popoolation"
+# POPOOLATION_TABLES = POPOOLATION / "tables"
+# POPOOLATION_PLOTS = POPOOLATION / "plots"
 
 HP = RESULTS / "hp"
 HP_TABLES = HP / "tables"
 HP_PLOTS = HP / "plots"
-
-FST = RESULTS / "fst"
-FST_TABLES = FST / "tables"
-FST_PLOTS = FST / "plots"
+# FST = RESULTS / "fst"
+# FST_TABLES = FST / "tables"
+# FST_PLOTS = FST / "plots"

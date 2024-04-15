@@ -1,8 +1,0 @@
-channels:
-  - conda-forge
-  - bioconda
-  - nodefaults
-dependencies:
-  - samtools =1.19.2
-  - python =3.12.2
-  - perl =5.32.1

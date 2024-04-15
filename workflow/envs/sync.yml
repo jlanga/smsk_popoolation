@@ -1,8 +1,0 @@
-channels:
-  - conda-forge
-  - bioconda
-  - nodefaults
-dependencies:
-  - perl =5.32.1
-  - pigz =2.8
-  - openjdk =21.0.2

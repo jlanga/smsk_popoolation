@@ -1,4 +1,4 @@
-rule reports_fastqc:
+rule report_fastqc:
     input:
         "{filename}.fq.gz",
     output:
@@ -7,12 +7,12 @@ rule reports_fastqc:
     log:
         "{filename}.fastqc.log",
     conda:
-        "../envs/reports.yml"
+        "__environment__.yml"
     shell:
         "fastqc --noextract --nogroup {input} 2> {log} 1>&2"
 
 
-rule reports_samtools_stats:
+rule report_samtools_stats:
     input:
         "{filename}.cram",
     output:
@@ -20,12 +20,12 @@ rule reports_samtools_stats:
     log:
         "{filename}.stats.log",
     conda:
-        "../envs/reports.yml"
+        "__environment__.yml"
     shell:
         "samtools stats {input} > {output} 2>&1"
 
 
-rule reports_samtools_flagstat:
+rule report_samtools_flagstat:
     input:
         "{filename}.cram",
     output:
@@ -33,12 +33,12 @@ rule reports_samtools_flagstat:
     log:
         "{filename}.flagstat.log",
     conda:
-        "../envs/reports.yml"
+        "__environment__.yml"
     shell:
         "samtools flagstat {input} > {output} 2> {log}"
 
 
-rule reports_samtools_idxstats:
+rule report_samtools_idxstats:
     input:
         cram="{filename}.cram",
         crai="{filename}.cram.crai",
@@ -47,15 +47,15 @@ rule reports_samtools_idxstats:
     log:
         "{filename}.idxstats.log",
     conda:
-        "../envs/reports.yml"
+        "__environment__.yml"
     shell:
         "samtools idxstats {input.cram} > {output} 2> {log}"
 
 
-rule reports:
+rule report:
     input:
         expand(
-            MAP_RAW / f"{population}.{library}.{analysis}"
+            PRE_MAP / f"{population}.{library}.{analysis}"
             for population, library in POPULATION_LIBRARY
             for analysis in "stats.tsv flagstat.txt idxstats.txt".split(" ")
         ),
