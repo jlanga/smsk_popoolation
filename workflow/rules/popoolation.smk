@@ -49,7 +49,7 @@ rule popoolation_merge_variance_sliding:
             analysis=["{analysis}"],
         ),
     output:
-        protected(POPOOLATION_PLOTS / "{analysis}/{population}.{analysis}.tsv.gz"),
+        POPOOLATION_PLOTS / "{analysis}/{population}.{analysis}.tsv.gz",
     log:
         POPOOLATION_PLOTS / "{analysis}/{population}.{analysis}.merge_vs.log",
     threads: 24
@@ -72,7 +72,7 @@ rule popoolation_merge_snps:
             analysis=["{analysis}"],
         ),
     output:
-        protected(POPOOLATION_PLOTS / "{analysis}/{population}.{analysis}.snps.gz"),
+        POPOOLATION_PLOTS / "{analysis}/{population}.{analysis}.snps.gz",
     threads: 8
     log:
         POPOOLATION_PLOTS / "{analysis}/{population}.{analysis}.merge_snps.log",
@@ -87,7 +87,7 @@ rule popoolation_plots:
     input:
         tsv_gz=POPOOLATION_PLOTS / "{analysis}/{population}.{analysis}.tsv.gz",
     output:
-        pdf=protected(POPOOLATION_PLOTS / "{analysis}/{population}.{analysis}.pdf"),
+        pdf=POPOOLATION_PLOTS / "{analysis}/{population}.{analysis}.pdf",
     log:
         POPOOLATION_PLOTS / "{analysis}/{population}.{analysis}.plot.log",
     conda:

@@ -8,7 +8,7 @@ rule fst_sliding:
         sync=SYNC_SUBSAMPLED / "{chromosome}.sync",
     output:
         tsv=temp(FST_TABLES / "{chromosome}.tsv"),
-        tsv_gz=protected(FST_TABLES / "{chromosome}.tsv.gz"),
+        tsv_gz=FST_TABLES / "{chromosome}.tsv.gz",
     params:
         sync=SYNC_SUBSAMPLED / "{chromosome}.sync",
         tsv=FST_TABLES / "{chromosome}.tsv",
@@ -45,7 +45,7 @@ rule fst_merge:
     input:
         tsvs=expand(FST_TABLES / "{chromosome}.tsv", chromosome=CHROMOSOMES),
     output:
-        tsv_gz=protected(FST_PLOTS / "all.tsv.gz"),
+        tsv_gz=FST_PLOTS / "all.tsv.gz",
     log:
         FST_PLOTS / "merge.log",
     threads: 24

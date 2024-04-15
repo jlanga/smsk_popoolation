@@ -103,9 +103,7 @@ rule mpileup_popoolation_subsample:
         mpileup_fifo=temp(
             MPILEUP_SUB / "{population}/{population}.{chromosome}.mpileup"
         ),
-        mpileup_gz=protected(
-            MPILEUP_SUB / "{population}/{population}.{chromosome}.mpileup.gz"
-        ),
+        mpileup_gz=MPILEUP_SUB / "{population}/{population}.{chromosome}.mpileup.gz",
     params:
         min_qual=get_subsample_min_qual,
         method=get_subsample_method,

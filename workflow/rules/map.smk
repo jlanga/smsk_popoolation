@@ -25,7 +25,7 @@ rule map_bwa_map:
         index=MAP_INDEX / "genome",
         reference=RAW / "genome.fa",
     output:
-        cram=protected(MAP_RAW / "{population}.{library}.cram"),
+        cram=MAP_RAW / "{population}.{library}.cram",
     params:
         extra=params["bwa"]["extra"],
         rg_tag=compose_rg_tag,
@@ -36,7 +36,7 @@ rule map_bwa_map:
         "../envs/map.yml"
     shell:
         """
-        (bwa mem \
+        ( bwa mem \
             -M \
             -R '{params.rg_tag}' \
             -t {threads} \
@@ -102,7 +102,7 @@ rule map_filter:  # TODO: java memory, uncompressed bam
         bam=MAP_SPLIT / "{population}.{library}.{chromosome}.bam",
         reference=RAW / "genome.fa",
     output:
-        cram=protected(MAP_FILT / "{population}.{library}.{chromosome}.cram"),
+        cram=MAP_FILT / "{population}.{library}.{chromosome}.cram",
         dupstats=MAP_FILT / "{population}.{library}.{chromosome}.dupstats",
     log:
         MAP_FILT / "{population}.{library}.{chromosome}.log",

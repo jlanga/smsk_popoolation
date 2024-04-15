@@ -5,7 +5,7 @@ rule hp_table_population_chromosome:
     input:
         snps_gz=POPOOLATION_PLOTS / "D/{population}.D.snps.gz",
     output:
-        hp_gz=protected(HP_TABLES / "{population}.tsv.gz"),
+        hp_gz=HP_TABLES / "{population}.tsv.gz",
     log:
         HP_TABLES / "{population}.log",
     conda:

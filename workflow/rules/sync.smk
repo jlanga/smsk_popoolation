@@ -137,7 +137,7 @@ rule sync_compress:
     input:
         sync=SYNC_SUBSAMPLED / "{chromosome}.sync",
     output:
-        sync_gz=protected(SYNC_SUBSAMPLED / "{chromosome}.sync.gz"),
+        sync_gz=SYNC_SUBSAMPLED / "{chromosome}.sync.gz",
     log:
         SYNC_SUBSAMPLED / "{chromosome}.compressed.log",
     conda:
