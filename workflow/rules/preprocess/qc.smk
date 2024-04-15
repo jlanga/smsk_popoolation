@@ -28,7 +28,7 @@ rule qc_trimmomatic:
     threads: params["trimmomatic"]["threads"]
     priority: 50  # Do this and later the mappings
     conda:
-        "../envs/qc.yml"
+        "__environment__.yml"
     shell:
         """
         trimmomatic PE \

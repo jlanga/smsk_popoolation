@@ -9,7 +9,7 @@ rule mpileup_convert:
     log:
         MPILEUP_RAW / "{population}/{population}.{chromosome}.log",
     conda:
-        "../envs/mpileup.yml"
+        "__environment__.yml"
     shell:
         """
         (samtools merge \
@@ -44,7 +44,7 @@ rule mpileup_popoolation_identify_indels:
     log:
         MPILEUP_FILT / "{population}/{population}.{chromosome}.gtf.log",
     conda:
-        "../envs/mpileup.yml"
+        "__environment__.yml"
     shell:
         """
         perl workflow/scripts/popoolation_1.2.2/basic-pipeline/\
@@ -77,7 +77,7 @@ rule mpileup_popoolation_filter_indels:
     log:
         MPILEUP_FILT / "{population}/{population}.{chromosome}.mpileup.log",
     conda:
-        "../envs/mpileup.yml"
+        "__environment__.yml"
     shell:
         """
         mkfifo {output.mpileup_fifo}
@@ -112,7 +112,7 @@ rule mpileup_popoolation_subsample:
     log:
         MPILEUP_SUB / "{population}/{population}.{chromosome}.log",
     conda:
-        "../envs/mpileup.yml"
+        "__environment__.yml"
     shell:
         """
         rm -f {output.mpileup_fifo}

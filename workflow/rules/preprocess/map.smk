@@ -12,7 +12,7 @@ rule map_bwa_index:
     log:
         MAP_INDEX / "bwa_index.log",
     conda:
-        "../envs/map.yml"
+        "__environment__.yml"
     shell:
         "bwa index -p {output.mock} {input.fa} > {log} 2>&1"
 
@@ -35,7 +35,7 @@ rule map_bwa_map:
     log:
         MAP_RAW / "{population}.{library}.bwa_mem.log",
     conda:
-        "../envs/map.yml"
+        "__environment__.yml"
     shell:
         """
         ( bwa mem \
@@ -79,7 +79,7 @@ rule map_split:
     log:
         MAP_SPLIT / "{population}.{library}.{chromosome}.log",
     conda:
-        "../envs/map.yml"
+        "__environment__.yml"
     shell:
         """
         samtools view \
@@ -111,7 +111,7 @@ rule map_filter:  # TODO: java memory, uncompressed bam
     resources:
         memory_gb=params["picard_markduplicates"]["memory_gb"],
     conda:
-        "../envs/map.yml"
+        "__environment__.yml"
     shell:
         """
         (picard -Xmx{resources.memory_gb}g MarkDuplicates \

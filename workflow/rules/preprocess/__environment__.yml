@@ -6,5 +6,10 @@ channels:
   - defaults
 dependencies:
   - bwa=0.7.17
-  - samtools=1.17.0
+  - gzip =1.13
+  - perl =5.32.1
   - picard=3.0.0
+  - pigz =2.8
+  - python =3.12.2
+  - samtools =1.19.2
+  - trimmomatic =0.39
