@@ -22,7 +22,7 @@ rule popoolation__variance_sliding__:
         "__environment__.yml"
     shell:
         """
-        perl workflow/scripts/popoolation_1.2.2/Variance-sliding.pl \
+        perl workflow/scripts/popoolation/Variance-sliding.pl \
             --measure {params.measure} \
             --fastq-type sanger \
             --min-count {params.min_count} \

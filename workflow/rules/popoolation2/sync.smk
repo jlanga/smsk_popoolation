@@ -24,7 +24,7 @@ rule popoolation2__sync__identify_indel_regions__:
         (eval \
             paste <(gzip -dc {input.mpileups[0]} | cut -f 1-3) \
             '<(gzip -dc '{params.mpileups_comma}' | cut -f 4-6 )' \
-        | perl workflow/scripts/popoolation2_1201/indel_filtering/\
+        | perl workflow/scripts/popoolation2/indel_filtering/\
 identify-indel-regions.pl \
             --input /dev/stdin \
             --output {output.gtf} \
@@ -61,7 +61,7 @@ rule popoolation2__sync__filter_indels__:
         (eval \
             paste <(gzip -dc {input.mpileups[0]} | cut -f 1-3) \
             '<(gzip -dc '{params.mpileups_comma}' | cut -f 4-6 )' \
-        | perl  workflow/scripts/popoolation2_1201/indel_filtering/filter-sync-by-gtf.pl \
+        | perl  workflow/scripts/popoolation2/indel_filtering/filter-sync-by-gtf.pl \
             --input /dev/stdin \
             --gtf {input.gtf} \
             --output {output.mpileup_fifo}) \
@@ -92,7 +92,7 @@ rule popoolation2__sync_mpileup2sync:
     shell:
         """
         (gzip --decompress --stdout {input.mpileup_gz} \
-        | java -Xmx{resources.memory_gb}g -jar workflow/scripts/popoolation2_1201/mpileup2sync.jar \
+        | java -Xmx{resources.memory_gb}g -jar workflow/scripts/popoolation2/mpileup2sync.jar \
             --input /dev/stdin \
             --output {output.sync} \
             --fastq-type sanger \
@@ -123,7 +123,7 @@ rule popoolation2__sync_subsample:
         "__environment__.yml"
     shell:
         """
-        perl workflow/scripts/popoolation2_1201/subsample-synchronized.pl \
+        perl workflow/scripts/popoolation2/subsample-synchronized.pl \
             --input {input.sync} \
             --output {output.sync} \
             --target-coverage {params.target_coverage} \

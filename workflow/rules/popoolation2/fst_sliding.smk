@@ -25,7 +25,7 @@ rule popoolation2__fst_sliding__compute__:
         "__environment__.yml"
     shell:
         """
-        perl workflow/scripts/popoolation2_1201/fst-sliding.pl \
+        perl workflow/scripts/popoolation2/fst-sliding.pl \
             --window-size {params.window_size} \
             --step-size {params.step_size} \
             --suppress-noninformative \

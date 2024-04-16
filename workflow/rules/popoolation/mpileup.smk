@@ -15,7 +15,7 @@ rule popoolation__mpileup__identify_indels__:
         "__environment__.yml"
     shell:
         """
-        perl workflow/scripts/popoolation_1.2.2/basic-pipeline/\
+        perl workflow/scripts/popoolation/basic-pipeline/\
 identify-genomic-indel-regions.pl \
             --input <(gzip --decompress --stdout {input.mpileup_gz}) \
             --output {output.gtf} \
@@ -23,6 +23,7 @@ identify-genomic-indel-regions.pl \
             --min-count {params.min_count} \
         2>{log} 1>&2
         """
+
 
 rule popoolation__mpileup__filter_indels__:
     """
@@ -35,12 +36,8 @@ rule popoolation__mpileup__filter_indels__:
         mpileup_gz=PRE_MPILEUP / "{population}/{population}.{chromosome}.mpileup.gz",
         gtf=POP1_FILT / "{population}/{population}.{chromosome}.gtf",
     output:
-        mpileup_fifo=temp(
-            POP1_FILT / "{population}/{population}.{chromosome}.mpileup"
-        ),
-        mpileup_gz=temp(
-            POP1_FILT / "{population}/{population}.{chromosome}.mpileup.gz"
-        ),
+        mpileup_fifo=temp(POP1_FILT / "{population}/{population}.{chromosome}.mpileup"),
+        mpileup_gz=temp(POP1_FILT / "{population}/{population}.{chromosome}.mpileup.gz"),
     log:
         POP1_FILT / "{population}/{population}.{chromosome}.mpileup.log",
     conda:
@@ -51,12 +48,13 @@ rule popoolation__mpileup__filter_indels__:
 
         (cat {output.mpileup_fifo} | gzip --fast > {output.mpileup_gz} &)
 
-        perl workflow/scripts/popoolation_1.2.2/basic-pipeline/filter-pileup-by-gtf.pl \
+        perl workflow/scripts/popoolation/basic-pipeline/filter-pileup-by-gtf.pl \
             --input <(gzip --decompress --stdout {input.mpileup_gz}) \
             --gtf {input.gtf} \
             --output {output.mpileup_fifo} \
         2> {log} 1>&2
         """
+
 
 rule popoolation__mpileup__subsample__:
     """
@@ -66,9 +64,7 @@ rule popoolation__mpileup__subsample__:
     input:
         mpileup=POP1_FILT / "{population}/{population}.{chromosome}.mpileup.gz",
     output:
-        mpileup_fifo=temp(
-            POP1_SUB / "{population}/{population}.{chromosome}.mpileup"
-        ),
+        mpileup_fifo=temp(POP1_SUB / "{population}/{population}.{chromosome}.mpileup"),
         mpileup_gz=POP1_SUB / "{population}/{population}.{chromosome}.mpileup.gz",
     params:
         min_qual=get_subsample_min_qual,
@@ -86,7 +82,7 @@ rule popoolation__mpileup__subsample__:
 
         (cat {output.mpileup_fifo} | gzip --best > {output.mpileup_gz} &)
 
-        perl workflow/scripts/popoolation_1.2.2/basic-pipeline/subsample-pileup.pl \
+        perl workflow/scripts/popoolation/basic-pipeline/subsample-pileup.pl \
             --min-qual {params.min_qual} \
             --method {params.method} \
             --max-coverage {params.max_coverage} \
@@ -104,4 +100,4 @@ rule popoolation__mpileup:
             POP1_SUB / f"{population}/{population}.{chromosome}.mpileup.gz"
             for population in POPULATIONS
             for chromosome in CHROMOSOMES
-        ]
+        ],
