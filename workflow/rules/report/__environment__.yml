@@ -1,10 +1,8 @@
-# Environment for reports subworkflow
----
 channels:
   - conda-forge
   - bioconda
   - nodefaults
 dependencies:
-  - fastqc=0.12.1
-  - samtools=1.17.0
-  - picard=3.0.0
+  - fastqc =0.12.1
+  - samtools =1.20
+  - multiqc =1.21

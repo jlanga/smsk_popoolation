@@ -7,7 +7,7 @@ Output is chr, pos, fst
 """
 
 import sys
-from numpy import sqrt
+from math import sqrt
 
 
 def triangular_number(number):

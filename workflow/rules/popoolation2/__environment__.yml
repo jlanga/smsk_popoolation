@@ -3,10 +3,9 @@ channels:
   - bioconda
   - nodefaults
 dependencies:
-  - numpy =1.26.4
   - openjdk =21.0.2
   - perl =5.32.1
   - pigz =2.8
-  - python =3.12.2
+  - python =3.12.3
   - r-argparse =2.2.3
   - r-tidyverse =2.0.0

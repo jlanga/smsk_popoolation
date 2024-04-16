@@ -7,5 +7,5 @@ dependencies:
   - gzip =1.13
   - picard =3.1.1
   - pigz =2.8
-  - python =3.12.2
-  - samtools =1.19.2
+  - python =3.12.3
+  - samtools =1.20
