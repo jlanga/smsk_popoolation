@@ -23,8 +23,8 @@ rule preprocess__mpileup__:
             --min-BQ 0 \
             --fasta-ref {input.fa} \
             - \
-        | gzip \
-            --best \
+        | bgzip \
+            --stdout \
         > {output.mpileup_gz} \
         ) 2> {log}
         """

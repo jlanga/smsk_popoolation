@@ -15,7 +15,6 @@ rule reference__recompress__:
             --decompres \
             --stdout {input.fa_gz} \
         | bgzip \
-            --compress-level 9 \
             --threads {threads} \
             --stdout \
             /dev/stdin \
