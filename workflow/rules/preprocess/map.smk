@@ -45,13 +45,10 @@ rule preprocess__map__bwamem__:
             {input.forward_} \
             {input.reverse_} \
         | samtools sort \
-            -l 9 \
             -o {output.cram} \
             --reference {input.reference} \
             --output-fmt CRAM \
-            -M \
             -@ {threads} \
-            `#/dev/stdin` \
         ) 2> {log}
         """
 
@@ -97,6 +94,10 @@ rule preprocess__map__filter__:  # TODO: java memory, uncompressed bam
     samtools view
 
     Pairs with something unpaired will disappear.
+
+    -f 0x0002  # read mapped in proper pair. Leave only
+    -F 0x0004  # read unmapped. Throw away
+    -F 0x0008  # mate unmapped. Throw away
     """
     input:
         bam=PRE_SPLIT / "{population}.{library}.{chromosome}.bam",
@@ -125,18 +126,14 @@ rule preprocess__map__filter__:  # TODO: java memory, uncompressed bam
             --VERBOSITY ERROR \
         | samtools view \
             -q 20 \
-            -f 0x0002  `# read mapped in proper pair. Leave only` \
-            -F 0x0004  `# read unmapped. Throw away` \
-            -F 0x0008  `# mate unmapped. Throw away` \
-            -u \
-            - \
-        | samtools sort \
-            -l 9 \
+            -f 2 \
+            -F 4 \
+            -F 8 \
             -@ {threads} \
-            -o {output.cram} \
+            --output-fmt cram \
             --reference {input.reference} \
-            --output-fmt CRAM \
-            /dev/stdin \
+            -o {output.cram} \
+            - \
         ) 2> {log}
         """
 
