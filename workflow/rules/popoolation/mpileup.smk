@@ -17,7 +17,7 @@ rule popoolation__mpileup__identify_indels__:
         """
         perl workflow/scripts/popoolation/basic-pipeline/\
 identify-genomic-indel-regions.pl \
-            --input <(gzip --decompress --stdout {input.mpileup_gz}) \
+            --input <(pigz --decompress --stdout {input.mpileup_gz}) \
             --output {output.gtf} \
             --indel-window {params.indel_window} \
             --min-count {params.min_count} \
@@ -46,10 +46,10 @@ rule popoolation__mpileup__filter_indels__:
         """
         mkfifo {output.mpileup_fifo}
 
-        (cat {output.mpileup_fifo} | gzip --fast > {output.mpileup_gz} &)
+        (cat {output.mpileup_fifo} | pigz --fast > {output.mpileup_gz} &)
 
         perl workflow/scripts/popoolation/basic-pipeline/filter-pileup-by-gtf.pl \
-            --input <(gzip --decompress --stdout {input.mpileup_gz}) \
+            --input <(pigz --decompress --stdout {input.mpileup_gz}) \
             --gtf {input.gtf} \
             --output {output.mpileup_fifo} \
         2> {log} 1>&2
@@ -80,7 +80,7 @@ rule popoolation__mpileup__subsample__:
         rm -f {output.mpileup_fifo}
         mkfifo {output.mpileup_fifo}
 
-        (cat {output.mpileup_fifo} | gzip --best > {output.mpileup_gz} &)
+        pigz --fast --stdout {output.mpileup_fifo} > {output.mpileup_gz} & 2> {log}
 
         perl workflow/scripts/popoolation/basic-pipeline/subsample-pileup.pl \
             --min-qual {params.min_qual} \
@@ -88,9 +88,9 @@ rule popoolation__mpileup__subsample__:
             --max-coverage {params.max_coverage} \
             --fastq-type sanger \
             --target-coverage {params.target_coverage} \
-            --input <(gzip -dc {input.mpileup}) \
+            --input <(pigz --decompress --stdout {input.mpileup}) \
             --output {output.mpileup_fifo} \
-        2> {log} 1>&2
+        2>> {log} 1>&2
         """
 
 

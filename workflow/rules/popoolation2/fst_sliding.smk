@@ -38,11 +38,11 @@ rule popoolation2__fst_sliding__compute__:
             --pool-size {params.pool_size} \
         2> {log} 1>&2
 
-        gzip --best --keep {output.tsv} 2>> {log}
+        gzip --keep {output.tsv} 2>> {log}
         """
 
 
-rule popoolation2__fst_sliding__merge:
+rule popoolation2__fst_sliding__merge__:
     input:
         tsvs=expand(POP2_TABLES / "{chromosome}.tsv", chromosome=CHROMOSOMES),
     output:
@@ -53,7 +53,7 @@ rule popoolation2__fst_sliding__merge:
     conda:
         "__environment__.yml"
     shell:
-        "pigz --best --stdout {input} > {output}"
+        "pigz --stdout {input} > {output}"
 
 
 rule popoolation2__fst_sliding__split__:

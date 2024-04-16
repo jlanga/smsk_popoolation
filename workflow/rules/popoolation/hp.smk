@@ -11,11 +11,17 @@ rule popoolation__hp__compute__:
     conda:
         "__environment__.yml"
     shell:
-        "(gzip --decompress --stdout {input.snps_gz} "
-        "| python3 workflow/scripts/snps_to_hp.py "
-        "| pigz --best "
-        "> {output.hp_gz}) "
-        "2> {log}"
+        """
+        ( pigz \
+            --decompress \
+            --stdout \
+            {input.snps_gz} \
+        | python3 workflow/scripts/snps_to_hp.py \
+        | pigz \
+            --stdout \
+        > {output.hp_gz} \
+        ) 2> {log}
+        """
 
 
 rule popoolation__hp__plot__:

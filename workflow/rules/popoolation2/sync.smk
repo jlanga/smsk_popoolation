@@ -21,11 +21,11 @@ rule popoolation2__sync__identify_indel_regions__:
         "__environment__.yml"
     shell:
         """
-        (eval \
-            paste <(gzip -dc {input.mpileups[0]} | cut -f 1-3) \
-            '<(gzip -dc '{params.mpileups_comma}' | cut -f 4-6 )' \
-        | perl workflow/scripts/popoolation2/indel_filtering/\
-identify-indel-regions.pl \
+        ( eval \
+            paste \
+                <(gzip -dc {input.mpileups[0]} | cut -f 1-3) \
+                <(gzip -dc '{params.mpileups_comma}' | cut -f 4-6 ) \
+        | perl workflow/scripts/popoolation2/indel_filtering/identify-indel-regions.pl \
             --input /dev/stdin \
             --output {output.gtf} \
             --indel-window {params.indel_window} \
@@ -59,8 +59,9 @@ rule popoolation2__sync__filter_indels__:
         (cat {output.mpileup_fifo} | gzip --fast > {output.mpileup_gz} &)
 
         (eval \
-            paste <(gzip -dc {input.mpileups[0]} | cut -f 1-3) \
-            '<(gzip -dc '{params.mpileups_comma}' | cut -f 4-6 )' \
+            paste \
+                <(gzip -dc {input.mpileups[0]} | cut -f 1-3) \
+                '<(gzip -dc '{params.mpileups_comma}' | cut -f 4-6 )' \
         | perl  workflow/scripts/popoolation2/indel_filtering/filter-sync-by-gtf.pl \
             --input /dev/stdin \
             --gtf {input.gtf} \
@@ -78,11 +79,9 @@ rule popoolation2__sync_mpileup2sync:
     input:
         mpileup_gz=POP2_FILT / "{chromosome}.mpileup.gz",
     output:
-        sync=temp(POP2_SYNC / "{chromosome}.sync"),  # TEMP!
+        sync=temp(POP2_SYNC / "{chromosome}.sync"),
     params:
         min_qual=get_sync_min_qual,
-    # Required for java not doing more than needed
-    threads: 1
     log:
         POP2_SYNC / "{chromosome}.log",
     resources:
@@ -91,7 +90,10 @@ rule popoolation2__sync_mpileup2sync:
         "__environment__.yml"
     shell:
         """
-        (gzip --decompress --stdout {input.mpileup_gz} \
+        ( gzip \
+            --decompress \
+            --stdout \
+            {input.mpileup_gz} \
         | java -Xmx{resources.memory_gb}g -jar workflow/scripts/popoolation2/mpileup2sync.jar \
             --input /dev/stdin \
             --output {output.sync} \
@@ -113,6 +115,7 @@ rule popoolation2__sync_subsample:
         sync=POP2_SYNC / "{chromosome}.sync",
     output:
         sync=temp(POP2_SUB / "{chromosome}.sync"),
+        sync_gz=POP2_SUB / "{chromosome}.sync.gz",
     params:
         target_coverage=get_sync_target_coverage,
         max_coverage=compose_max_coverages,
@@ -130,21 +133,9 @@ rule popoolation2__sync_subsample:
             --max-coverage {params.max_coverage} \
             --method {params.method} \
         2> {log} 1>&2
+
+        gzip --keep {output.sync} 2>> {log} 1>&2
         """
-
-
-rule popoolation2__sync_compress:
-    input:
-        sync=POP2_SUB / "{chromosome}.sync",
-    output:
-        sync_gz=POP2_SUB / "{chromosome}.sync.gz",
-    log:
-        POP2_SUB / "{chromosome}.compressed.log",
-    conda:
-        "__environment__.yml"
-    threads: 4
-    shell:
-        "pigz --best --keep {input.sync}"
 
 
 rule popoolation2__sync:

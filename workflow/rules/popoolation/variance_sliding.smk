@@ -52,14 +52,12 @@ rule popoolation__variance_sliding__merge_values__:
         POP1_PLOTS / "{analysis}/{population}.{analysis}.tsv.gz",
     log:
         POP1_PLOTS / "{analysis}/{population}.{analysis}.merge_vs.log",
-    threads: 24
     conda:
         "__environment__.yml"
     shell:
         """
         ( bash workflow/scripts/variance_sliding_to_genomic_score.sh {input} \
         | pigz \
-            --best \
             --processes {threads} \
         > {output} \
         ) 2> {log}
@@ -92,7 +90,14 @@ rule popoolation__variance_sliding__merge_snps__:
     conda:
         "__environment__.yml"
     shell:
-        "pigz --processes {threads} --best --stdout {input} > {output}"
+        """
+        pigz \
+            --processes {threads} \
+            --stdout \
+            {input} \
+        > {output} \
+        2> {log}
+        """
 
 
 rule popoolation__variance_sliding__merge_snps:
