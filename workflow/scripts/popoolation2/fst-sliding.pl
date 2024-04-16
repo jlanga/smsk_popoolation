@@ -4,7 +4,7 @@ use warnings;
 use Getopt::Long;
 use Pod::Usage;
 use File::Path;
-use File::Basename; # to get the file path, file name and file extension
+use File::Basename;    # to get the file path, file name and file extension
 use FindBin qw/$RealBin/;
 use lib "$RealBin/Modules";
 use Test;
@@ -14,57 +14,64 @@ use FstConventional;
 use FstAsymptUnbiased;
 use MaxCoverage;
 
-
 # --pool-size 500 --min-count 2 --min-coverage 4 --window-size 1000 --step-size 1000 --input test/snp.merge --output test/test.fst
 # --pool-size 500 --min-count 2 --min-coverage 4 --window-size 1000 --step-size 1000 --input /Users/robertkofler/dev/PopGenTools/test/trmod.sync --output /Users/robertkofler/dev/PopGenTools/test/test.fst
 
 my $input;
-my $output="";
-my $help=0;
-my $test=0;
+my $output = "";
+my $help   = 0;
+my $test   = 0;
 
-my $windowsize=1000;
-my $step=1000;
+my $windowsize = 1000;
+my $step       = 1000;
 
-my $mincount=2;
-my $mincoverage=4;
+my $mincount    = 2;
+my $mincoverage = 4;
 my $poolsize;
-my $minCoverageFraction=0.0;
+my $minCoverageFraction = 0.0;
 my $usermaxcoverage;
-my $asunbiased=0;
-my $suppressna=0;
+my $asunbiased = 0;
+my $suppressna = 0;
+
 #my $correction="VarianceExactCorrection";
 
-
 GetOptions(
-    "input=s"	        =>\$input,
-    "output=s"	        =>\$output,
-    "min-count=i"       =>\$mincount,
-    "min-coverage=i"    =>\$mincoverage,
-    "max-coverage=s"    =>\$usermaxcoverage,
-    "min-covered-fraction=f"    =>\$minCoverageFraction,
-    "pool-size=s"       =>\$poolsize,
-    "window-size=i"     =>\$windowsize,
-    "step-size=i"       =>\$step,
-    "karlsson-fst"      =>\$asunbiased,
-    "suppress-noninformative"       =>\$suppressna,
-    "test"              =>\$test,
-    "help"	        =>\$help
-) or pod2usage(-msg=>"Wrong options",-verbose=>1);
+    "input=s"                 => \$input,
+    "output=s"                => \$output,
+    "min-count=i"             => \$mincount,
+    "min-coverage=i"          => \$mincoverage,
+    "max-coverage=s"          => \$usermaxcoverage,
+    "min-covered-fraction=f"  => \$minCoverageFraction,
+    "pool-size=s"             => \$poolsize,
+    "window-size=i"           => \$windowsize,
+    "step-size=i"             => \$step,
+    "karlsson-fst"            => \$asunbiased,
+    "suppress-noninformative" => \$suppressna,
+    "test"                    => \$test,
+    "help"                    => \$help
+) or pod2usage( -msg => "Wrong options", -verbose => 1 );
 
 # too many arguments should result in an error
-pod2usage(-msg=>"Wrong options",-verbose=>1) if @ARGV;
-pod2usage(-verbose=>2) if $help;
+pod2usage( -msg     => "Wrong options", -verbose => 1 ) if @ARGV;
+pod2usage( -verbose => 2 )                              if $help;
 FstTest::runTests() if $test;
-pod2usage(-msg=>"Input file does not exist",-verbose=>1) unless -e $input;
-pod2usage(-msg=>"No output file has been provided",-verbose=>1) unless $output;
-pod2usage(-msg=>"Minimum coverage <1 not allowed",-verbose=>1) if $mincoverage<1;
-pod2usage(-msg=>"Poolsize has to be provided",-verbose=>1) unless $poolsize;
-pod2usage(-msg=>"Minimum coverage must be equal or larger than minimum count",-verbose=>1) unless $mincoverage>= $mincount;
-pod2usage(-msg=>"Maximum coverage has to be provided",-verbose=>1) unless $usermaxcoverage;
+pod2usage( -msg => "Input file does not exist", -verbose => 1 )
+    unless -e $input;
+pod2usage( -msg => "No output file has been provided", -verbose => 1 )
+    unless $output;
+pod2usage( -msg => "Minimum coverage <1 not allowed", -verbose => 1 )
+    if $mincoverage < 1;
+pod2usage( -msg => "Poolsize has to be provided", -verbose => 1 )
+    unless $poolsize;
+pod2usage(
+    -msg     => "Minimum coverage must be equal or larger than minimum count",
+    -verbose => 1
+) unless $mincoverage >= $mincount;
+pod2usage( -msg => "Maximum coverage has to be provided", -verbose => 1 )
+    unless $usermaxcoverage;
 
-my $paramfile=$output.".params";
-open my $pfh, ">",$paramfile or die "Could not open $paramfile\n";
+my $paramfile = $output . ".params";
+open my $pfh, ">", $paramfile or die "Could not open $paramfile\n";
 print $pfh "Using input\t$input\n";
 print $pfh "Using output\t$output\n";
 print $pfh "Using min-count\t$mincount\n";
@@ -80,66 +87,57 @@ print $pfh "Using test\t$test\n";
 print $pfh "Using help\t$help\n";
 close $pfh;
 
-my $maxcoverage=get_max_coverage($input,$usermaxcoverage);
+my $maxcoverage = get_max_coverage( $input, $usermaxcoverage );
 open my $ofh, ">$output" or die "Could not open output file";
-my $reader=SyncSlider->new($input,$windowsize,$step,$mincount,$mincoverage,$maxcoverage);
+my $reader
+    = SyncSlider->new( $input, $windowsize, $step, $mincount, $mincoverage,
+    $maxcoverage );
 
 # file count
-my $popcount=$reader->count_samples();
+my $popcount = $reader->count_samples();
 
 # handle the poolsize
-my $poolAr=Utility::_getPoolSize($poolsize,$popcount);
+my $poolAr = Utility::_getPoolSize( $poolsize, $popcount );
 
 my $fstCalculator;
-if($asunbiased)
-{
-    $fstCalculator=get_asymptunbiased_fstcalculator($popcount);
+if ($asunbiased) {
+    $fstCalculator = get_asymptunbiased_fstcalculator($popcount);
 }
-else
-{
-    $fstCalculator=get_conventional_fstcalculator($poolAr,$popcount);
+else {
+    $fstCalculator = get_conventional_fstcalculator( $poolAr, $popcount );
 }
 
+while ( my $window = $reader->nextWindow() ) {
+    my $chr      = $window->{chr};
+    my $pos      = $window->{middle};
+    my $win      = $window->{window};
+    my $above    = $window->{count_covered};
+    my $snpcount = $window->{countpuresnp};
+    my $avmincov = $window->{avmincov};
+    my $data     = $window->{data};
+    next unless @$data;
+    my $coveredFrac = $above / $win;
 
+    my $fsth = $fstCalculator->($window);
 
-while(my $window=$reader->nextWindow())
-{
-        my $chr=$window->{chr};
-        my $pos=$window->{middle};
-        my $win=$window->{window};
-        my $above=$window->{count_covered};
-        my $snpcount=$window->{countpuresnp};
-        my $avmincov=$window->{avmincov};
-        my $data=$window->{data};
-        next unless @$data;
-        my $coveredFrac=$above/$win;
+    my $sufficientCovered = $coveredFrac >= $minCoverageFraction;
+    next if ( not $sufficientCovered and $suppressna );
+    next if ( not $snpcount          and $suppressna );
 
-        my $fsth=$fstCalculator->($window);
+    $coveredFrac = sprintf( "%.3f", $coveredFrac );
+    $avmincov    = sprintf( "%.1f", $avmincov );
 
-        my $sufficientCovered = $coveredFrac>=$minCoverageFraction;
-        next if(not $sufficientCovered and $suppressna);
-        next if(not $snpcount and $suppressna);
+    my $str = Utility::formatOutput( $fsth, $popcount, $sufficientCovered );
 
-        $coveredFrac=sprintf("%.3f",$coveredFrac);
-        $avmincov=sprintf("%.1f",$avmincov);
-
-        my $str=Utility::formatOutput($fsth,$popcount,$sufficientCovered);
-
-        print $ofh "$chr\t$pos\t$snpcount\t$coveredFrac\t$avmincov\t$str\n";
-
+    print $ofh "$chr\t$pos\t$snpcount\t$coveredFrac\t$avmincov\t$str\n";
 
 }
 close $ofh;
 
-
-
-
 exit;
 
-
-
-
 {
+
     package Utility;
     use strict;
     use warnings;
@@ -147,67 +145,48 @@ exit;
     use FindBin qw/$RealBin/;
     use lib "$RealBin/Modules";
 
+    sub formatOutput {
+        my $fsth       = shift;
+        my $popcount   = shift;
+        my $sufcovered = shift;
 
+        my $e = [];
+        for ( my $i = 0; $i < $popcount; $i++ ) {
+            for ( my $k = $i + 1; $k < $popcount; $k++ ) {
+                my $key = $i . ":" . $k;
+                my $val = $fsth->{$key};
+                $val = "na" unless $sufcovered;
 
-
-    sub formatOutput
-    {
-        my $fsth=shift;
-        my $popcount=shift;
-        my $sufcovered=shift;
-
-
-        my $e=[];
-        for(my $i=0; $i<$popcount; $i++)
-        {
-            for(my $k=$i+1; $k<$popcount; $k++)
-            {
-                my $key=$i.":".$k;
-                my $val=$fsth->{$key};
-                $val="na" unless $sufcovered;
-
-                $val=sprintf("%.8f",$val) unless $val eq "na";
-                my $str=($i+1).":".($k+1)."=".$val;
-                push @$e,$str;
+                $val = sprintf( "%.8f", $val ) unless $val eq "na";
+                my $str = ( $i + 1 ) . ":" . ( $k + 1 ) . "=" . $val;
+                push @$e, $str;
             }
         }
-        my $toret=join("\t",@$e);
+        my $toret = join( "\t", @$e );
         return $toret;
     }
 
-
-
-
-
-
-
-
-
-
-
-    sub _getPoolSize
-    {
-        my $poolsize=shift;
-        my $popCount=shift;
-        my $poolAr=[];
-        if($poolsize=~/:/)
-        {
-            $poolAr=[split /:/, $poolsize];
+    sub _getPoolSize {
+        my $poolsize = shift;
+        my $popCount = shift;
+        my $poolAr   = [];
+        if ( $poolsize =~ /:/ ) {
+            $poolAr = [ split /:/, $poolsize ];
         }
-        else
-        {
-            for(1..$popCount)
-            {
-                push @$poolAr,$poolsize;
+        else {
+            for ( 1 .. $popCount ) {
+                push @$poolAr, $poolsize;
             }
         }
-        die "provide poolsize does not fit with input file" if scalar(@$poolAr) != $popCount;
+        die "provide poolsize does not fit with input file"
+            if scalar(@$poolAr) != $popCount;
         return $poolAr;
     }
 
 }
 
 {
+
     package FstTest;
     use FindBin qw/$RealBin/;
     use lib "$RealBin/Modules";
@@ -218,9 +197,7 @@ exit;
     use Test::TSynchronized;
     use Test::TMaxCoverage;
 
-
-    sub runTests
-    {
+    sub runTests {
         run_MaxCoverageTests();
         run_SynchronizedTests();
         run_SyncSliderTests();
@@ -230,16 +207,16 @@ exit;
 
 }
 
-    #"input=s"	    =>\$input,
-    #"output=s"	    =>\$output,
-    #"min-count=i"   =>\$mincount,
-    #"min-coverage=i"=>\$mincoverage,
-    #"pool-size=i"   =>\$poolsize,
-    #"window-unit=s"  =>\$windowunit,
-    #"window-size=i"  =>\$windowsize,
-    #"step-size=i"   =>\$step,
-    #"test"          =>\$test,
-    #"help"	    =>\$help
+#"input=s"	    =>\$input,
+#"output=s"	    =>\$output,
+#"min-count=i"   =>\$mincount,
+#"min-coverage=i"=>\$mincoverage,
+#"pool-size=i"   =>\$poolsize,
+#"window-unit=s"  =>\$windowunit,
+#"window-size=i"  =>\$windowsize,
+#"step-size=i"   =>\$step,
+#"test"          =>\$test,
+#"help"	    =>\$help
 
 =head1 NAME
 

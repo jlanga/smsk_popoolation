@@ -8,33 +8,33 @@ use lib "$RealBin/Modules";
 use SynchronizeUtility;
 use Pileup;
 
-
-my $input="";
-my $output="";
-my $fastqtype="illumina";
-my $minQual=20;
-my $test=0;
-my $help=0;
+my $input     = "";
+my $output    = "";
+my $fastqtype = "illumina";
+my $minQual   = 20;
+my $test      = 0;
+my $help      = 0;
 
 GetOptions(
-    "input=s"           =>\$input,
-    "output=s"          =>\$output,
-    "fastq-type=s"      =>\$fastqtype,
-    "min-qual=i"        =>\$minQual,
-    "test"              =>\$test,
-    "help"              =>\$help
+    "input=s"      => \$input,
+    "output=s"     => \$output,
+    "fastq-type=s" => \$fastqtype,
+    "min-qual=i"   => \$minQual,
+    "test"         => \$test,
+    "help"         => \$help
 ) or die "Invalid arguments";
 
-pod2usage(-verbose=>2) if $help;
-VarTest::runTests() if $test;
-pod2usage(-msg=>"Could not find input file",-verbose=>1) unless -e $input;
-pod2usage(-msg=>"Output file not provided",-verbose=>1) unless  $output;
-pod2usage(-msg=>"Mininum quality needs to be >0",-verbose=>1) unless $minQual;
-
+pod2usage( -verbose => 2 ) if $help;
+VarTest::runTests()        if $test;
+pod2usage( -msg => "Could not find input file", -verbose => 1 )
+    unless -e $input;
+pod2usage( -msg => "Output file not provided", -verbose => 1 ) unless $output;
+pod2usage( -msg => "Mininum quality needs to be >0", -verbose => 1 )
+    unless $minQual;
 
 # Writing the .param file
-my $paramfile=$output.".params";
-open my $pfh, ">",$paramfile or die "Could not open $paramfile\n";
+my $paramfile = $output . ".params";
+open my $pfh, ">", $paramfile or die "Could not open $paramfile\n";
 print $pfh "Using input\t$input\n";
 print $pfh "Using output\t$output\n";
 print $pfh "Using fastq-type\t$fastqtype\n";
@@ -43,46 +43,42 @@ print $pfh "Using help\t$help\n";
 print $pfh "Using test\t$test\n";
 close $pfh;
 
-my $pp=get_basic_mpileupparser($fastqtype,$minQual);
+my $pp = get_basic_mpileupparser( $fastqtype, $minQual );
 
-open my $ifh, "<", $input or die "Could not open input file $input";
+open my $ifh, "<", $input  or die "Could not open input file $input";
 open my $ofh, ">", $output or die "Could not open output file $output";
 
-
-while(my $l=<$ifh>)
-{
+while ( my $l = <$ifh> ) {
     chomp $l;
-    my $p=$pp->($l);
-    my @ar=();
-    my $entries=$p->{entries};
-    push @ar,$p->{chr};
-    push @ar,$p->{pos};
-    push @ar,$p->{refc};
-    foreach my $e (@$entries)
-    {
-        my $f=format_parsed_pileup($e);
-        push @ar,$f;
+    my $p       = $pp->($l);
+    my @ar      = ();
+    my $entries = $p->{entries};
+    push @ar, $p->{chr};
+    push @ar, $p->{pos};
+    push @ar, $p->{refc};
+    foreach my $e (@$entries) {
+        my $f = format_parsed_pileup($e);
+        push @ar, $f;
     }
-    my $toprint =join("\t",@ar);
-    print $ofh $toprint."\n";
+    my $toprint = join( "\t", @ar );
+    print $ofh $toprint . "\n";
 }
 
-
 {
+
     package VarTest;
     use FindBin qw($RealBin);
     use lib "$RealBin/Modules";
     use Test::PileupParser;
     use Pileup;
     use Test;
-    sub runTests
-    {
+
+    sub runTests {
         run_PileupParserTests();
         exit;
     }
 
 }
-
 
 =head1 NAME
 

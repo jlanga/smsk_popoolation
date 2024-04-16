@@ -1,407 +1,372 @@
 #!/usr/bin/env perl
 {
-use strict;
-use warnings;
-use Data::Dumper;
-use Getopt::Long;
-use Pod::Usage;
-use FindBin qw($RealBin);
-use lib "$RealBin/Modules";
-use Synchronized;
+    use strict;
+    use warnings;
+    use Data::Dumper;
+    use Getopt::Long;
+    use Pod::Usage;
+    use FindBin qw($RealBin);
+    use lib "$RealBin/Modules";
+    use Synchronized;
 
-my $input="";
-my $gtffile="";
-my $output="";
-my $help=0;
-my $test=0;
+    my $input   = "";
+    my $gtffile = "";
+    my $output  = "";
+    my $help    = 0;
+    my $test    = 0;
 
+    GetOptions(
+        "input=s"  => \$input,
+        "gtf=s"    => \$gtffile,
+        "output=s" => \$output,
+        "test"     => \$test,
+        "help"     => \$help
+    ) or die "Invalid arguments";
 
-GetOptions(
-    "input=s"           =>\$input,
-    "gtf=s"             =>\$gtffile,
-    "output=s"          =>\$output,
-    "test"              =>\$test,
-    "help"              =>\$help
-) or die "Invalid arguments";
+    pod2usage( -verbose => 2 )                 if $help;
+    die "No test implemented for this scripts" if $test;
+    pod2usage( -msg => "Could not find input file", -verbose => 1 )
+        unless -e $input;
+    pod2usage( -msg => "Could not find gtf file", -verbose => 1 )
+        unless -e $gtffile;
+    pod2usage( -msg => "Output file not provided", -verbose => 1 )
+        unless $output;
 
+    my $paramfile = $output . ".params";
+    open my $pfh, ">", $paramfile or die "Could not open $paramfile\n";
+    print $pfh "Using input\t$input\n";
+    print $pfh "Using output\t$output\n";
+    print $pfh "Using gtf\t$gtffile\n";
+    print $pfh "Using test\t$test\n";
+    print $pfh "Using help\t$help\n";
+    close $pfh;
 
-pod2usage(-verbose=>2) if $help;
-die "No test implemented for this scripts" if $test;
-pod2usage(-msg=>"Could not find input file",-verbose=>1) unless -e $input;
-pod2usage(-msg=>"Could not find gtf file",-verbose=>1) unless -e $gtffile;
-pod2usage(-msg=>"Output file not provided",-verbose=>1) unless  $output;
+    my $syncparser = get_basic_syncparser();
+    my ( $chrdec, $genehash ) = Utility::read_gtf($gtffile);
 
-my $paramfile=$output.".params";
-open my $pfh, ">",$paramfile or die "Could not open $paramfile\n";
-print $pfh "Using input\t$input\n";
-print $pfh "Using output\t$output\n";
-print $pfh "Using gtf\t$gtffile\n";
-print $pfh "Using test\t$test\n";
-print $pfh "Using help\t$help\n";
-close $pfh;
+    print "Parsing sync file..\n";
+    open my $ifh, "<", $input  or die "Could not open input file";
+    open my $ofh, ">", $output or die "Could not open output file";
 
-my $syncparser=get_basic_syncparser();
-my ($chrdec,$genehash)=Utility::read_gtf($gtffile);
+    while ( my $line = <$ifh> ) {
+        chomp $line;
+        my ( $chr, $pos ) = split /\t/, $line;
+        my $genes = $chrdec->( $chr, $pos );
+        next unless $genes;
 
-print "Parsing sync file..\n";
-open my $ifh, "<",$input or die "Could not open input file";
-open my $ofh, ">",$output or die "Could not open output file";
+        my $sync = $syncparser->($line);
 
-while(my $line=<$ifh>)
-{
-    chomp $line;
-    my($chr,$pos)=split /\t/,$line;
-    my $genes=$chrdec->($chr,$pos);
-    next unless $genes;
+        foreach my $gene (@$genes) {
+            my $gc = $genehash->{$gene};
+            die
+                "Error for gene $gene; position $sync->{pos} smaller than start $gc->{first}\n"
+                if $sync->{pos} < $gc->{first};
+            die
+                "Error for gene $gene; Position $sync->{pos} larger than end $gc->{last}\n"
+                if $pos > $gc->{last};
+            push @{ $gc->{sync} }, $sync;
 
-    my $sync=$syncparser->($line);
-
-    foreach my $gene (@$genes)
-    {
-        my $gc=$genehash->{$gene};
-        die "Error for gene $gene; position $sync->{pos} smaller than start $gc->{first}\n"if $sync->{pos} <   $gc->{first};
-        die "Error for gene $gene; Position $sync->{pos} larger than end $gc->{last}\n"if $pos >   $gc->{last};
-        push @{$gc->{sync}},$sync;
-
-        # in case this is the last position of the gene, handle it immediately; print it
-        if($pos==$genehash->{$gene}{last})
-        {
-            Utility::handle_completed_gene($ofh,$genehash,$gene);
+# in case this is the last position of the gene, handle it immediately; print it
+            if ( $pos == $genehash->{$gene}{last} ) {
+                Utility::handle_completed_gene( $ofh, $genehash, $gene );
+            }
         }
     }
-}
 
-# handle the remaining genes/features
-my @keys=keys(%$genehash);
-for my $key (@keys)
-{
-    Utility::handle_completed_gene($ofh,$genehash,$key);
-}
+    # handle the remaining genes/features
+    my @keys = keys(%$genehash);
+    for my $key (@keys) {
+        Utility::handle_completed_gene( $ofh, $genehash, $key );
+    }
 
-
-exit;
+    exit;
 }
 
 {
     use strict;
     use warnings;
+
     package Utility;
     use FindBin qw($RealBin);
     use lib "$RealBin/Modules";
     use SynchronizeUtility;
 
-    sub handle_completed_gene
-    {
-        my $ofh=shift;
-        my $genehash=shift;
-        my $geneid=shift;
+    sub handle_completed_gene {
+        my $ofh      = shift;
+        my $genehash = shift;
+        my $geneid   = shift;
 
-        my $temp=$genehash->{$geneid};
+        my $temp = $genehash->{$geneid};
+
         #erase the entry from the hash -> very important memory issue
-        delete($genehash->{$geneid});
+        delete( $genehash->{$geneid} );
 
-
-        my $features=$temp->{features};
-        my $first=$temp->{first};
-        my $last=$temp->{last};
-        my $strand=$temp->{strand};
-        my $sync=$temp->{sync};
+        my $features = $temp->{features};
+        my $first    = $temp->{first};
+        my $last     = $temp->{last};
+        my $strand   = $temp->{strand};
+        my $sync     = $temp->{sync};
         return unless @$sync;
 
-        my $binfeat={};
-        foreach my $f (@$features)
-        {
-            my($start,$end)=($f->{start},$f->{end});
-            ($start,$end)=($end,$start) if $start>$end;
+        my $binfeat = {};
+        foreach my $f (@$features) {
+            my ( $start, $end ) = ( $f->{start}, $f->{end} );
+            ( $start, $end ) = ( $end, $start ) if $start > $end;
 
-            for my $i($start..$end)
-            {
-                $binfeat->{$i}=1;
+            for my $i ( $start .. $end ) {
+                $binfeat->{$i} = 1;
             }
         }
 
-
-
-
-        if($strand eq "+")
-        {
-            _write_plus_strand($ofh,$sync,$binfeat,$first,$geneid)
+        if ( $strand eq "+" ) {
+            _write_plus_strand( $ofh, $sync, $binfeat, $first, $geneid );
         }
-        elsif($strand eq "-")
-        {
-            _write_minus_strand($ofh,$sync,$binfeat,$last,$geneid)
+        elsif ( $strand eq "-" ) {
+            _write_minus_strand( $ofh, $sync, $binfeat, $last, $geneid );
         }
-        else
-        {
+        else {
             die "unknown strand $strand";
         }
     }
 
-    sub _write_plus_strand
-    {
-        my $ofh=shift;
-        my $syncs=shift;
-        my $binfeat=shift;
-        my $first=shift;
-        my $geneid=shift;
+    sub _write_plus_strand {
+        my $ofh     = shift;
+        my $syncs   = shift;
+        my $binfeat = shift;
+        my $first   = shift;
+        my $geneid  = shift;
 
-        foreach my $s (@$syncs)
-        {
+        foreach my $s (@$syncs) {
 
-            my $curpos=$s->{pos};
-            my $nuevopos=0;
-            for my $i ($first..$curpos)
-            {
-                $nuevopos++ if(exists($binfeat->{$i}));
+            my $curpos   = $s->{pos};
+            my $nuevopos = 0;
+            for my $i ( $first .. $curpos ) {
+                $nuevopos++ if ( exists( $binfeat->{$i} ) );
             }
 
-            my $nuevosyn=
-            {
-                chr=>$geneid,
-                pos=>$nuevopos,
-                refchar=>$s->{refchar},
-                samples=>$s->{samples}
+            my $nuevosyn = {
+                chr     => $geneid,
+                pos     => $nuevopos,
+                refchar => $s->{refchar},
+                samples => $s->{samples}
             };
 
-            my $toprint=format_synchronized($nuevosyn);
-            print $ofh  $toprint."\n";
+            my $toprint = format_synchronized($nuevosyn);
+            print $ofh $toprint . "\n";
         }
     }
 
-    sub _write_minus_strand
-    {
-        my $ofh=shift;
-        my $syncs=shift;
-        my $binfeat=shift;
-        my $last=shift;
-        my $geneid=shift;
-        $syncs=[reverse(@$syncs)];
+    sub _write_minus_strand {
+        my $ofh     = shift;
+        my $syncs   = shift;
+        my $binfeat = shift;
+        my $last    = shift;
+        my $geneid  = shift;
+        $syncs = [ reverse(@$syncs) ];
 
-        foreach my $s(@$syncs)
-        {
+        foreach my $s (@$syncs) {
 
-            my $curpos=$s->{pos};
-            my $nuevopos=0;
-            for my $i ($curpos..$last)
-            {
-                $nuevopos++ if(exists($binfeat->{$i}));
+            my $curpos   = $s->{pos};
+            my $nuevopos = 0;
+            for my $i ( $curpos .. $last ) {
+                $nuevopos++ if ( exists( $binfeat->{$i} ) );
             }
 
-            my $nuevorefchar=$s->{refchar};
-            $nuevorefchar=~tr/ATCGNatcgn/TAGCNtagcn/;
+            my $nuevorefchar = $s->{refchar};
+            $nuevorefchar =~ tr/ATCGNatcgn/TAGCNtagcn/;
 
-            my $nuevosamples=[];
+            my $nuevosamples = [];
 
-            foreach my $samp (@{$s->{samples}})
-            {
-                my $ns={
-                    A=>$samp->{T},
-                    T=>$samp->{A},
-                    C=>$samp->{G},
-                    G=>$samp->{C},
-                    N=>$samp->{N},
-                    del=>$samp->{del}
-                    };
+            foreach my $samp ( @{ $s->{samples} } ) {
+                my $ns = {
+                    A   => $samp->{T},
+                    T   => $samp->{A},
+                    C   => $samp->{G},
+                    G   => $samp->{C},
+                    N   => $samp->{N},
+                    del => $samp->{del}
+                };
                 push @$nuevosamples, $ns;
             }
 
-            my $nuevosyn=
-            {
-                chr=>$geneid,
-                pos=>$nuevopos,
-                refchar=>$nuevorefchar,
-                samples=>$nuevosamples,
+            my $nuevosyn = {
+                chr     => $geneid,
+                pos     => $nuevopos,
+                refchar => $nuevorefchar,
+                samples => $nuevosamples,
             };
-            my $toprint=format_synchronized($nuevosyn);
-            print $ofh $toprint."\n";
+            my $toprint = format_synchronized($nuevosyn);
+            print $ofh $toprint . "\n";
         }
     }
 
-     sub _parsegtf
-    {
-        my $line=shift;
-        my @a=split /\t/, $line;
-        my $ref=$a[0];
-        my $start=$a[3];
-        my $end=$a[4];
-        my $strand=$a[6];
-        my $tfeat=$a[8];
+    sub _parsegtf {
+        my $line   = shift;
+        my @a      = split /\t/, $line;
+        my $ref    = $a[0];
+        my $start  = $a[3];
+        my $end    = $a[4];
+        my $strand = $a[6];
+        my $tfeat  = $a[8];
 
-        unless($ref or $start or $end or $tfeat)
-        {
+        unless ( $ref or $start or $end or $tfeat ) {
             die "the following line is not valid";
         }
-        my $gene_id="";
-        if($tfeat=~/gene_id "([^"]+)";/)
-        {
-            $gene_id=$1;
+        my $gene_id = "";
+        if ( $tfeat =~ /gene_id "([^"]+)";/ ) {
+            $gene_id = $1;
         }
-        else
-        {
+        else {
             die "the following entry does not have a valid gene id: $line";
         }
 
-        return
-        {
-            ref=>$ref,
-            start=>$start,
-            strand=>$strand,
-            end=>$end,
-            length=>$end-$start+1,
-            gi=>$gene_id
+        return {
+            ref    => $ref,
+            start  => $start,
+            strand => $strand,
+            end    => $end,
+            length => $end - $start + 1,
+            gi     => $gene_id
         };
     }
 
-
-    sub _getdefaultgenecoll
-    {
-        return
-        {
-            features=>[],
-            length=>0,
-            last=>0,
-            strand=>undef,
-            first=>1000000000000,
-            sync=>[],
-            covered=>0
+    sub _getdefaultgenecoll {
+        return {
+            features => [],
+            length   => 0,
+            last     => 0,
+            strand   => undef,
+            first    => 1000000000000,
+            sync     => [],
+            covered  => 0
         }
-        # last, length, covered, lines[], first,
+
+            # last, length, covered, lines[], first,
     }
 
-    sub _getgeneint
-    {
-        my $geneid=shift;
-        my $genemap=shift;
-        my $lastcounter=shift;
-        if(exists($genemap->{$geneid}))
-        {
-            return ($lastcounter,$genemap->{$geneid});
+    sub _getgeneint {
+        my $geneid      = shift;
+        my $genemap     = shift;
+        my $lastcounter = shift;
+        if ( exists( $genemap->{$geneid} ) ) {
+            return ( $lastcounter, $genemap->{$geneid} );
         }
-        else
-        {
+        else {
             $lastcounter++;
-            $genemap->{$geneid}=$lastcounter;
-            return ($lastcounter,$genemap->{$geneid});
+            $genemap->{$geneid} = $lastcounter;
+            return ( $lastcounter, $genemap->{$geneid} );
 
         }
     }
 
-    sub _getDecodedGenemap
-    {
-        my $genemap=shift;
+    sub _getDecodedGenemap {
+        my $genemap = shift;
 
-        my $decode=[];
-        while(my($gene,$num)=each(%$genemap))
-        {
-            $decode->[$num]=$gene;
+        my $decode = [];
+        while ( my ( $gene, $num ) = each(%$genemap) ) {
+            $decode->[$num] = $gene;
         }
         return $decode;
     }
 
-    sub read_gtf
-    {
-        my $file=shift;
-        open my $ifh,"<",$file or die "Could not open gtf-file";
-        my $chrhash={};
-        my $genecoll={};
-        my $genemap={};
-        my $lastcounter=0;
-
+    sub read_gtf {
+        my $file = shift;
+        open my $ifh, "<", $file or die "Could not open gtf-file";
+        my $chrhash     = {};
+        my $genecoll    = {};
+        my $genemap     = {};
+        my $lastcounter = 0;
 
         print "Parsing gtf file..\n";
-        while(my $line=<$ifh>)
-        {
+        while ( my $line = <$ifh> ) {
             chomp $line;
-            my $ge=_parsegtf($line);
+            my $ge = _parsegtf($line);
 
-            my $gid=$ge->{gi};
-            $genecoll->{$gid}=_getdefaultgenecoll unless exists($genecoll->{$gid});
+            my $gid = $ge->{gi};
+            $genecoll->{$gid} = _getdefaultgenecoll
+                unless exists( $genecoll->{$gid} );
 
             my $geneint;
-            ($lastcounter,$geneint)=_getgeneint($gid,$genemap,$lastcounter);
+            ( $lastcounter, $geneint )
+                = _getgeneint( $gid, $genemap, $lastcounter );
 
             # update the chromosome hash
-            my($start,$end,$ref)=($ge->{start},$ge->{end},$ge->{ref});
-            push @{$genecoll->{$gid}{features}},
-                {start=>$start,
-                end=>$end};
-
+            my ( $start, $end, $ref )
+                = ( $ge->{start}, $ge->{end}, $ge->{ref} );
+            push @{ $genecoll->{$gid}{features} },
+                {
+                start => $start,
+                end   => $end
+                };
 
             # set the new end if it is larger than the previous one
-            $genecoll->{$gid}{last} = $end if $end > $genecoll->{$gid}{last};
-            $genecoll->{$gid}{first} = $start if $start < $genecoll->{$gid}{first};
-            $genecoll->{$gid}{strand} = $ge->{strand} unless($genecoll->{$gid}{strand});
-            die "all features of a gene have to be on the same strand; Problem for $gid"  unless $genecoll->{$gid}{strand} eq $ge->{strand};
+            $genecoll->{$gid}{last}  = $end if $end > $genecoll->{$gid}{last};
+            $genecoll->{$gid}{first} = $start
+                if $start < $genecoll->{$gid}{first};
+            $genecoll->{$gid}{strand} = $ge->{strand}
+                unless ( $genecoll->{$gid}{strand} );
+            die
+                "all features of a gene have to be on the same strand; Problem for $gid"
+                unless $genecoll->{$gid}{strand} eq $ge->{strand};
 
             #print "$ref $start $end\n";
 
-            for(my $i=$start; $i<=$end; $i++)
-            {
-                if(exists($chrhash->{$ref}{$i}))
-                {
-                    my $ar=$chrhash->{$ref}{$i};
-                    push @$ar,$geneint;
-                    $ar=uniq($ar);
-                    $chrhash->{$ref}{$i}=$ar;
+            for ( my $i = $start; $i <= $end; $i++ ) {
+                if ( exists( $chrhash->{$ref}{$i} ) ) {
+                    my $ar = $chrhash->{$ref}{$i};
+                    push @$ar, $geneint;
+                    $ar = uniq($ar);
+                    $chrhash->{$ref}{$i} = $ar;
 
                 }
-                else
-                {
-                    $chrhash->{$ref}{$i}=[$geneint];
+                else {
+                    $chrhash->{$ref}{$i} = [$geneint];
                 }
             }
         }
 
-
-        my $decodeGeneMap=_getDecodedGenemap($genemap);
+        my $decodeGeneMap = _getDecodedGenemap($genemap);
 ################################################################################
         # bless the beauty of a closure
-        my $chrdecocer=sub {
-            my $ref=shift;
-            my $pos=shift;
-            my $ta=$chrhash->{$ref}{$pos};
+        my $chrdecocer = sub {
+            my $ref = shift;
+            my $pos = shift;
+            my $ta  = $chrhash->{$ref}{$pos};
             return undef unless $ta;
-            my $dec=[];
-            for my $e (@$ta)
-            {
-                push @$dec,$decodeGeneMap->[$e];
+            my $dec = [];
+            for my $e (@$ta) {
+                push @$dec, $decodeGeneMap->[$e];
             }
             return $dec;
         };
 ################################################################################
 
-
         #calculate the length of the features
-        while(my($chr,$t)=each(%$chrhash))
-        {
-            while(my($pos,$genes)=each(%$t))
-            {
-                foreach my $g (@$genes)
-                {
-                    my $decg=$decodeGeneMap->[$g];
+        while ( my ( $chr, $t ) = each(%$chrhash) ) {
+            while ( my ( $pos, $genes ) = each(%$t) ) {
+                foreach my $g (@$genes) {
+                    my $decg = $decodeGeneMap->[$g];
                     $genecoll->{$decg}{length}++;
                 }
             }
         }
 
-        return ($chrdecocer,$genecoll);
-        #chr1 Twinscan  exon         501   650   .   +   .  gene_id "AB000381.000"; transcript_id "AB000381.000.1";
+        return ( $chrdecocer, $genecoll );
+
+#chr1 Twinscan  exon         501   650   .   +   .  gene_id "AB000381.000"; transcript_id "AB000381.000.1";
     }
 
-    sub uniq
-    {
-        my $ar=shift;
+    sub uniq {
+        my $ar = shift;
 
-        my $h={};
-        foreach my $a (@$ar)
-        {
-            $h->{$a}=1;
+        my $h = {};
+        foreach my $a (@$ar) {
+            $h->{$a} = 1;
         }
-        return [keys(%$h)];
+        return [ keys(%$h) ];
     }
 
 }
-
 
 =head1 NAME
 

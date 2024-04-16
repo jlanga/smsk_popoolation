@@ -6,47 +6,48 @@ use Pod::Usage;
 
 my $input;
 my $output;
-my $help=0;
+my $help = 0;
 
-my $minpvalue=1.0e-20;
-
+my $minpvalue = 1.0e-20;
 
 GetOptions(
-    "input=s"	    =>\$input,
-    "output=s"	    =>\$output,
-    "min-pvalue=s"  =>\$minpvalue,
-    "help"	    =>\$help
-) or pod2usage(-msg=>"Wrong options",-verbose=>1);
+    "input=s"      => \$input,
+    "output=s"     => \$output,
+    "min-pvalue=s" => \$minpvalue,
+    "help"         => \$help
+) or pod2usage( -msg => "Wrong options", -verbose => 1 );
 
-pod2usage(-verbose=>2) if $help;
-pod2usage(-msg=>"A input file has to be provided\n",-verbose=>1) unless -e $input;
-pod2usage(-msg=>"A output file has to be provided\n",-verbose=>1) unless $output;
-pod2usage(-msg=>"Output needs file extension .gwas\n",-verbose=>1) unless $output=~/\.gwas$/;
+pod2usage( -verbose => 2 ) if $help;
+pod2usage( -msg     => "A input file has to be provided\n", -verbose => 1 )
+    unless -e $input;
+pod2usage( -msg => "A output file has to be provided\n", -verbose => 1 )
+    unless $output;
+pod2usage( -msg => "Output needs file extension .gwas\n", -verbose => 1 )
+    unless $output =~ /\.gwas$/;
 
-open my $ifh, "<", $input or die "Could not open input file";
+open my $ifh, "<", $input  or die "Could not open input file";
 open my $ofh, ">", $output or die "Could not open output file";
 
-my $counter=1;
+my $counter = 1;
 print $ofh "CHR\tBP\tSNP\tP\n";
-while(my $line=<$ifh>)
-{
+while ( my $line = <$ifh> ) {
     chomp $line;
 
-    my @ar=split /\t/,$line;
-    my $chr=shift @ar;
-    my $pos=shift @ar;
-    my $pvalue=pop @ar;
-    $pvalue=$minpvalue if $pvalue< $minpvalue;
+    my @ar     = split /\t/, $line;
+    my $chr    = shift @ar;
+    my $pos    = shift @ar;
+    my $pvalue = pop @ar;
+    $pvalue = $minpvalue if $pvalue < $minpvalue;
     print $ofh "$chr\t$pos\tsnp$counter\t$pvalue\n";
     $counter++;
 }
 close $ofh;
 close $ifh;
-    #CHR: chromosome (aliases chr, chromosome)
-    #BP: nucleotide location (aliases bp, pos, position)
-    #SNP: SNP identifier (aliases snp, rs, rsid, rsnum, id, marker, markername)
-    #P: p-value for the association (aliases p, pval, p-value, pvalue, p.value)
 
+#CHR: chromosome (aliases chr, chromosome)
+#BP: nucleotide location (aliases bp, pos, position)
+#SNP: SNP identifier (aliases snp, rs, rsid, rsnum, id, marker, markername)
+#P: p-value for the association (aliases p, pval, p-value, pvalue, p.value)
 
 #2R	4459	N	0:55:45:0:0:0	0:40:54:2:0:0	0:55:45:0:0:0	0:40:54:2:0:0	0.01910801
 #2R	9728	N	0:56:44:0:0:0	0:44:55:0:0:0	0:56:44:0:0:0	0:44:55:0:0:0	0.0278406

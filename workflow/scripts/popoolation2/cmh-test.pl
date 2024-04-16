@@ -10,57 +10,62 @@ use lib "$RealBin/Modules";
 use MaxCoverage;
 use Synchronized;
 use SynchronizeUtility;
-use MajorAlleles; # get the two major allele
+use MajorAlleles;    # get the two major allele
 use Test;
-
 
 # Author: Ram Vinay Pandey
 # Author: Robert Kofler
 
-
 # Define the variables
 my $input;
-my $output="";
+my $output = "";
 my $userpopulation;
-my $help=0;
-my $test=0;
-my $verbose=1;
+my $help    = 0;
+my $test    = 0;
+my $verbose = 1;
 
-my $mincount=2;
-my $mincoverage=4;
+my $mincount    = 2;
+my $mincoverage = 4;
 my $usermaxcoverage;
-my $minpvalue=1.0;
-my $removetemp=0;
+my $minpvalue  = 1.0;
+my $removetemp = 0;
 
 # --input /Users/robertkofler/pub/PoPoolation2/Walkthrough/demo-data/cmh/small-test.sync --output /Users/robertkofler/pub/PoPoolation2/Walkthrough/demo-data/cmh/small-test.cmh --population 1,2,3,4 --min-count 2 --min-coverage 4 --max-coverage 200
 
 GetOptions(
-    "input=s"	    =>\$input,
-    "output=s"	    =>\$output,
-    "min-count=i"   =>\$mincount,
-    "min-coverage=i"=>\$mincoverage,
-    "max-coverage=s"=>\$usermaxcoverage,
-    "population=s"  =>\$userpopulation,
-    "min-pvalue=f"  =>\$minpvalue,
-    "remove-temp"   =>\$removetemp,
-    "test"          =>\$test,
-    "help"	    =>\$help
-) or pod2usage(-msg=>"Wrong options",-verbose=>1);
+    "input=s"        => \$input,
+    "output=s"       => \$output,
+    "min-count=i"    => \$mincount,
+    "min-coverage=i" => \$mincoverage,
+    "max-coverage=s" => \$usermaxcoverage,
+    "population=s"   => \$userpopulation,
+    "min-pvalue=f"   => \$minpvalue,
+    "remove-temp"    => \$removetemp,
+    "test"           => \$test,
+    "help"           => \$help
+) or pod2usage( -msg => "Wrong options", -verbose => 1 );
 
-pod2usage(-verbose=>2) if $help;
+pod2usage( -verbose => 2 )  if $help;
 CMHTest::runTests() && exit if $test;
-pod2usage(-msg=>"A input file has to be provided\n",-verbose=>1) unless -e $input;
-pod2usage(-msg=>"A output file has to be provided\n",-verbose=>1) unless $output;
-pod2usage(-msg=>"Minimum coverage must be equal or larger than minimum count",-verbose=>1) unless $mincoverage>= $mincount;
-pod2usage(-msg=>"Maximum coverage has to be provided",-verbose=>1) unless $usermaxcoverage;
-pod2usage(-msg=>"The pairwise comparisions have to be provided (--population)",-verbose=>1) unless $userpopulation;
-
-
+pod2usage( -msg => "A input file has to be provided\n", -verbose => 1 )
+    unless -e $input;
+pod2usage( -msg => "A output file has to be provided\n", -verbose => 1 )
+    unless $output;
+pod2usage(
+    -msg     => "Minimum coverage must be equal or larger than minimum count",
+    -verbose => 1
+) unless $mincoverage >= $mincount;
+pod2usage( -msg => "Maximum coverage has to be provided", -verbose => 1 )
+    unless $usermaxcoverage;
+pod2usage(
+    -msg => "The pairwise comparisions have to be provided (--population)",
+    -verbose => 1
+) unless $userpopulation;
 
 ################# write param file
 
-my $paramfile=$output.".params";
-open my $pfh, ">",$paramfile or die "Could not open $paramfile\n";
+my $paramfile = $output . ".params";
+open my $pfh, ">", $paramfile or die "Could not open $paramfile\n";
 print $pfh "Using input\t$input\n";
 print $pfh "Using output\t$output\n";
 print $pfh "Using min-count\t$mincount\n";
@@ -73,158 +78,156 @@ print $pfh "Using test\t$test\n";
 print $pfh "Using help\t$help\n";
 close $pfh;
 
-my $maxcoverage=get_max_coverage($input,$usermaxcoverage);
-my $populations=CMHUtil::resolve_population($userpopulation);
-my $syncparser=get_sumsnp_synparser($mincount,$mincoverage,$maxcoverage);
+my $maxcoverage = get_max_coverage( $input, $usermaxcoverage );
+my $populations = CMHUtil::resolve_population($userpopulation);
+my $syncparser
+    = get_sumsnp_synparser( $mincount, $mincoverage, $maxcoverage );
 
-my $rinput=$output.".rin";
-my $routput=$output.".rout";
+my $rinput  = $output . ".rin";
+my $routput = $output . ".rout";
 
 print "Reading sync file and writing temporary R output file\n";
-CMHUtil::write_Rinput($input,$rinput,$syncparser,$populations);
+CMHUtil::write_Rinput( $input, $rinput, $syncparser, $populations );
 
 print "Calling R, to calculate the Cochran-Mantel-Haenszel test statistic\n";
 system("R --vanilla --slave <$rinput >$routput");
 
 print "Parsing R-output and writing output file\n";
-CMHUtil::write_output($routput,$output,$minpvalue);
+CMHUtil::write_output( $routput, $output, $minpvalue );
 
-if($removetemp)
-{
-	print "Removing temporary files\n";
-	unlink($rinput);
-	unlink($routput);
+if ($removetemp) {
+    print "Removing temporary files\n";
+    unlink($rinput);
+    unlink($routput);
 }
 print "Done\n";
 
 exit(0);
 
-
-
 {
-	package CMHUtil;
-	use strict;
-	use warnings;
-	use List::Util qw[min max];
-	use FindBin qw/$RealBin/;
-	use lib "$RealBin/Modules";
-	use MaxCoverage;
-	use Synchronized;
-	use SynchronizeUtility;
-	use MajorAlleles; # get the two major allele
 
-	sub write_output
-	{
-		my $routput=shift;
-		my $output=shift;
-		my $minpvalue=shift;
+    package CMHUtil;
+    use strict;
+    use warnings;
+    use List::Util qw[min max];
+    use FindBin qw/$RealBin/;
+    use lib "$RealBin/Modules";
+    use MaxCoverage;
+    use Synchronized;
+    use SynchronizeUtility;
+    use MajorAlleles;    # get the two major allele
 
-		open my $ifh,"<", $routput or die "Could not open input file\n";
-		open my $ofh,">",$output or die "Could not open output file\n";
+    sub write_output {
+        my $routput   = shift;
+        my $output    = shift;
+        my $minpvalue = shift;
 
-		while(1)
-		{
-			#[1] "2R\t2296\tN\t90:10:0:0:0:0\t100:0:0:0:0:0\t100:0:0:0:0:0\t100:0:0:0:0:0"
-			#[1] 0.003583457
-			my $line=<$ifh>;
-			last unless $line;
-			my $pvalue=<$ifh>;
-			chomp $line; chomp $pvalue;
-			$line=~s/^\S+\s//;
-			$line=~s/^"//;
-			$line=~s/"$//;
-			$line=~s/\\t/\t/g;
-			$pvalue=~s/^\S+\s//;
-			next if $pvalue> $minpvalue;
-			print $ofh $line."\t".$pvalue."\n";
-		}
-		close $ofh;
-		close $ifh;
-	}
+        open my $ifh, "<", $routput or die "Could not open input file\n";
+        open my $ofh, ">", $output  or die "Could not open output file\n";
 
-	sub resolve_population
-	{
-		my $userpopulation=shift;
-		die "At least two pairwise comparisions need to be specified, e.g.: 1-2,3-4" unless $userpopulation=~m/,/;
-		die "At least two pairwise comparisions need to be specified, e.g.: 1-2,3-4" unless $userpopulation=~m/-/;
+        while (1) {
 
+#[1] "2R\t2296\tN\t90:10:0:0:0:0\t100:0:0:0:0:0\t100:0:0:0:0:0\t100:0:0:0:0:0"
+#[1] 0.003583457
+            my $line = <$ifh>;
+            last unless $line;
+            my $pvalue = <$ifh>;
+            chomp $line;
+            chomp $pvalue;
+            $line   =~ s/^\S+\s//;
+            $line   =~ s/^"//;
+            $line   =~ s/"$//;
+            $line   =~ s/\\t/\t/g;
+            $pvalue =~ s/^\S+\s//;
+            next if $pvalue > $minpvalue;
+            print $ofh $line . "\t" . $pvalue . "\n";
+        }
+        close $ofh;
+        close $ifh;
+    }
 
-		my $populations=[];
-		my @temp=split /,/,$userpopulation;
-		foreach my $t (@temp)
-		{
-			my @a=split /-/,$t;
-			die "At least two pairwise comparisions need to be specified" if scalar(@a) !=2;
-			push @$populations,$a[0];
-			push @$populations,$a[1];
-		}
+    sub resolve_population {
+        my $userpopulation = shift;
+        die
+            "At least two pairwise comparisions need to be specified, e.g.: 1-2,3-4"
+            unless $userpopulation =~ m/,/;
+        die
+            "At least two pairwise comparisions need to be specified, e.g.: 1-2,3-4"
+            unless $userpopulation =~ m/-/;
 
-		die "Pairwise comparisions must be an even number (user provided $userpopulation)" if(scalar(@$populations) % 2);
-		return $populations;
-	}
+        my $populations = [];
+        my @temp        = split /,/, $userpopulation;
+        foreach my $t (@temp) {
+            my @a = split /-/, $t;
+            die "At least two pairwise comparisions need to be specified"
+                if scalar(@a) != 2;
+            push @$populations, $a[0];
+            push @$populations, $a[1];
+        }
 
-	sub write_Rinput
-	{
-		my $syncfile=shift;
-		my $rinput=shift;
-		my $syncparser=shift;
-		my $populations=shift;
+        die
+            "Pairwise comparisions must be an even number (user provided $userpopulation)"
+            if ( scalar(@$populations) % 2 );
+        return $populations;
+    }
 
-		my $third_dim =int(scalar(@$populations)/2);
-		my $dim_str="c(2,2,$third_dim)";
+    sub write_Rinput {
+        my $syncfile    = shift;
+        my $rinput      = shift;
+        my $syncparser  = shift;
+        my $populations = shift;
 
-		open my $ifh, "<", $syncfile or die "Could not open input file";
-		open my $ofh, ">", $rinput or die "Could not open routput file";
-		while(my $line=<$ifh>)
-		{
-			chomp $line;
-			my $e=$syncparser->($line);
-			next unless $e->{ispuresnp};
+        my $third_dim = int( scalar(@$populations) / 2 );
+        my $dim_str   = "c(2,2,$third_dim)";
 
-			my $pop_str=_get_populationstring($e->{samples},$populations);
-			my $ar_str="array($pop_str,dim=$dim_str)";
-			my $mantel_str="mantelhaen.test($ar_str,alternative=c(\"two.sided\"))\$p.value";
-			print $ofh "print(\"$line\")\n";
-			print $ofh $mantel_str."\n";
-		}
-		close $ofh;
-		close $ifh;
-	}
+        open my $ifh, "<", $syncfile or die "Could not open input file";
+        open my $ofh, ">", $rinput   or die "Could not open routput file";
+        while ( my $line = <$ifh> ) {
+            chomp $line;
+            my $e = $syncparser->($line);
+            next unless $e->{ispuresnp};
 
+            my $pop_str
+                = _get_populationstring( $e->{samples}, $populations );
+            my $ar_str = "array($pop_str,dim=$dim_str)";
+            my $mantel_str
+                = "mantelhaen.test($ar_str,alternative=c(\"two.sided\"))\$p.value";
+            print $ofh "print(\"$line\")\n";
+            print $ofh $mantel_str . "\n";
+        }
+        close $ofh;
+        close $ifh;
+    }
 
-	sub _get_populationstring
-	{
-		my $samples=shift;
-		my $populations=shift;
+    sub _get_populationstring {
+        my $samples     = shift;
+        my $populations = shift;
 
-		my ($major,$minor) = MajorAlleles::get_major_minor_alleles($samples);
-		my @ar=();
-		for(my $i=1; $i<@$populations; $i+=2)
-		{
-			my $basenr=$populations->[$i-1];
-			my $derivednr=$populations->[$i];
-			$basenr--; $derivednr--;
-			my $base=$samples->[$basenr];
-			my $derived=$samples->[$derivednr];
+        my ( $major, $minor )
+            = MajorAlleles::get_major_minor_alleles($samples);
+        my @ar = ();
+        for ( my $i = 1; $i < @$populations; $i += 2 ) {
+            my $basenr    = $populations->[ $i - 1 ];
+            my $derivednr = $populations->[$i];
+            $basenr--;
+            $derivednr--;
+            my $base    = $samples->[$basenr];
+            my $derived = $samples->[$derivednr];
 
-			push @ar,$base->{$major};
-			push @ar,$derived->{$major};
-			push @ar,$base->{$minor};
-			push @ar,$derived->{$minor};
-		}
-		my $string_all_allele = join(",",@ar);
-		my $popstring="c($string_all_allele)";
-		return $popstring;
-	}
-
-
+            push @ar, $base->{$major};
+            push @ar, $derived->{$major};
+            push @ar, $base->{$minor};
+            push @ar, $derived->{$minor};
+        }
+        my $string_all_allele = join( ",", @ar );
+        my $popstring         = "c($string_all_allele)";
+        return $popstring;
+    }
 
 }
 
-
-
-
 {
+
     package CMHTest;
     use FindBin qw/$RealBin/;
     use lib "$RealBin/Modules";
@@ -234,42 +237,60 @@ exit(0);
     use Test::TMaxCoverage;
     use MajorAlleles;
 
-
-    sub runTests
-    {
+    sub runTests {
         run_MaxCoverageTests();
         run_SynchronizedTests();
-	run_majorminor();
+        run_majorminor();
 
         exit;
     }
 
-    sub run_majorminor
-    {
-	my($maj,$min);
+    sub run_majorminor {
+        my ( $maj, $min );
 
-	($maj,$min)=get_major_minor_alleles([{A=>11,T=>0,C=>0,G=>0},{A=>0,T=>10,C=>0,G=>0},{A=>0,T=>0,C=>9,G=>0},{A=>0,T=>0,C=>0,G=>9}]);
-	is($maj,"A","identification of major allele; correct allele");
-	is($min,"T","identification of minor allele; correct allele");
+        ( $maj, $min ) = get_major_minor_alleles(
+            [   { A => 11, T => 0,  C => 0, G => 0 },
+                { A => 0,  T => 10, C => 0, G => 0 },
+                { A => 0,  T => 0,  C => 9, G => 0 },
+                { A => 0,  T => 0,  C => 0, G => 9 }
+            ]
+        );
+        is( $maj, "A", "identification of major allele; correct allele" );
+        is( $min, "T", "identification of minor allele; correct allele" );
 
-	($maj,$min)=get_major_minor_alleles([{A=>3,T=>0,C=>0,G=>0},{A=>3,T=>10,C=>0,G=>0},{A=>3,T=>0,C=>9,G=>0},{A=>2,T=>0,C=>0,G=>9}]);
-	is($maj,"A","identification of major allele; correct allele");
-	is($min,"T","identification of minor allele; correct allele");
+        ( $maj, $min ) = get_major_minor_alleles(
+            [   { A => 3, T => 0,  C => 0, G => 0 },
+                { A => 3, T => 10, C => 0, G => 0 },
+                { A => 3, T => 0,  C => 9, G => 0 },
+                { A => 2, T => 0,  C => 0, G => 9 }
+            ]
+        );
+        is( $maj, "A", "identification of major allele; correct allele" );
+        is( $min, "T", "identification of minor allele; correct allele" );
 
-	($maj,$min)=get_major_minor_alleles([{A=>3,T=>0,C=>0,G=>0},{A=>3,T=>10,C=>0,G=>0},{A=>3,T=>2,C=>9,G=>0},{A=>2,T=>0,C=>0,G=>9}]);
-	is($maj,"T","identification of major allele; correct allele");
-	is($min,"A","identification of minor allele; correct allele");
+        ( $maj, $min ) = get_major_minor_alleles(
+            [   { A => 3, T => 0,  C => 0, G => 0 },
+                { A => 3, T => 10, C => 0, G => 0 },
+                { A => 3, T => 2,  C => 9, G => 0 },
+                { A => 2, T => 0,  C => 0, G => 9 }
+            ]
+        );
+        is( $maj, "T", "identification of major allele; correct allele" );
+        is( $min, "A", "identification of minor allele; correct allele" );
 
-	($maj,$min)=get_major_minor_alleles([{A=>3,T=>0,C=>4,G=>0},{A=>3,T=>10,C=>0,G=>0},{A=>3,T=>2,C=>9,G=>0},{A=>2,T=>0,C=>0,G=>9}]);
-	is($maj,"C","identification of major allele; correct allele");
-	is($min,"T","identification of minor allele; correct allele");
+        ( $maj, $min ) = get_major_minor_alleles(
+            [   { A => 3, T => 0,  C => 4, G => 0 },
+                { A => 3, T => 10, C => 0, G => 0 },
+                { A => 3, T => 2,  C => 9, G => 0 },
+                { A => 2, T => 0,  C => 0, G => 9 }
+            ]
+        );
+        is( $maj, "C", "identification of major allele; correct allele" );
+        is( $min, "T", "identification of minor allele; correct allele" );
 
     }
 
-
 }
-
-
 
 =head1 NAME
 

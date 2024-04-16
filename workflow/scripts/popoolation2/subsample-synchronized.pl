@@ -4,7 +4,7 @@ use warnings;
 use Getopt::Long;
 use Pod::Usage;
 use File::Path;
-use File::Basename; # to get the file path, file name and file extension
+use File::Basename;    # to get the file path, file name and file extension
 use FindBin qw/$RealBin/;
 use lib "$RealBin/Modules";
 use List::Util qw[min max];
@@ -14,37 +14,41 @@ use Synchronized;
 use SynchronizeUtility;
 
 my $input;
-my $output="";
-my $help=0;
-my $test=0;
-my $targetcoverage=0;
-my $usermaxcoverage=0; # the user may provide one of the following: 500 or 500,400,300 or 2%
-my $method; #withreplace, withoutreplace, fraction
-
+my $output         = "";
+my $help           = 0;
+my $test           = 0;
+my $targetcoverage = 0;
+my $usermaxcoverage
+    = 0; # the user may provide one of the following: 500 or 500,400,300 or 2%
+my $method;    #withreplace, withoutreplace, fraction
 
 GetOptions(
-    "input=s"	        =>\$input,
-    "output=s"          =>\$output,
-    "max-coverage=s"    =>\$usermaxcoverage,
-    "target-coverage=i" =>\$targetcoverage,
-    "method=s"          =>\$method,
-    "test"              =>\$test,
-    "help"	        =>\$help
-) or pod2usage(-msg=>"Wrong options",-verbose=>1);
+    "input=s"           => \$input,
+    "output=s"          => \$output,
+    "max-coverage=s"    => \$usermaxcoverage,
+    "target-coverage=i" => \$targetcoverage,
+    "method=s"          => \$method,
+    "test"              => \$test,
+    "help"              => \$help
+) or pod2usage( -msg => "Wrong options", -verbose => 1 );
 
 # too many arguments should result in an error
-pod2usage(-msg=>"Wrong options",-verbose=>1) if @ARGV;
-pod2usage(-verbose=>2) if $help;
+pod2usage( -msg     => "Wrong options", -verbose => 1 ) if @ARGV;
+pod2usage( -verbose => 2 )                              if $help;
 SubsampleTests::runTests() if $test;
-pod2usage(-msg=>"Please provide an existing input file",-verbose=>1) unless -e $input;
-pod2usage(-msg=>"Please provide an output file",-verbose=>1) unless $output;
-pod2usage(-msg=>"Please provide a maximum coverage",-verbose=>1) unless $usermaxcoverage;
-pod2usage(-msg=>"Please provide a target coverage",-verbose=>1) unless $targetcoverage;
-pod2usage(-msg=>"Please provide a sampling method",-verbose=>1) unless $method;
+pod2usage( -msg => "Please provide an existing input file", -verbose => 1 )
+    unless -e $input;
+pod2usage( -msg => "Please provide an output file", -verbose => 1 )
+    unless $output;
+pod2usage( -msg => "Please provide a maximum coverage", -verbose => 1 )
+    unless $usermaxcoverage;
+pod2usage( -msg => "Please provide a target coverage", -verbose => 1 )
+    unless $targetcoverage;
+pod2usage( -msg => "Please provide a sampling method", -verbose => 1 )
+    unless $method;
 
-
-my $paramfile=$output.".params";
-open my $pfh, ">",$paramfile or die "Could not open $paramfile\n";
+my $paramfile = $output . ".params";
+open my $pfh, ">", $paramfile or die "Could not open $paramfile\n";
 print $pfh "Using input\t$input\n";
 print $pfh "Using output\t$output\n";
 print $pfh "Using maximum coverage\t$usermaxcoverage\n";
@@ -54,34 +58,34 @@ print $pfh "Using test\t$test\n";
 print $pfh "Using help\t$help\n";
 close $pfh;
 
-my $maxcoverage=get_max_coverage($input,$usermaxcoverage);
-my $pp=get_sumsnp_synparser(1,$targetcoverage,$maxcoverage);
-my $subsampler=get_subsampler($method,$targetcoverage);
+my $maxcoverage = get_max_coverage( $input, $usermaxcoverage );
+my $pp          = get_sumsnp_synparser( 1, $targetcoverage, $maxcoverage );
+my $subsampler  = get_subsampler( $method, $targetcoverage );
 
-open my $ifh, "<",$input or die "Could not open input file $input";
-open my $ofh, ">",$output or die "Could not open output file $output";
+open my $ifh, "<", $input  or die "Could not open input file $input";
+open my $ofh, ">", $output or die "Could not open output file $output";
 
-while(my $line=<$ifh>)
-{
+while ( my $line = <$ifh> ) {
     chomp $line;
     next unless $line;
-    my $p=$pp->($line);
+    my $p = $pp->($line);
     next unless $p->{iscov};
 
-    my $samplecount=@{$p->{samples}};
-    for(my $i=0; $i<$samplecount; $i++)
-    {
+    my $samplecount = @{ $p->{samples} };
+    for ( my $i = 0; $i < $samplecount; $i++ ) {
+
         # randomly subsample every sample to the given coverage
-        my $subsampled=$subsampler->($p->{samples}[$i]);
-        $p->{samples}[$i]=$subsampled;
+        my $subsampled = $subsampler->( $p->{samples}[$i] );
+        $p->{samples}[$i] = $subsampled;
     }
-    my $toprint=format_synchronized($p);
-    print $ofh $toprint."\n";
+    my $toprint = format_synchronized($p);
+    print $ofh $toprint . "\n";
 }
 
 {
     use strict;
     use warnings;
+
     package SubsampleTests;
     use FindBin qw/$RealBin/;
     use lib "$RealBin/Modules";
@@ -89,17 +93,13 @@ while(my $line=<$ifh>)
     use Test::TSynchronized;
     use Test::TMaxCoverage;
 
-
-    sub runTests
-    {
+    sub runTests {
         run_MaxCoverageTests();
         run_SynchronizedTests();
         run_SubsampleTests();
         exit;
     }
 }
-
-
 
 =head1 NAME
 

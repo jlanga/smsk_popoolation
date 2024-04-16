@@ -4,36 +4,36 @@ use warnings;
 use Getopt::Long;
 use Pod::Usage;
 
-my $tc="";
-my $infile="";
-my $outfile="";
-my $tempr="/tmp/rinput.r";
-my $lab="measure";
-my $scale_equal=0;
-my $outps=0;
-my $ymin=undef;
-my $ymax=undef;
-my $help=0;
+my $tc          = "";
+my $infile      = "";
+my $outfile     = "";
+my $tempr       = "/tmp/rinput.r";
+my $lab         = "measure";
+my $scale_equal = 0;
+my $outps       = 0;
+my $ymin        = undef;
+my $ymax        = undef;
+my $help        = 0;
 
 GetOptions(
-    "input=s"       =>\$infile,
-    "output=s"      =>\$outfile,
-    "chromosomes=s" =>\$tc,
-    "ylab=s"        =>\$lab,
-    "ymin=f"        =>\$ymin,
-    "ymax=f"        =>\$ymax,
-    "scale-equal"   =>\$scale_equal,
-    "ps"           =>\$outps,
-    "help"          =>\$help
+    "input=s"       => \$infile,
+    "output=s"      => \$outfile,
+    "chromosomes=s" => \$tc,
+    "ylab=s"        => \$lab,
+    "ymin=f"        => \$ymin,
+    "ymax=f"        => \$ymax,
+    "scale-equal"   => \$scale_equal,
+    "ps"            => \$outps,
+    "help"          => \$help
 ) or die "do not recognise option $!";
 
-pod2usage(-verbose=>2) if $help;
-pod2usage(-msg=>"Specify an input file",-verbose=>1) unless -e $infile;
-pod2usage(-msg=>"Specify an output file",-verbose=>1) unless $outfile;
-pod2usage(-msg=>"Specify the chromosomes",-verbose=>1) unless $tc;
+pod2usage( -verbose => 2 ) if $help;
+pod2usage( -msg => "Specify an input file", -verbose => 1 ) unless -e $infile;
+pod2usage( -msg => "Specify an output file",  -verbose => 1 ) unless $outfile;
+pod2usage( -msg => "Specify the chromosomes", -verbose => 1 ) unless $tc;
 
-my $paramfile=$outfile.".params";
-open my $pfh, ">",$paramfile or die "Could not open $paramfile\n";
+my $paramfile = $outfile . ".params";
+open my $pfh, ">", $paramfile or die "Could not open $paramfile\n";
 print $pfh "Using infile\t$infile\n";
 print $pfh "Using outfile\t$outfile\n";
 print $pfh "Using chromosomes\t$tc\n";
@@ -45,76 +45,67 @@ print $pfh "Using ps\t$outps\n";
 print $pfh "Using help\t$help\n";
 close $pfh;
 
-my @chromosomes=split/\s/,$tc;
+my @chromosomes = split /\s/, $tc;
 
-_printRCode($tempr,$infile,$outfile,\@chromosomes,$scale_equal,$lab,$ymin,$ymax,$outps);
-
+_printRCode(
+    $tempr, $infile, $outfile, \@chromosomes, $scale_equal,
+    $lab,   $ymin,   $ymax,    $outps
+);
 
 system "R --vanilla <$tempr";
 unlink $tempr;
 
-
-
-
 exit;
 
-sub _printRCode
-{
-    my $tempr=shift;
-    my $input=shift;
-    my $output=shift;
-    my $tc=shift;
-    my $scalequal=shift;
-    my $ylab=shift;
-    my $ymin=shift;
-    my $ymax=shift;
-    my $outps=shift;
+sub _printRCode {
+    my $tempr     = shift;
+    my $input     = shift;
+    my $output    = shift;
+    my $tc        = shift;
+    my $scalequal = shift;
+    my $ylab      = shift;
+    my $ymin      = shift;
+    my $ymax      = shift;
+    my $outps     = shift;
 
-    my $c=@$tc;
-    my $columnes=3;
-    my $rows= int(($c+2)/3);
-    my $chromosomes=join "\",\"",@$tc;
-    $chromosomes="c(\"".$chromosomes."\")";
+    my $c           = @$tc;
+    my $columnes    = 3;
+    my $rows        = int( ( $c + 2 ) / 3 );
+    my $chromosomes = join "\",\"", @$tc;
+    $chromosomes = "c(\"" . $chromosomes . "\")";
 
-
-open my $tfh,">$tempr" or die "Could not open output file";
-print $tfh <<PERLSUCKS;
+    open my $tfh, ">$tempr" or die "Could not open output file";
+    print $tfh <<PERLSUCKS;
 scale=$scalequal
 t<-read.table("$input",sep="\t")
 t\$V5[t\$V5=="na"]=NA
 t\$V5=as.numeric(as.character(t\$V5))
 PERLSUCKS
-if($outps)
-{
-    print $tfh "postscript(file=\"$output\",onefile=TRUE,horizontal=FALSE)\n";
-}
-else
-{
-    print $tfh "pdf(\"$output\",width=15)\n";
-}
+    if ($outps) {
+        print $tfh
+            "postscript(file=\"$output\",onefile=TRUE,horizontal=FALSE)\n";
+    }
+    else {
+        print $tfh "pdf(\"$output\",width=15)\n";
+    }
 
-
-print $tfh <<PERLSUCKS;
+    print $tfh <<PERLSUCKS;
 par(mfrow=c($rows,$columnes))
 chroms<-$chromosomes
 PERLSUCKS
-if(defined($ymax))
-{
-    print $tfh "maxval=$ymax\n";
-}
-else
-{
-    print $tfh "maxval<-max(t[,5],na.rm=TRUE)\n";
-}
-if(defined($ymin))
-{
-    print $tfh "minval=$ymin\n";
-}
-else
-{
-    print $tfh "minval<-min(t[,5],na.rm=TRUE)\n";
-}
-print $tfh <<PERLSUCKS;
+    if ( defined($ymax) ) {
+        print $tfh "maxval=$ymax\n";
+    }
+    else {
+        print $tfh "maxval<-max(t[,5],na.rm=TRUE)\n";
+    }
+    if ( defined($ymin) ) {
+        print $tfh "minval=$ymin\n";
+    }
+    else {
+        print $tfh "minval<-min(t[,5],na.rm=TRUE)\n";
+    }
+    print $tfh <<PERLSUCKS;
 maxval
 minval
 xmaxtotal=max(t[,2],na.rm=TRUE)
@@ -133,21 +124,18 @@ for(chr in chroms)
 }
 dev.off()
 PERLSUCKS
-close $tfh;
+    close $tfh;
 
-
-#dat <- read.table("$tempinput", sep="\t", header=TRUE)
-#jpeg("$output");
-#plot(dat)
-#l<-lm(dat[,2]~dat[,1])
-#abline(l,lty=1,lwd=2)
-#abline(a=0,b=1, lty=2,lwd=2)
-#x<-as.character(summary(l))
-#text(x[8],y=0.2,x=0.8)
-#dev.off()
-#PERLSUCKS
-
-
+    #dat <- read.table("$tempinput", sep="\t", header=TRUE)
+    #jpeg("$output");
+    #plot(dat)
+    #l<-lm(dat[,2]~dat[,1])
+    #abline(l,lty=1,lwd=2)
+    #abline(a=0,b=1, lty=2,lwd=2)
+    #x<-as.character(summary(l))
+    #text(x[8],y=0.2,x=0.8)
+    #dev.off()
+    #PERLSUCKS
 
 #    > t<-read.table("/Volumes/Macintosh HD/Users/robertkofler/analysis/martin/comparison_simvsmel/heterozygousity.sim-si3",sep="\t")
 #> t$V3[t$V3=="na"]=NA
@@ -162,8 +150,6 @@ close $tfh;
 #> plot(t[t$V1=="4",2],t[t$V1=="4",3],type="l",xlab="position",ylab="pi",main="4",ylim=c(0,0.011))
 #> dev.copy2eps(file="/Volumes/Macintosh HD/Users/robertkofler/tmp/sim-sim.eps")
 }
-
-
 
 =head1 NAME
 

@@ -7,35 +7,36 @@ use FindBin qw($RealBin);
 use lib "$RealBin/../Modules";
 use Pileup;
 
-our $verbose=1;
+our $verbose = 1;
 
-my $input="";
-my $gtffile="";
-my $output="";
-my $help=0;
-my $test=0;
-my $discardmode=1;
+my $input       = "";
+my $gtffile     = "";
+my $output      = "";
+my $help        = 0;
+my $test        = 0;
+my $discardmode = 1;
 
 #--gtf /Users/robertkofler/testfiles/3R-3entries.gtf --input /Users/robertkofler/testfiles/3R.pileup --output /Users/robertkofler/testfiles/output/3R-filtered.pileup
 
 GetOptions(
-    "input=s"           =>\$input,
-    "gtf=s"             =>\$gtffile,
-    "output=s"          =>\$output,
-    "keep-mode"         =>sub{$discardmode=0;},
-    "test"              =>\$test,
-    "help"              =>\$help
+    "input=s"   => \$input,
+    "gtf=s"     => \$gtffile,
+    "output=s"  => \$output,
+    "keep-mode" => sub { $discardmode = 0; },
+    "test"      => \$test,
+    "help"      => \$help
 ) or die "Invalid arguments";
 
-pod2usage(-verbose=>2) if $help;
-VarTest::runTests() if $test;
-pod2usage(-msg=>"Could not find pileup file",-verbose=>1) unless -e $input;
-pod2usage(-msg=>"Could not find gtf file",-verbose=>1) unless -e $gtffile;
-pod2usage(-msg=>"Output file not provided",-verbose=>1) unless  $output;
+pod2usage( -verbose => 2 ) if $help;
+VarTest::runTests()        if $test;
+pod2usage( -msg => "Could not find pileup file", -verbose => 1 )
+    unless -e $input;
+pod2usage( -msg => "Could not find gtf file", -verbose => 1 )
+    unless -e $gtffile;
+pod2usage( -msg => "Output file not provided", -verbose => 1 ) unless $output;
 
-
-my $paramfile=$output.".params";
-open my $pfh, ">",$paramfile or die "Could not open $paramfile\n";
+my $paramfile = $output . ".params";
+open my $pfh, ">", $paramfile or die "Could not open $paramfile\n";
 print $pfh "Using input\t$input\n";
 print $pfh "Using output\t$output\n";
 print $pfh "Using gtf\t$gtffile\n";
@@ -44,44 +45,42 @@ print $pfh "Using test\t$test\n";
 print $pfh "Using help\t$help\n";
 close $pfh;
 
-my ($chrhash)=Utility::read_gtf($gtffile);
+my ($chrhash) = Utility::read_gtf($gtffile);
 
-open my $ifh, "<",$input or die "Could not open pileup file";
+open my $ifh, "<", $input or die "Could not open pileup file";
 
 print "Start parsing the pileup file..\n";
-open my $ofh,">",$output or die "Could not open output file";
-my $counter=0;
+open my $ofh, ">", $output or die "Could not open output file";
+my $counter = 0;
 
-while(my $line=<$ifh>)
-{
-    # parse the whole pileup and store every parsed pileup-entry at the corresponding
+while ( my $line = <$ifh> ) {
+
+# parse the whole pileup and store every parsed pileup-entry at the corresponding
     chomp $line;
 
     # prefilter, without proper parsing of the pileup
-    my($chr,$pos)=split/\t/,$line;
+    my ( $chr, $pos ) = split /\t/, $line;
 
-    my $ispresent=$chrhash->{$chr}{$pos};
+    my $ispresent = $chrhash->{$chr}{$pos};
 
-    if($discardmode)
-    {
+    if ($discardmode) {
+
         # discard everything in the gtf
-        unless($ispresent)
-        {
+        unless ($ispresent) {
+
             # if not present in the gtf
             print $ofh "$line\n";
         }
     }
-    else
-    {
+    else {
         # keep mode
-        if($ispresent)
-        {
-            # if you only want to keep the things in the gtf, print only when present
+        if ($ispresent) {
+
+     # if you only want to keep the things in the gtf, print only when present
             print $ofh "$line\n";
         }
     }
 }
-
 
 close $ofh;
 
@@ -89,62 +88,53 @@ print "Done\n";
 exit;
 
 {
+
     package Utility;
     use strict;
     use warnings;
 
+    sub _parsegtf {
+        my $line  = shift;
+        my @a     = split /\t/, $line;
+        my $ref   = $a[0];
+        my $start = $a[3];
+        my $end   = $a[4];
+        my $tfeat = $a[8];
 
-    sub _parsegtf
-    {
-        my $line=shift;
-        my @a=split /\t/, $line;
-        my $ref=$a[0];
-        my $start=$a[3];
-        my $end=$a[4];
-        my $tfeat=$a[8];
-
-        unless($ref or $start or $end or $tfeat)
-        {
+        unless ( $ref or $start or $end or $tfeat ) {
             die "the following line is not valid";
         }
 
-        return
-        {
-            ref=>$ref,
-            start=>$start,
-            end=>$end,
-            length=>$end-$start+1
+        return {
+            ref    => $ref,
+            start  => $start,
+            end    => $end,
+            length => $end - $start + 1
         };
     }
 
-
-    sub read_gtf
-    {
-        my $file=shift;
-        open my $ifh,"<",$file or die "Could not open gtf-file";
-        my $chrhash={};
+    sub read_gtf {
+        my $file = shift;
+        open my $ifh, "<", $file or die "Could not open gtf-file";
+        my $chrhash = {};
 
         print "Parsing gtf file..\n";
-        while(my $line=<$ifh>)
-        {
+        while ( my $line = <$ifh> ) {
             chomp $line;
-            next if $line=~m/^##/;
-            my $ge=_parsegtf($line);
+            next if $line =~ m/^##/;
+            my $ge = _parsegtf($line);
 
             # update the chromosome hash
-            my($chr,$start,$end)=($ge->{ref},$ge->{start},$ge->{end});
+            my ( $chr, $start, $end )
+                = ( $ge->{ref}, $ge->{start}, $ge->{end} );
 
-
-            for(my $i=$start; $i<=$end; $i++)
-            {
+            for ( my $i = $start; $i <= $end; $i++ ) {
                 $chrhash->{$chr}{$i}++;
             }
         }
         return $chrhash;
     }
 }
-
-
 
 =head1 NAME
 
