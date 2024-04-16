@@ -1,18 +1,21 @@
 rule preprocess__mpileup__:
-    """Compute the mpileup and compress it"""
+    """Compute the mpileup and compress it
+
+    Note: don't update samtools mpileup to bcftools becaus the outputs are way different.
+    """
     input:
         cram=get_library_files_from_sample,
         fa=REFERENCE / f"{REFERENCE_NAME}.fa.gz",
         fai=REFERENCE / f"{REFERENCE_NAME}.fa.gz.fai",
     output:
-        mpileup_gz=PRE_MPILEUP / "{population}" / "{population}.{chromosome}.mpileup.gz",
+        mpileup_gz=PRE_MPILEUP / "{population}.{chromosome}.mpileup.gz",
     log:
-        PRE_MPILEUP / "{population}" / "{population}.{chromosome}.log",
+        PRE_MPILEUP / "{population}.{chromosome}.log",
     conda:
         "__environment__.yml"
     shell:
         """
-        (samtools merge \
+        ( samtools merge \
             -u \
             --reference {input.fa} \
             - \
@@ -33,7 +36,7 @@ rule preprocess__mpileup__:
 rule preprocess__mpileup:
     input:
         [
-            PRE_MPILEUP / population / f"{population}.{chromosome}.mpileup.gz"
+            PRE_MPILEUP / f"{population}.{chromosome}.mpileup.gz"
             for population in POPULATIONS
             for chromosome in CHROMOSOMES
         ],

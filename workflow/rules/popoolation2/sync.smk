@@ -4,11 +4,7 @@ rule popoolation2__sync__identify_indel_regions__:
     together
     """
     input:
-        mpileups=expand(
-            PRE_MPILEUP / "{population}/{population}.{chromosome}.mpileup.gz",
-            population=POPULATIONS,
-            chromosome="{chromosome}",
-        ),
+        mpileup=POP2_MPILEUP / "{chromosome}.mpileup.gz",
     output:
         gtf=temp(POP2_FILT / "{chromosome}.gtf"),
     params:
@@ -21,30 +17,23 @@ rule popoolation2__sync__identify_indel_regions__:
         "__environment__.yml"
     shell:
         """
-        ( eval \
-            paste \
-                <(gzip -dc {input.mpileups[0]} | cut -f 1-3) \
-                <(gzip -dc '{params.mpileups_comma}' | cut -f 4-6 ) \
-        | perl workflow/scripts/popoolation2/indel_filtering/identify-indel-regions.pl \
-            --input /dev/stdin \
+        perl workflow/scripts/popoolation2/indel_filtering/identify-indel-regions.pl \
+            --input <(gzip --decompress --stdout {input.mpileup}) \
             --output {output.gtf} \
             --indel-window {params.indel_window} \
-            --min-count {params.min_count}) \
+            --min-count {params.min_count} \
         2> {log} 1>&2
         """
 
 
 rule popoolation2__sync__filter_indels__:
-    """Filter indels from the joint mpileup"""
+    """Filter indels from the joint mpileup
+    """
     input:
-        mpileups=expand(
-            PRE_MPILEUP / "{population}/{population}.{chromosome}.mpileup.gz",
-            population=POPULATIONS,
-            chromosome="{chromosome}",
-        ),
+        mpileup=POP2_MPILEUP / "{chromosome}.mpileup.gz",
         gtf=POP2_FILT / "{chromosome}.gtf",
     output:
-        mpileup_fifo=temp(POP2_FILT / "{chromosome}.mpileup"),
+        mpileup=temp(POP2_FILT / "{chromosome}.mpileup"),
         mpileup_gz=POP2_FILT / "{chromosome}.mpileup.gz",
     params:
         mpileups_comma=compose_mpileups_comma,
@@ -54,27 +43,21 @@ rule popoolation2__sync__filter_indels__:
         "__environment__.yml"
     shell:
         """
-        mkfifo {output.mpileup_fifo}
-
-        (cat {output.mpileup_fifo} | gzip --fast > {output.mpileup_gz} &)
-
-        (eval \
-            paste \
-                <(gzip -dc {input.mpileups[0]} | cut -f 1-3) \
-                '<(gzip -dc '{params.mpileups_comma}' | cut -f 4-6 )' \
-        | perl  workflow/scripts/popoolation2/indel_filtering/filter-sync-by-gtf.pl \
-            --input /dev/stdin \
+        perl  workflow/scripts/popoolation2/indel_filtering/filter-sync-by-gtf.pl \
+            --input <(gzip --decompress --stdout {input.mpileup}) \
             --gtf {input.gtf} \
-            --output {output.mpileup_fifo}) \
+            --output {output.mpileup} \
         2> {log} 1>&2
+
+        gzip --keep {output.mpileup} 2>> {log} 1>&2
         """
 
 
-rule popoolation2__sync_mpileup2sync:
+rule popoolation2__sync_mpileup2sync__:
     """Convert joint mpileup to sync
 
     - mpileup2sync returns error always, and that is why there is a || true.
-    - Next step requires a proper file
+    - Next step requires a proper file and uncompressed
     """
     input:
         mpileup_gz=POP2_FILT / "{chromosome}.mpileup.gz",
@@ -105,7 +88,7 @@ rule popoolation2__sync_mpileup2sync:
         """
 
 
-rule popoolation2__sync_subsample:
+rule popoolation2__sync_subsample__:
     """
     Subsample a sync file.
 

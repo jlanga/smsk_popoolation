@@ -3,7 +3,7 @@ rule popoolation__variance_sliding__:
     Run popoolation's Variance sliding script: Tajima's D, Tajima's Theta or Pi
     """
     input:
-        mpileup_gz=POP1_SUB / "{population}/{population}.{chromosome}.mpileup.gz",
+        mpileup_gz=POP1_SUB / "{population}.{chromosome}.mpileup.gz",
     output:
         snps=temp(POP1_TABLES / "{analysis}/{population}.{chromosome}.{analysis}.snps"),
         vs=temp(POP1_TABLES / "{analysis}/{population}.{chromosome}.{analysis}.tsv"),

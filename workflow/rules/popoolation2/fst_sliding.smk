@@ -61,7 +61,7 @@ rule popoolation2__fst_sliding__split__:
     input:
         merged_tsv_gz=POP2_PLOTS / "all.tsv.gz",
     output:
-        fst_tsv=POP2_PLOTS / "{pop1}_{pop2}.fst.tsv",
+        fst_tsv=POP2_PLOTS / "{pop1}_{pop2}.fst.tsv.gz",
     log:
         POP2_PLOTS / "split_{pop1}_{pop2}.log",
     params:
@@ -78,6 +78,7 @@ rule popoolation2__fst_sliding__split__:
         | python3 workflow/scripts/fst_to_genomic_score.py \
             {params.pop1} \
             {params.pop2} \
+        | gzip \
         > {output.fst_tsv} \
         ) 2> {log}
         """
@@ -86,7 +87,7 @@ rule popoolation2__fst_sliding__split__:
 rule popoolation2__fst_sliding__plot__:
     """Plot pairwise F_ST distributions over a genome"""
     input:
-        fst_tsv=POP2_PLOTS / "{pop1}_{pop2}.fst.tsv",
+        fst_tsv=POP2_PLOTS / "{pop1}_{pop2}.fst.tsv.gz",
     output:
         pdf=POP2_PLOTS / "{pop1}_{pop2}.pdf",
     log:

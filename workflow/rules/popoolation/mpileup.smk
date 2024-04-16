@@ -3,14 +3,14 @@ rule popoolation__mpileup__identify_indels__:
     Get a GTF with the indels present.
     """
     input:
-        mpileup_gz=PRE_MPILEUP / "{population}/{population}.{chromosome}.mpileup.gz",
+        mpileup_gz=PRE_MPILEUP / "{population}.{chromosome}.mpileup.gz",
     output:
-        gtf=temp(POP1_FILT / "{population}/{population}.{chromosome}.gtf"),
+        gtf=temp(POP1_FILT / "{population}.{chromosome}.gtf"),
     params:
         indel_window=get_indel_window,
         min_count=get_indel_min_count,
     log:
-        POP1_FILT / "{population}/{population}.{chromosome}.gtf.log",
+        POP1_FILT / "{population}.{chromosome}.gtf.log",
     conda:
         "__environment__.yml"
     shell:
@@ -33,13 +33,13 @@ rule popoolation__mpileup__filter_indels__:
     Both fifo and fifo.gz will be deleted.
     """
     input:
-        mpileup_gz=PRE_MPILEUP / "{population}/{population}.{chromosome}.mpileup.gz",
-        gtf=POP1_FILT / "{population}/{population}.{chromosome}.gtf",
+        mpileup_gz=PRE_MPILEUP / "{population}.{chromosome}.mpileup.gz",
+        gtf=POP1_FILT / "{population}.{chromosome}.gtf",
     output:
-        mpileup_fifo=temp(POP1_FILT / "{population}/{population}.{chromosome}.mpileup"),
-        mpileup_gz=temp(POP1_FILT / "{population}/{population}.{chromosome}.mpileup.gz"),
+        mpileup_fifo=temp(POP1_FILT / "{population}.{chromosome}.mpileup"),
+        mpileup_gz=temp(POP1_FILT / "{population}.{chromosome}.mpileup.gz"),
     log:
-        POP1_FILT / "{population}/{population}.{chromosome}.mpileup.log",
+        POP1_FILT / "{population}.{chromosome}.mpileup.log",
     conda:
         "__environment__.yml"
     shell:
@@ -62,17 +62,17 @@ rule popoolation__mpileup__subsample__:
     through a FIFO
     """
     input:
-        mpileup=POP1_FILT / "{population}/{population}.{chromosome}.mpileup.gz",
+        mpileup=POP1_FILT / "{population}.{chromosome}.mpileup.gz",
     output:
-        mpileup_fifo=temp(POP1_SUB / "{population}/{population}.{chromosome}.mpileup"),
-        mpileup_gz=POP1_SUB / "{population}/{population}.{chromosome}.mpileup.gz",
+        mpileup_fifo=temp(POP1_SUB / "{population}.{chromosome}.mpileup"),
+        mpileup_gz=POP1_SUB / "{population}.{chromosome}.mpileup.gz",
     params:
         min_qual=get_subsample_min_qual,
         method=get_subsample_method,
         max_coverage=get_subsample_max_coverage,
         target_coverage=get_subsample_target_coverage,
     log:
-        POP1_SUB / "{population}/{population}.{chromosome}.log",
+        POP1_SUB / "{population}.{chromosome}.log",
     conda:
         "__environment__.yml"
     shell:
@@ -97,7 +97,7 @@ rule popoolation__mpileup__subsample__:
 rule popoolation__mpileup:
     input:
         [
-            POP1_SUB / f"{population}/{population}.{chromosome}.mpileup.gz"
+            POP1_SUB / f"{population}.{chromosome}.mpileup.gz"
             for population in POPULATIONS
             for chromosome in CHROMOSOMES
         ],

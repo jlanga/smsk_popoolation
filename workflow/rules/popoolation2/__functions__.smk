@@ -10,7 +10,7 @@ def get_sync_min_count(wildcards):
 def compose_mpileups_comma(wildcards):
     chromosome = wildcards.chromosome
     mpileups = [
-        str(PRE_MPILEUP / f"{population}/{population}.{chromosome}.mpileup.gz")
+        str(PRE_MPILEUP / f"{population}.{chromosome}.mpileup.gz")
         for population in POPULATIONS
     ]
     composed = "{" + ",".join(mpileups) + "}"

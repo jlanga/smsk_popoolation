@@ -9,3 +9,4 @@ dependencies:
   - python =3.12.3
   - r-argparse =2.2.3
   - r-tidyverse =2.0.0
+  - samtools = 1.19

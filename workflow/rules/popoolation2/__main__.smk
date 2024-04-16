@@ -1,4 +1,5 @@
 include: "__functions__.smk"
+include: "mpileup.smk"
 include: "sync.smk"
 include: "fst_sliding.smk"
 
