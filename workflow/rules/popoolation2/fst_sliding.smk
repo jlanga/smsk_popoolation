@@ -44,7 +44,7 @@ rule popoolation2__fst_sliding__compute__:
 
 rule popoolation2__fst_sliding__merge__:
     input:
-        tsvs=expand(POP2_TABLES / "{chromosome}.tsv", chromosome=CHROMOSOMES),
+        tsvs=[POP2_TABLES / f"{chromosome}.tsv" for chromosome in CHROMOSOMES],
     output:
         tsv_gz=POP2_PLOTS / "all.tsv.gz",
     log:

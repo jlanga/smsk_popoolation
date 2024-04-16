@@ -3,11 +3,10 @@ rule popoolation2__mpileup__join__:
     Join multiple single-sample mpileups into one
     """
     input:
-        mpileups=expand(
-            PRE_MPILEUP / "{population}.{chromosome}.mpileup.gz",
-            population=POPULATIONS,
-            chromosome="{chromosome}",
-        ),
+        mpileups=lambda w: [
+            PRE_MPILEUP / f"{population}.{w.chromosome}.mpileup.gz"
+            for population in POPULATIONS
+        ],
     output:
         temp(POP2_MPILEUP / "{chromosome}.mpileup.gz"),
     log:

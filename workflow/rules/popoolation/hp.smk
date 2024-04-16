@@ -3,7 +3,7 @@ rule popoolation__hp__compute__:
     Build the hp table for a population in a chromosome.
     """
     input:
-        snps_gz=POP1_PLOTS / "D/{population}.D.snps.gz",
+        snps_gz=POP1_TABLES / "{population}.D.snps.gz",
     output:
         hp_gz=HP_TABLES / "{population}.tsv.gz",
     log:
@@ -12,7 +12,7 @@ rule popoolation__hp__compute__:
         "__environment__.yml"
     shell:
         """
-        ( pigz \
+        ( gzip \
             --decompress \
             --stdout \
             {input.snps_gz} \

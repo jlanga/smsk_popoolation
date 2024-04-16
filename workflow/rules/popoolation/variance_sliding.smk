@@ -5,10 +5,12 @@ rule popoolation__variance_sliding__:
     input:
         mpileup_gz=POP1_SUB / "{population}.{chromosome}.mpileup.gz",
     output:
-        snps=temp(POP1_TABLES / "{analysis}/{population}.{chromosome}.{analysis}.snps"),
-        vs=temp(POP1_TABLES / "{analysis}/{population}.{chromosome}.{analysis}.tsv"),
+        snps=temp(POP1_TABLES / "{population}.{chromosome}.{analysis}.snps"),
+        snps_gz=POP1_TABLES / "{population}.{chromosome}.{analysis}.snps.gz",
+        vs=temp(POP1_TABLES / "{population}.{chromosome}.{analysis}.tsv"),
+        vs_gz=POP1_TABLES / "{population}.{chromosome}.{analysis}.tsv.gz",
     params:
-        measure="{analysis}",
+        measure=lambda w: w.analysis,
         min_count=get_popoolation_min_count,
         min_coverage=get_popoolation_min_coverage,
         max_coverage=get_popoolation_max_coverage,
@@ -17,7 +19,7 @@ rule popoolation__variance_sliding__:
         step_size=get_popoolation_step_size,
         window_size=get_popoolation_window_size,
     log:
-        POP1_TABLES / "{analysis}/{population}.{chromosome}.{analysis}.log",
+        POP1_TABLES / "{population}.{chromosome}.{analysis}.log",
     conda:
         "__environment__.yml"
     shell:
@@ -36,80 +38,17 @@ rule popoolation__variance_sliding__:
             --output {output.vs} \
             --snp-output {output.snps} \
         2> {log} 1>&2
+
+        gzip --keep {output.snps} {output.vs} 2>> {log} 1>&2
         """
-
-
-rule popoolation__variance_sliding__merge_values__:
-    """Merge results across chromosomes"""
-    input:
-        expand(
-            POP1_TABLES / "{analysis}/{population}.{chromosome}.{analysis}.tsv",
-            chromosome=CHROMOSOMES,
-            population=["{population}"],
-            analysis=["{analysis}"],
-        ),
-    output:
-        POP1_PLOTS / "{analysis}/{population}.{analysis}.tsv.gz",
-    log:
-        POP1_PLOTS / "{analysis}/{population}.{analysis}.merge_vs.log",
-    conda:
-        "__environment__.yml"
-    shell:
-        """
-        ( bash workflow/scripts/variance_sliding_to_genomic_score.sh {input} \
-        | pigz \
-            --processes {threads} \
-        > {output} \
-        ) 2> {log}
-        """
-
-
-rule popoolation__variance_sliding__merge_values:
-    input:
-        [
-            POP1_PLOTS / analysis / f"{population}.{analysis}.tsv.gz"
-            for analysis in ["D", "pi", "theta"]
-            for population in POPULATIONS
-        ],
-
-
-rule popoolation__variance_sliding__merge_snps__:
-    """Merge snps"""
-    input:
-        expand(
-            POP1_TABLES / "{analysis}/{population}.{chromosome}.{analysis}.snps",
-            chromosome=CHROMOSOMES,
-            population=["{population}"],
-            analysis=["{analysis}"],
-        ),
-    output:
-        POP1_PLOTS / "{analysis}/{population}.{analysis}.snps.gz",
-    threads: 8
-    log:
-        POP1_PLOTS / "{analysis}/{population}.{analysis}.merge_snps.log",
-    conda:
-        "__environment__.yml"
-    shell:
-        """
-        pigz \
-            --processes {threads} \
-            --stdout \
-            {input} \
-        > {output} \
-        2> {log}
-        """
-
-
-rule popoolation__variance_sliding__merge_snps:
-    input:
-        [
-            POP1_PLOTS / analysis / f"{population}.{analysis}.snps.gz"
-            for analysis in ["D", "pi", "theta"]
-            for population in POPULATIONS
-        ],
 
 
 rule popoolation__variance_sliding:
     input:
-        rules.popoolation__variance_sliding__merge_values.input,
-        rules.popoolation__variance_sliding__merge_snps.input,
+        [
+            POP1_TABLES / f"{population}.{chromosome}.{analysis}.{extension}.gz"
+            for population in POPULATIONS
+            for chromosome in CHROMOSOMES
+            for analysis in ["D", "pi", "theta"]
+            for extension in ["snps", "tsv"]
+        ],

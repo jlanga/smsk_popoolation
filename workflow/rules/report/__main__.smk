@@ -54,8 +54,8 @@ rule report_samtools_idxstats:
 
 rule report:
     input:
-        expand(
+        [
             PRE_MAP / f"{population}.{library}.{analysis}"
             for population, library in POPULATION_LIBRARY
             for analysis in "stats.tsv flagstat.txt idxstats.txt".split(" ")
-        ),
+        ],
