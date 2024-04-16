@@ -1,22 +1,3 @@
-rule preprocess__map__index:
-    """Index with bwa"""
-    input:
-        fa=REFERENCE / f"{REFERENCE_NAME}.fa.gz",
-    output:
-        mock=touch(PRE_INDEX / f"{REFERENCE_NAME}"),
-        buckets=[
-            PRE_INDEX / f"{reference_name}.{suffix}"
-            for reference_name in [REFERENCE_NAME]
-            for suffix in "amb ann bwt pac sa".split()
-        ],
-    log:
-        PRE_INDEX / "bwa_index.log",
-    conda:
-        "__environment__.yml"
-    shell:
-        "bwa index -p {output.mock} {input.fa} > {log} 2>&1"
-
-
 rule preprocess__map__bwamem__:
     """Map population with bowtie2, sort with samtools, compress to cram"""
     input:
@@ -36,7 +17,7 @@ rule preprocess__map__bwamem__:
         "__environment__.yml"
     shell:
         """
-        ( bwa mem \
+        ( bwa-mem2 mem \
             -M \
             -R '{params.rg_tag}' \
             -t {threads} \
