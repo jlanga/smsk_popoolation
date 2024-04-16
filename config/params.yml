@@ -1,28 +1,6 @@
 # Execution params
 ---
 
-trimmomatic:
-    threads:
-        24
-    extra: >
-        AVGQUAL:3
-        MINLEN:31
-        LEADING:19
-        TRAILING:19
-        MINLEN:31
-        SLIDINGWINDOW:4:5
-        LEADING:5
-        TRAILING:5
-        MINLEN:25
-        TOPHRED33
-
-
-# If you have lots of libraries, keep the number of threads to two,
-# if you have < 10, raise it. samtools sort is the bottleneck
-bwa:
-    threads: 24
-    extra: ""
-
 picard_markduplicates:
     memory_gb: 1
 

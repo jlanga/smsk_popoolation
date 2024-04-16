@@ -1,4 +1,4 @@
-rule preprocess__map__bwamem__:
+rule preprocess__map__bwamem2__:
     """Map population with bowtie2, sort with samtools, compress to cram"""
     input:
         forward_=READS / "{population}.{library}_1.fq.gz",
@@ -8,7 +8,6 @@ rule preprocess__map__bwamem__:
     output:
         cram=PRE_MAP / "{population}.{library}.cram",
     params:
-        extra=params["bwa"]["extra"],
         rg_tag=compose_rg_tag,
     threads: 24
     log:
@@ -21,7 +20,6 @@ rule preprocess__map__bwamem__:
             -M \
             -R '{params.rg_tag}' \
             -t {threads} \
-            {params.extra} \
             {input.index} \
             {input.forward_} \
             {input.reverse_} \
