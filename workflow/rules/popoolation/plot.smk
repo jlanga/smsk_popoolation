@@ -2,15 +2,14 @@ rule popoolation__plot__merge_values__:
     """Merge the varianve sliding results across chromosomes"""
     input:
         lambda w: [
-            POP1_VS / f"{population}.{chromosome}.{analysis}.tsv.gz"
-            for population in [w.population]
+            POP1_VS
+            / f"{w.population}.{chromosome}.{w.analysis}.w{w.window}-s{w.step}.tsv.gz"
             for chromosome in CHROMOSOMES
-            for analysis in [w.analysis]
         ],
     output:
-        POP1_PLOTS / "{population}.{analysis}.tsv.gz",
+        POP1_PLOTS / "{population}.{analysis}.w{window}-s{step}.tsv.gz",
     log:
-        POP1_PLOTS / "{population}.{analysis}.merge_vs.log",
+        POP1_PLOTS / "{population}.{analysis}.w{window}-s{step}.tsv.log",
     conda:
         "__environment__.yml"
     shell:
@@ -27,15 +26,14 @@ rule popoolation__plot__merge_snps__:
     """Merge all the SNP files across chromosomes"""
     input:
         lambda w: [
-            POP1_VS / f"{population}.{chromosome}.{analysis}.snps.gz"
-            for population in [w.population]
+            POP1_VS
+            / f"{w.population}.{chromosome}.{w.analysis}.w{w.window}-s{w.step}.snps.gz"
             for chromosome in CHROMOSOMES
-            for analysis in [w.analysis]
         ],
     output:
-        POP1_PLOTS / "{population}.{analysis}.snps.gz",
+        POP1_PLOTS / "{population}.{analysis}.w{window}-s{step}.snps.gz",
     log:
-        POP1_PLOTS / "{population}.{analysis}.merge_snps.log",
+        POP1_PLOTS / "{population}.{analysis}.w{window}-s{step}.snps.log",
     conda:
         "__environment__.yml"
     shell:
@@ -47,11 +45,11 @@ rule popoolation__plot__merge_snps__:
 rule popoolation__plot__:
     """Plot a genome-wide result's from variance sliding"""
     input:
-        tsv_gz=POP1_PLOTS / "{population}.{analysis}.tsv.gz",
+        tsv_gz=POP1_PLOTS / "{population}.{analysis}.w{window}-s{step}.tsv.gz",
     output:
-        pdf=POP1_PLOTS / "{population}.{analysis}.pdf",
+        pdf=POP1_PLOTS / "{population}.{analysis}.w{window}-s{step}.pdf",
     log:
-        POP1_PLOTS / "{population}.{analysis}.plot.log",
+        POP1_PLOTS / "{population}.{analysis}.w{window}-s{step}.log",
     conda:
         "__environment__.yml"
     shell:
@@ -63,23 +61,11 @@ rule popoolation__plot__:
         """
 
 
-rule popoolation__plot__d:
-    input:
-        [POP1_PLOTS / f"{population}.D.pdf" for population in POPULATIONS],
-
-
-rule popoolation__plot__pi:
-    input:
-        [POP1_PLOTS / f"{population}.pi.pdf" for population in POPULATIONS],
-
-
-rule popoolation__plot__theta:
-    input:
-        [POP1_PLOTS / f"{population}.theta.pdf" for population in POPULATIONS],
-
-
 rule popoolation__plot:
     input:
-        rules.popoolation__plot__d.input,
-        rules.popoolation__plot__pi.input,
-        rules.popoolation__plot__theta.input,
+        [
+            POP1_PLOTS / f"{population}.{analysis}.w{window}-s{step}.pdf"
+            for population in POPULATIONS
+            for analysis in POP1_ANALYSES
+            for window, step in POP1_WINDOW_STEP
+        ],

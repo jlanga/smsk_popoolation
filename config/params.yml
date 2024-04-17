@@ -12,31 +12,14 @@ popoolation:
         min_qual: 20
         method: withoutreplace
         target_coverage: 10
-        # max_coverage: from tsv
-    D:
+    variance_sliding:
         min_count: 2
         min_coverage: 4
-        # max_coverage: from tsv
         min_covered_fraction: 0.5
-        # pool_size: from tsv
-        step_size: 1000
-        window_size: 1000
-    pi:
-        min_count: 2
-        min_coverage: 4
-        # max_coverage: from tsv
-        min_covered_fraction: 0.5
-        # pool_size: from tsv
-        step_size: 1000
-        window_size: 1000
-    theta:
-        min_count: 2
-        min_coverage: 4
-        # max_coverage: from tsv
-        min_covered_fraction: 0.5
-        # pool_size: from tsv
-        step_size: 1000
-        window_size: 1000
+        analyses: [pi, theta, D]
+        window_step:  # window: 5000, step: 1000 -> [1, 5000], [1000, 6000], [2000, 7000], ...
+            - [1, 1]
+            - [1000, 5000]
 
 popoolation2:
     find_indels:
@@ -46,13 +29,10 @@ popoolation2:
         min_qual: 20
         method: withoutreplace
         target_coverage: 10
-        # max_coverage: from tsv
         memory_gb: 2
     fst:
         min_count: 3
         min_coverage: 4
-        # max_coverage: from tsv
         min_covered_fraction: 1.0
-        # pool_size: from tsv
         window_size: 1
         step_size: 1
