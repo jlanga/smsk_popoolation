@@ -7,15 +7,13 @@
 
 This is a repo that contains installers and snakemake scripts to execute the pipelines described by Kofler et al. in popoolation 1 and 2:
 
-- QC with Trimmomatic
+- Mapping with `bwa-mem2`
 
-- Mapping with Bowtie2
+- BAM wrangling and SNP calling with `samtools` and `picard`
 
-- BAM wrangling and SNP calling with samtools
+- Population measures with `popoolation`. Computation of expected heterozygosity h_p with a python script.
 
-- Population measures with popoolation
-
-- Pairwise comparisons between populations with popoolation2
+- Pairwise comparisons between populations with `popoolation2`
 
 ## 2. First steps
 
@@ -34,18 +32,16 @@ Follow the contents of the `.travis.yml` file:
 3. Run the test dataset:
 
     ```sh
-    snakemake --use-conda -
+    snakemake --use-conda -c 8
     ```
 
 4. Modify the following files:
 
-    - `features.yaml`: the path to the genome reference, and the names of every chromosome to be processed.
+    - `config/features.yaml`: the path to the genome reference, and the names of every chromosome to be processed.
 
-    - `samples.tsv`: paths and library information of each of the samples.
+    - `config/samples.tsv`: paths and library information of each of the samples.
 
-    - `params.yml`: execution parameters of different tools.
-
-    - `cluster.json`: memory limits for some of the steps-
+    - `config/params.yml`: execution parameters of different tools.
 
 5. Execute the pipeline:
 
@@ -55,7 +51,7 @@ Follow the contents of the `.travis.yml` file:
 
 ## Representation of the pipeline
 
-![smsk_popoolation pipeline](https://cdn.rawgit.com/jlanga/smsk_popoolation/master/rulegraph.svg)
+![smsk_popoolation pipeline](rulegraph_simple.svg)
 
 ## Bibliography
 

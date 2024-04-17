@@ -1,0 +1,67 @@
+digraph snakemake_dag {
+	// newrank=true;
+    rankdir=LR;
+    graph[bgcolor=white, margin=0, compound=true];
+    node[shape=box, style=rounded, fontname=sans, fontsize=10, penwidth=2];
+    edge[penwidth=2, color=grey];
+
+
+
+    subgraph cluster_0 {
+        label = "Input";
+        shape=box; style=rounded; fontname=sans; fontsize=10; penwidth=2; margin=10;
+
+        reads     [label = "FASTQ\nreads",      color = "0.59 0.6 0.85", style="rounded"];
+	    reference [label = "Reference\nGenome", color = "0.15 0.6 0.85", style="rounded"];
+    }
+
+	subgraph cluster_1 {
+		label = "Preprocess";
+		shape=box; style=rounded; fontname=sans; fontsize=10; penwidth=2; margin=10;
+
+        index   [label = "index",    color = "0.15 0.6 0.85", style="rounded"];
+    	bwa     [label = "bwa-mem2", color = "0.64 0.6 0.85", style="rounded"];
+        split   [label = "split",    color = "0.64 0.6 0.85", style="rounded"];
+        filter  [label = "filter",   color = "0.64 0.6 0.85", style="rounded"];
+        mpileup [label = "mpileup",  color = "0.64 0.6 0.85", style="rounded"];
+	}
+
+	subgraph cluster_2 {
+		label = "popoolation";
+		shape=box; style=rounded; fontname=sans; fontsize=10; penwidth=2; margin=10;
+
+        filter_indels    [label = "filter\nindels",   color = "0.02 0.6 0.85", style="rounded"];
+		subsample        [label = "subsample",        color = "0.27 0.6 0.85", style="rounded"];
+        variance_sliding [label = "variance\nsliding", color = "0.27 0.6 0.85", style="rounded"];
+        merge            [label = "merge",            color = "0.27 0.6 0.85", style="rounded"];
+        plot             [label = "plot",             color = "0.27 0.6 0.85", style="rounded"];
+        hp               [label = "hp",               color = "0.27 0.6 0.85", style="rounded"];
+
+	}
+
+    subgraph cluster_3 {
+        label = "popoolation2";
+        shape=box; style=rounded; fontname=sans; fontsize=10; penwidth=2; margin=10;
+
+        join_populations   [label = "join",                color = "0.02 0.6 0.85", style="rounded"];
+        sync_filter_indels [label = "sync\nfilter indels", color = "0.02 0.6 0.85", style="rounded"];
+        sync_convert       [label = "sync\nconvert",       color = "0.02 0.6 0.85", style="rounded"];
+        sync_subsample     [label = "sync\nsubsample",     color = "0.02 0.6 0.85", style="rounded"];
+        fst_sliding        [label = "fst\nsliding",         color = "0.02 0.6 0.85", style="rounded"];
+        merge_fst_sliding  [label = "merge\nfsts",   color = "0.02 0.6 0.85", style="rounded"];
+        plot_fst           [label = "plot\nfst",            color = "0.02 0.6 0.85", style="rounded"];
+    }
+
+
+
+    reads -> bwa
+    reference -> index
+    index -> bwa
+    bwa -> split -> filter -> mpileup
+
+    mpileup -> filter_indels -> subsample -> variance_sliding -> merge -> plot
+    variance_sliding -> hp -> plot
+
+    mpileup -> join_populations -> sync_filter_indels -> sync_convert -> sync_subsample -> fst_sliding -> merge_fst_sliding -> plot_fst
+
+}
