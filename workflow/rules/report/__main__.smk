@@ -1,4 +1,4 @@
-rule report_fastqc:
+rule report__fastqc__:
     input:
         "{filename}.fq.gz",
     output:
@@ -12,7 +12,7 @@ rule report_fastqc:
         "fastqc --noextract --nogroup {input} 2> {log} 1>&2"
 
 
-rule report_samtools_stats:
+rule report__samtools_stats__:
     input:
         "{filename}.cram",
     output:
@@ -25,7 +25,7 @@ rule report_samtools_stats:
         "samtools stats {input} > {output} 2>&1"
 
 
-rule report_samtools_flagstat:
+rule report__samtools_flagstat__:
     input:
         "{filename}.cram",
     output:
@@ -38,7 +38,7 @@ rule report_samtools_flagstat:
         "samtools flagstat {input} > {output} 2> {log}"
 
 
-rule report_samtools_idxstats:
+rule report__samtools_idxstats__:
     input:
         cram="{filename}.cram",
         crai="{filename}.cram.crai",
