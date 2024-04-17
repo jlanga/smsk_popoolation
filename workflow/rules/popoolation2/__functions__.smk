@@ -40,14 +40,6 @@ def get_sync_subsample_method(wildcards):
 
 
 # fst
-def get_window_size(wildcards):
-    return params["popoolation2"]["fst"]["window_size"]
-
-
-def get_step_size(wildcards):
-    return params["popoolation2"]["fst"]["step_size"]
-
-
 def get_min_covered_fraction(wildcards):
     return params["popoolation2"]["fst"]["min_covered_fraction"]
 

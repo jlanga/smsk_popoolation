@@ -7,18 +7,18 @@ rule popoolation2__fst_sliding__compute__:
     input:
         sync=POP2_SUB / "{chromosome}.sync",
     output:
-        tsv_gz=POP2_FST / "{chromosome}.tsv.gz",
+        tsv_gz=POP2_FST / "{chromosome}.w{window}-s{step}.tsv.gz",
     params:
-        tsv=lambda w: POP2_FST / f"{w.chromosome}.tsv",
-        window_size=get_window_size,
-        step_size=get_step_size,
+        tsv=lambda w: POP2_FST / f"{w.chromosome}.w{w.window}-s{w.step}.tsv",
+        window_size=lambda w: w.window,
+        step_size=lambda w: w.step,
         min_covered_fraction=get_min_covered_fraction,
         min_coverage=get_min_coverage,
         max_coverage=get_max_coverage,
         pool_size=compose_population_sizes,
         min_count=get_min_count,
     log:
-        POP2_FST / "{chromosome}.log",
+        POP2_FST / "{chromosome}.w{window}-s{step}.log",
     conda:
         "__environment__.yml"
     shell:
@@ -40,20 +40,10 @@ rule popoolation2__fst_sliding__compute__:
         """
 
 
-rule popoolation2__fst_sliding__merge__:
-    input:
-        tsvs=[POP2_FST / f"{chromosome}.tsv.gz" for chromosome in CHROMOSOMES],
-    output:
-        tsv_gz=POP2_PLOTS / "all.tsv.gz",
-    log:
-        POP2_PLOTS / "merge.log",
-    threads: 24
-    conda:
-        "__environment__.yml"
-    shell:
-        "cat {input} > {output} 2> {log}"
-
-
 rule popoolation2__fst_sliding:
     input:
-        POP2_PLOTS / "all.tsv.gz",
+        [
+            POP2_FST / f"{chromosome}.w{window}-s{step}.tsv.gz"
+            for chromosome in CHROMOSOMES
+            for window, step in POP2_WINDOW_STEP
+        ],

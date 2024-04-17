@@ -28,6 +28,8 @@ REFERENCE_NAME = [x for x in features["references"].keys()][0]
 POP1_ANALYSES = params["popoolation"]["variance_sliding"]["analyses"]
 POP1_WINDOW_STEP = params["popoolation"]["variance_sliding"]["window_step"]
 
+POP2_WINDOW_STEP = params["popoolation2"]["fst"]["window_step"]
+
 
 include: "rules/folders.smk"
 include: "rules/helpers/__main__.smk"

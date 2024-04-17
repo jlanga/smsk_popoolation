@@ -19,7 +19,7 @@ popoolation:
         analyses: [pi, theta, D]
         window_step:  # window: 5000, step: 1000 -> [1, 5000], [1000, 6000], [2000, 7000], ...
             - [1, 1]
-            - [1000, 5000]
+            - [5000, 1000]
 
 popoolation2:
     find_indels:
@@ -34,5 +34,6 @@ popoolation2:
         min_count: 3
         min_coverage: 4
         min_covered_fraction: 1.0
-        window_size: 1
-        step_size: 1
+        window_step:  # window: 5000, step: 1000 -> [1, 5000], [1000, 6000], [2000, 7000], ...
+            - [1, 1]
+            - [5000, 1000]

@@ -1,14 +1,30 @@
+rule popoolation2__plot__merge__:
+    input:
+        tsvs=lambda w: [
+            POP2_FST / f"{chromosome}.w{w.window}-s{w.step}.tsv.gz"
+            for chromosome in CHROMOSOMES
+        ],
+    output:
+        tsv_gz=POP2_PLOTS / "all.w{window}-s{step}.tsv.gz",
+    log:
+        POP2_PLOTS / "all.w{window}-s{step}.log",
+    conda:
+        "__environment__.yml"
+    shell:
+        "cat {input} > {output} 2> {log}"
+
+
 rule popoolation2__plot__split_pair__:
     """Split fst table into a pair of populations"""
     input:
-        merged_tsv_gz=POP2_PLOTS / "all.tsv.gz",
+        merged_tsv_gz=POP2_PLOTS / "all.w{window}-s{step}.tsv.gz",
     output:
-        fst_tsv=POP2_PLOTS / "{pop1}_{pop2}.fst.tsv.gz",
+        fst_tsv=POP2_PLOTS / "{pop1}_{pop2}.w{window}-s{step}.fst.gz",
     log:
-        POP2_PLOTS / "split_{pop1}_{pop2}.log",
+        POP2_PLOTS / "{pop1}_{pop2}.w{window}-s{step}.fst.log",
     params:
-        pop1="{pop1}",
-        pop2="{pop2}",
+        pop1=lambda w: f"{w.pop1}",
+        pop2=lambda w: f"{w.pop2}",
     conda:
         "__environment__.yml"
     shell:
@@ -29,11 +45,11 @@ rule popoolation2__plot__split_pair__:
 rule popoolation2__plot__:
     """Plot pairwise F_ST distributions over a genome"""
     input:
-        fst_tsv=POP2_PLOTS / "{pop1}_{pop2}.fst.tsv.gz",
+        fst_tsv=POP2_PLOTS / "{pop1}_{pop2}.w{window}-s{step}.fst.gz",
     output:
-        pdf=POP2_PLOTS / "{pop1}_{pop2}.pdf",
+        pdf=POP2_PLOTS / "{pop1}_{pop2}.w{window}-s{step}.pdf",
     log:
-        POP2_PLOTS / "plot_{pop1}_{pop2}.log",
+        POP2_PLOTS / "{pop1}_{pop2}.w{window}-s{step}.pdf.log",
     conda:
         "__environment__.yml"
     shell:
@@ -50,7 +66,8 @@ rule popoolation2__plot:
     """Make every plot"""
     input:
         [
-            POP2_PLOTS / f"{str(i)}_{str(j)}.pdf"
+            POP2_PLOTS / f"{i}_{j}.w{window}-s{step}.pdf"
             for i in range(1, len(POPULATIONS))
             for j in range(i + 1, len(POPULATIONS) + 1)
+            for window, step in POP2_WINDOW_STEP
         ],
