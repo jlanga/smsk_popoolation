@@ -27,7 +27,7 @@ POP1_PLOTS = POP1 / "plots"
 # sync - popoolation2
 POP2 = RESULTS / "popoolation2"
 POP2_MPILEUP = POP2 / "mpileup"
-POP2_FILT = POP2 / "filt"
+POP2_FILT = POP2 / "filtered"
 POP2_SYNC = POP2 / "sync"  # rename?
 POP2_SUB = POP2 / "subsampled"
 POP2_FST = POP2 / "fst_sliding"
