@@ -1,16 +1,15 @@
-def get_forward(wildcards):
+def get_file(wildcards):
     pop = wildcards.population
     lib = wildcards.library
-    forward_ = samples[(samples["population"] == pop) & (samples["library"] == lib)][
-        ["forward"]
+    files = samples[(samples["population"] == pop) & (samples["library"] == lib)][
+        ["forward", "reverse"]
     ].values.tolist()[0]
-    return forward_
+    return files
+
+
+def get_forward(wildcards):
+    return get_file(wildcards)[0]
 
 
 def get_reverse(wildcards):
-    pop = wildcards.population
-    lib = wildcards.library
-    reverse_ = samples[(samples["population"] == pop) & (samples["library"] == lib)][
-        ["reverse"]
-    ].values.tolist()[0]
-    return reverse_
+    return get_file(wildcards)[1]
