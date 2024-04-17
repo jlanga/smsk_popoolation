@@ -1,0 +1,49 @@
+# pylint: disable=syntax-error
+
+import pandas as pd
+import yaml
+
+from snakemake.utils import min_version
+
+min_version("5.0")
+
+shell.prefix("set -euo pipefail;")
+
+params = yaml.load(open("config/params.yml", "r"), Loader=yaml.SafeLoader)
+features = yaml.load(open("config/features.yml", "r"), Loader=yaml.SafeLoader)
+samples = pd.read_table("config/samples.tsv", comment="#", dtype="str")
+
+
+# Other variables
+POPULATIONS = samples["population"].drop_duplicates().values.tolist()
+POPULATION_LIBRARY = (
+    samples[["population", "library"]].drop_duplicates().values.tolist()
+)
+PAIRS = ["pe_pe", "pe_se"]
+CHROMOSOMES = features["chromosomes"].split(" ")
+ENDS = "1 2 u".split(" ")
+
+REFERENCE_NAME = [x for x in features["references"].keys()][0]
+
+POP1_ANALYSES = params["popoolation"]["variance_sliding"]["analyses"]
+POP1_WINDOW_STEP = params["popoolation"]["variance_sliding"]["window_step"]
+
+POP2_WINDOW_STEP = params["popoolation2"]["fst"]["window_step"]
+
+
+include: "rules/folders.smk"
+include: "rules/helpers/__main__.smk"
+include: "rules/reads/__main__.smk"
+include: "rules/reference/__main__.smk"
+include: "rules/preprocess/__main__.smk"
+include: "rules/popoolation/__main__.smk"
+include: "rules/popoolation2/__main__.smk"
+include: "rules/report/__main__.smk"
+
+
+rule all:
+    input:
+        rules.preprocess.input,
+        rules.popoolation.input,
+        rules.popoolation2.input,
+        rules.report.input,
