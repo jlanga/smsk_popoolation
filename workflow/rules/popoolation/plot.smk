@@ -2,7 +2,7 @@ rule popoolation__plot__merge_values__:
     """Merge the varianve sliding results across chromosomes"""
     input:
         lambda w: [
-            POP1_TABLES / f"{population}.{chromosome}.{analysis}.tsv.gz"
+            POP1_VS / f"{population}.{chromosome}.{analysis}.tsv.gz"
             for population in [w.population]
             for chromosome in CHROMOSOMES
             for analysis in [w.analysis]
@@ -27,7 +27,7 @@ rule popoolation__plot__merge_snps__:
     """Merge all the SNP files across chromosomes"""
     input:
         lambda w: [
-            POP1_TABLES / f"{population}.{chromosome}.{analysis}.snps.gz"
+            POP1_VS / f"{population}.{chromosome}.{analysis}.snps.gz"
             for population in [w.population]
             for chromosome in CHROMOSOMES
             for analysis in [w.analysis]
@@ -40,11 +40,7 @@ rule popoolation__plot__merge_snps__:
         "__environment__.yml"
     shell:
         """
-        ( zcat {input} \
-        | cut -f 1,2,5 \
-        | gzip \
-        > {output} \
-        ) 2> {log}
+        cat {input} > {output} 2> {log}
         """
 
 

@@ -5,10 +5,10 @@ rule popoolation__variance_sliding__:
     input:
         mpileup_gz=POP1_SUB / "{population}.{chromosome}.mpileup.gz",
     output:
-        snps=temp(POP1_TABLES / "{population}.{chromosome}.{analysis}.snps"),
-        snps_gz=POP1_TABLES / "{population}.{chromosome}.{analysis}.snps.gz",
-        vs=temp(POP1_TABLES / "{population}.{chromosome}.{analysis}.tsv"),
-        vs_gz=POP1_TABLES / "{population}.{chromosome}.{analysis}.tsv.gz",
+        snps=temp(POP1_VS / "{population}.{chromosome}.{analysis}.snps"),
+        snps_gz=POP1_VS / "{population}.{chromosome}.{analysis}.snps.gz",
+        vs=temp(POP1_VS / "{population}.{chromosome}.{analysis}.tsv"),
+        vs_gz=POP1_VS / "{population}.{chromosome}.{analysis}.tsv.gz",
     params:
         measure=lambda w: w.analysis,
         min_count=get_popoolation_min_count,
@@ -19,7 +19,7 @@ rule popoolation__variance_sliding__:
         step_size=get_popoolation_step_size,
         window_size=get_popoolation_window_size,
     log:
-        POP1_TABLES / "{population}.{chromosome}.{analysis}.log",
+        POP1_VS / "{population}.{chromosome}.{analysis}.log",
     conda:
         "__environment__.yml"
     shell:
@@ -46,7 +46,7 @@ rule popoolation__variance_sliding__:
 rule popoolation__variance_sliding:
     input:
         [
-            POP1_TABLES / f"{population}.{chromosome}.{analysis}.{extension}.gz"
+            POP1_VS / f"{population}.{chromosome}.{analysis}.{extension}.gz"
             for population in POPULATIONS
             for chromosome in CHROMOSOMES
             for analysis in ["D", "pi", "theta"]

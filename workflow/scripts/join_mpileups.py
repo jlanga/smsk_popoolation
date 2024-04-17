@@ -1,5 +1,11 @@
 #!/usr/bin/env python
 
+"""
+join_mpileups.py
+
+Left join multiple mpileup files. The input files should contail ALL the positions
+"""
+
 import sys
 import gzip
 from functools import reduce

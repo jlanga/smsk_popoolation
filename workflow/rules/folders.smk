@@ -21,7 +21,7 @@ POP1 = RESULTS / "popoolation1"
 POP1_RAW = POP1 / "raw"
 POP1_FILT = POP1 / "filtered"
 POP1_SUB = POP1 / "subsampled"
-POP1_TABLES = POP1 / "tables"
+POP1_VS = POP1 / "variance_sliding"
 POP1_PLOTS = POP1 / "plots"
 
 # sync - popoolation2
@@ -30,7 +30,7 @@ POP2_MPILEUP = POP2 / "mpileup"
 POP2_FILT = POP2 / "filt"
 POP2_SYNC = POP2 / "sync"  # rename?
 POP2_SUB = POP2 / "subsampled"
-POP2_TABLES = POP2 / "tables"
+POP2_FST = POP2 / "fst_sliding"
 POP2_PLOTS = POP2 / "plots"
 
 # Tables & plots

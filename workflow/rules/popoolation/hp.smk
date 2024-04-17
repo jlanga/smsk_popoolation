@@ -3,11 +3,11 @@ rule popoolation__hp__compute__:
     Build the hp table for a population in a chromosome.
     """
     input:
-        snps_gz=POP1_TABLES / "{population}.D.snps.gz",
+        snps_gz=POP1_PLOTS / "{population}.D.snps.gz",
     output:
-        hp_gz=HP_TABLES / "{population}.tsv.gz",
+        hp_gz=HP_PLOTS / "{population}.tsv.gz",
     log:
-        HP_TABLES / "{population}.log",
+        HP_PLOTS / "{population}.log",
     conda:
         "__environment__.yml"
     shell:
@@ -29,7 +29,7 @@ rule popoolation__hp__plot__:
     Plot the genome-wide H_p distribution of a population
     """
     input:
-        hp_gz=HP_TABLES / "{population}.tsv.gz",
+        hp_gz=HP_PLOTS / "{population}.tsv.gz",
     output:
         pdf=HP_PLOTS / "{population}.pdf",
     log:

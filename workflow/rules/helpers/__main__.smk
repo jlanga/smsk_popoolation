@@ -1,4 +1,4 @@
-rule index_bam:
+rule helpers__bai__:
     """Index a bam file"""
     input:
         "{filename}.bam",
@@ -12,7 +12,7 @@ rule index_bam:
         "samtools index {input}"
 
 
-rule index_cram:
+rule helpers__crai__:
     """Index a .cram file"""
     input:
         "{filename}.cram",
@@ -26,7 +26,7 @@ rule index_cram:
         "samtools index {input}"
 
 
-rule index_fasta:
+rule helpers__fai__:
     """Index a .fasta"""
     input:
         "{filename}",
