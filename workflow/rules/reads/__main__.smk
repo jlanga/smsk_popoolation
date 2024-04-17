@@ -15,8 +15,8 @@ rule reads__link__:
         "__environment__.yml"
     shell:
         """
-        ln --symbolic $(readlink --canonicalize {input.forward_}) {output.forward_}
-        ln --symbolic $(readlink --canonicalize {input.reverse_}) {output.reverse_}
+        ln --symbolic $(readlink --canonicalize {input.forward_}) {output.forward_} 2> {log}
+        ln --symbolic $(readlink --canonicalize {input.reverse_}) {output.reverse_} 2>> {log}
         """
 
 
