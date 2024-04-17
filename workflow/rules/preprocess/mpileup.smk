@@ -1,7 +1,9 @@
 rule preprocess__mpileup__:
     """Compute the mpileup and compress it
 
-    Note: don't update samtools mpileup to bcftools becaus the outputs are way different.
+    Don't update samtools to bcftools:
+    - samtools mpileup produces mpileup format
+    - bcftools mpileup produces VCF format
     """
     input:
         cram=get_library_files_from_sample,

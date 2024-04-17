@@ -10,7 +10,7 @@ rule preprocess__index:
             for suffix in "0123 amb ann bwt.2bit.64 pac".split()
         ],
     log:
-        PRE_INDEX / "bwa_index.log",
+        PRE_INDEX / f"{REFERENCE_NAME}.log",
     conda:
         "__environment__.yml"
     shell:

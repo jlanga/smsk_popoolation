@@ -74,9 +74,9 @@ rule preprocess__map__filter__:  # TODO: java memory, uncompressed bam
 
     Pairs with something unpaired will disappear.
 
-    -f 0x0002  # read mapped in proper pair. Leave only
-    -F 0x0004  # read unmapped. Throw away
-    -F 0x0008  # mate unmapped. Throw away
+    -f 0x0002  : read mapped in proper pair. Leave only
+    -F 0x0004  : read unmapped. Throw away
+    -F 0x0008  : mate unmapped. Throw away
     """
     input:
         bam=PRE_SPLIT / "{population}.{library}.{chromosome}.bam",
@@ -108,7 +108,6 @@ rule preprocess__map__filter__:  # TODO: java memory, uncompressed bam
             -f 2 \
             -F 4 \
             -F 8 \
-            -@ {threads} \
             --output-fmt cram \
             --reference {input.reference} \
             -o {output.cram} \
