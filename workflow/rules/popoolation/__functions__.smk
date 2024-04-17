@@ -1,46 +1,12 @@
-# Popoolation
-def get_popoolation_min_count(wildcards):
-    return params["popoolation"]["variance_sliding"]["min_count"]
+# Popoolation - find_indels
+POP1_INDEL_WINDOW = params["popoolation"]["find_indels"]["indel_window"]
+POP1_INDEL_MIN_COUNT = params["popoolation"]["find_indels"]["min_count"]
 
 
-def get_popoolation_min_covered_fraction(wildcards):
-    return params["popoolation"]["variance_sliding"]["min_covered_fraction"]
-
-
-def get_popoolation_min_coverage(wildcards):
-    return params["popoolation"]["variance_sliding"]["min_coverage"]
-
-
-def get_pool_size(wildcards):
-    return (
-        samples[samples["population"] == wildcards.population][["pool_size"]]
-        .drop_duplicates()
-        .values.tolist()[0][0]
-    )
-
-
-def get_popoolation_max_coverage(wildcards):
-    return (
-        samples[samples["population"] == wildcards.population][["max_coverage"]]
-        .drop_duplicates()
-        .values.tolist()[0]
-    )
-
-
-def get_indel_window(wildcards):
-    return params["popoolation"]["find_indels"]["indel_window"]
-
-
-def get_indel_min_count(wildcards):
-    return params["popoolation"]["find_indels"]["min_count"]
-
-
-def get_subsample_min_qual(wildcards):
-    return params["popoolation"]["subsample"]["min_qual"]
-
-
-def get_subsample_method(wildcards):
-    return params["popoolation"]["subsample"]["method"]
+# Popoolation - subsample
+POP1_SUBSAMPLE_MIN_QUAL = params["popoolation"]["subsample"]["min_qual"]
+POP1_SUBSAMPLE_METHOD = params["popoolation"]["subsample"]["method"]
+POP1_SUBSAMPLE_TARGET_COVERAGE = params["popoolation"]["subsample"]["target_coverage"]
 
 
 def get_subsample_max_coverage(wildcards):
@@ -49,5 +15,25 @@ def get_subsample_max_coverage(wildcards):
     ].tolist()[0]
 
 
-def get_subsample_target_coverage(wildcards):
-    return params["popoolation"]["subsample"]["target_coverage"]
+# Popoolation - variance_sliding
+POP1_VS_MIN_COUNT = params["popoolation"]["variance_sliding"]["min_count"]
+POP1_VS_MIN_COVERAGE = params["popoolation"]["variance_sliding"]["min_coverage"]
+POP1_VS_MIN_COVERED_FRACTION = params["popoolation"]["variance_sliding"][
+    "min_covered_fraction"
+]
+
+
+def get_vs_pool_size(wildcards):
+    return (
+        samples[samples["population"] == wildcards.population][["pool_size"]]
+        .drop_duplicates()
+        .values.tolist()[0][0]
+    )
+
+
+def get_vs_max_coverage(wildcards):
+    return (
+        samples[samples["population"] == wildcards.population][["max_coverage"]]
+        .drop_duplicates()
+        .values.tolist()[0]
+    )

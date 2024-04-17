@@ -14,11 +14,11 @@ rule popoolation__variance_sliding__:
         vs=lambda w: POP1_VS
         / f"{w.population}.{w.chromosome}.{w.analysis}.w{w.window}-s{w.step}.tsv",
         measure=lambda w: w.analysis,
-        min_count=get_popoolation_min_count,
-        min_coverage=get_popoolation_min_coverage,
-        max_coverage=get_popoolation_max_coverage,
-        min_covered_fraction=get_popoolation_min_covered_fraction,
-        pool_size=get_pool_size,
+        min_count=POP1_VS_MIN_COUNT,
+        min_coverage=POP1_VS_MIN_COVERAGE,
+        max_coverage=get_vs_max_coverage,
+        min_covered_fraction=POP1_VS_MIN_COVERED_FRACTION,
+        pool_size=get_vs_pool_size,
         step=lambda w: w.step,
         window=lambda w: w.window,
     log:

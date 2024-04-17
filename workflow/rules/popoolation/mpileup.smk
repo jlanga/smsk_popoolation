@@ -7,8 +7,8 @@ rule popoolation__mpileup__identify_indels__:
     output:
         gtf=temp(POP1_FILT / "{population}.{chromosome}.gtf"),
     params:
-        indel_window=get_indel_window,
-        min_count=get_indel_min_count,
+        indel_window=POP1_INDEL_WINDOW,
+        min_count=POP1_INDEL_MIN_COUNT,
     log:
         POP1_FILT / "{population}.{chromosome}.gtf.log",
     conda:
@@ -67,10 +67,10 @@ rule popoolation__mpileup__subsample__:
         mpileup_fifo=temp(POP1_SUB / "{population}.{chromosome}.mpileup"),
         mpileup_gz=POP1_SUB / "{population}.{chromosome}.mpileup.gz",
     params:
-        min_qual=get_subsample_min_qual,
-        method=get_subsample_method,
+        min_qual=POP1_SUBSAMPLE_MIN_QUAL,
+        method=POP1_SUBSAMPLE_METHOD,
         max_coverage=get_subsample_max_coverage,
-        target_coverage=get_subsample_target_coverage,
+        target_coverage=POP1_SUBSAMPLE_TARGET_COVERAGE,
     log:
         POP1_SUB / "{population}.{chromosome}.log",
     conda:
