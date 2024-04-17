@@ -5,9 +5,9 @@ rule popoolation__hp__compute__:
     input:
         snps_gz=POP1_PLOTS / "{population}.D.w{window}-s{step}.snps.gz",
     output:
-        hp_gz=HP_PLOTS / "{population}.w{window}-s{step}.tsv.gz",
+        hp_gz=POP1_HP / "{population}.w{window}-s{step}.tsv.gz",
     log:
-        HP_PLOTS / "{population}.w{window}-s{step}.log",
+        POP1_HP / "{population}.w{window}-s{step}.log",
     conda:
         "__environment__.yml"
     shell:
@@ -29,11 +29,11 @@ rule popoolation__hp__plot__:
     Plot the genome-wide H_p distribution of a population
     """
     input:
-        hp_gz=HP_PLOTS / "{population}.w{window}-s{step}.tsv.gz",
+        hp_gz=POP1_HP / "{population}.w{window}-s{step}.tsv.gz",
     output:
-        pdf=HP_PLOTS / "{population}.w{window}-s{step}.pdf",
+        pdf=POP1_HP / "{population}.w{window}-s{step}.pdf",
     log:
-        HP_PLOTS / "{population}.w{window}-s{step}.log",
+        POP1_HP / "{population}.w{window}-s{step}.log",
     conda:
         "__environment__.yml"
     shell:
@@ -49,7 +49,7 @@ rule popoolation__hp__plot__:
 rule popoolation__hp:
     input:
         [
-            HP_PLOTS / f"{population}.w{window}-s{step}.pdf"
+            POP1_HP / f"{population}.w{window}-s{step}.pdf"
             for population in POPULATIONS
             for window, step in POP1_WINDOW_STEP
         ],
