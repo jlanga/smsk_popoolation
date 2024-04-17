@@ -23,8 +23,8 @@ rule popoolation2__plot__split_pair__:
     log:
         POP2_PLOTS / "{pop1}_{pop2}.w{window}-s{step}.fst.log",
     params:
-        pop1=lambda w: f"{w.pop1}",
-        pop2=lambda w: f"{w.pop2}",
+        pop1_number=lambda w: POPULATIONS.index(w.pop1) + 1,
+        pop2_number=lambda w: POPULATIONS.index(w.pop2) + 1,
     conda:
         "__environment__.yml"
     shell:
@@ -34,8 +34,8 @@ rule popoolation2__plot__split_pair__:
             --stdout \
             {input.merged_tsv_gz} \
         | python3 workflow/scripts/fst_to_genomic_score.py \
-            {params.pop1} \
-            {params.pop2} \
+            {params.pop1_number} \
+            {params.pop2_number} \
         | gzip \
         > {output.fst_tsv} \
         ) 2> {log}
@@ -66,8 +66,8 @@ rule popoolation2__plot:
     """Make every plot"""
     input:
         [
-            POP2_PLOTS / f"{i}_{j}.w{window}-s{step}.pdf"
-            for i in range(1, len(POPULATIONS))
-            for j in range(i + 1, len(POPULATIONS) + 1)
+            POP2_PLOTS / f"{pop1}_{pop2}.w{window}-s{step}.pdf"
+            for pop1 in POPULATIONS
+            for pop2 in POPULATIONS[POPULATIONS.index(pop1) + 1 :]
             for window, step in POP2_WINDOW_STEP
         ],
