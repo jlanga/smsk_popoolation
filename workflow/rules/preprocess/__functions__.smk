@@ -16,6 +16,7 @@ def get_library_files_from_sample(wildcards):
     population = wildcards.population
     libraries = samples[samples["population"] == population]["library"].values.tolist()
     files = [
-        PRE_SPLIT / chromosome / f"{population}.{library}.cram" for library in libraries
+        PRE_SPLIT / f"{population}.{library}" / f"{chromosome}.cram"
+        for library in libraries
     ]
     return files

@@ -102,11 +102,11 @@ rule preprocess__map__split__:
         reference=REFERENCE / f"{REFERENCE_NAME}.fa.gz",
         fai=REFERENCE / f"{REFERENCE_NAME}.fa.gz.fai",
     output:
-        cram=PRE_SPLIT / "{chromosome}" / "{population}.{library}.cram",
+        cram=PRE_SPLIT / "{population}.{library}" / "{chromosome}.cram",
     params:
         chromosome=lambda w: w.chromosome,
     log:
-        PRE_SPLIT / "{chromosome}" / "{population}.{library}.log",
+        PRE_SPLIT / "{population}.{library}" / "{chromosome}.log",
     conda:
         "__environment__.yml"
     shell:
@@ -124,7 +124,7 @@ rule preprocess__map__split__:
 rule preprocess__map:
     input:
         [
-            PRE_FILT / chromosome / f"{population}.{library}.cram"
+            PRE_SPLIT / f"{population}.{library}" / f"{chromosome}.cram"
             for population, library in POPULATION_LIBRARY
             for chromosome in CHROMOSOMES
         ],
