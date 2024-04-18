@@ -3,26 +3,31 @@ rule popoolation__variance_sliding__:
     Run popoolation's Variance sliding script: Tajima's D, Tajima's Theta or Pi
     """
     input:
-        mpileup_gz=POP1_SUB / "{population}.{chromosome}.mpileup.gz",
+        mpileup_gz=POP1_SUB / "{population}" / "{chromosome}.mpileup.gz",
     output:
         snps_gz=POP1_VS
-        / "{population}.{chromosome}.{analysis}.w{window}-s{step}.snps.gz",
-        vs_gz=POP1_VS / "{population}.{chromosome}.{analysis}.w{window}-s{step}.tsv.gz",
+        / "{population}"
+        / "{chromosome}.{analysis}.w{window}-s{step}.snps.gz",
+        vs_gz=POP1_VS
+        / "{population}"
+        / "{chromosome}.{analysis}.w{window}-s{step}.tsv.gz",
     params:
         snps=lambda w: POP1_VS
-        / f"{w.population}.{w.chromosome}.{w.analysis}.w{w.window}-s{w.step}.snps",
+        / w.population
+        / f"{w.chromosome}.{w.analysis}.w{w.window}-s{w.step}.snps",
         vs=lambda w: POP1_VS
-        / f"{w.population}.{w.chromosome}.{w.analysis}.w{w.window}-s{w.step}.tsv",
+        / w.population
+        / f"{w.chromosome}.{w.analysis}.w{w.window}-s{w.step}.tsv",
         measure=lambda w: w.analysis,
         min_count=POP1_VS_MIN_COUNT,
         min_coverage=POP1_VS_MIN_COVERAGE,
         max_coverage=get_vs_max_coverage,
         min_covered_fraction=POP1_VS_MIN_COVERED_FRACTION,
         pool_size=get_vs_pool_size,
-        step=lambda w: w.step,
-        window=lambda w: w.window,
+        step=lambda w: humanfriendly.parse_size(w.step),
+        window=lambda w: humanfriendly.parse_size(w.window),
     log:
-        POP1_VS / "{population}.{chromosome}.{analysis}.w{window}-s{step}.log",
+        POP1_VS / "{population}" / "{chromosome}.{analysis}.w{window}-s{step}.log",
     conda:
         "__environment__.yml"
     shell:
@@ -50,7 +55,8 @@ rule popoolation__variance_sliding:
     input:
         [
             POP1_VS
-            / f"{population}.{chromosome}.{analysis}.w{window}-s{step}.{extension}.gz"
+            / population
+            / f"{chromosome}.{analysis}.w{window}-s{step}.{extension}.gz"
             for population in POPULATIONS
             for chromosome in CHROMOSOMES
             for analysis in POP1_ANALYSES

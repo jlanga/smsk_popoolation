@@ -12,8 +12,9 @@ REFERENCE = RESULTS / "reference"
 PRE = RESULTS / "preprocess"
 PRE_INDEX = PRE / "index"
 PRE_MAP = PRE / "map"
-PRE_SPLIT = PRE / "split"
+PRE_RMDUP = PRE / "rmdup"
 PRE_FILT = PRE / "filtered"
+PRE_SPLIT = PRE / "split"
 PRE_MPILEUP = PRE / "mpileup"
 
 # popoolation - sample-wise

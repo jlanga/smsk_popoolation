@@ -10,8 +10,8 @@ rule popoolation2__fst_sliding__compute__:
         tsv_gz=POP2_FST / "{chromosome}.w{window}-s{step}.tsv.gz",
     params:
         tsv=lambda w: POP2_FST / f"{w.chromosome}.w{w.window}-s{w.step}.tsv",
-        window_size=lambda w: w.window,
-        step_size=lambda w: w.step,
+        window_size=lambda w: humanfriendly.parse_size(w.window),
+        step_size=lambda w: humanfriendly.parse_size(w.step),
         min_covered_fraction=get_min_covered_fraction,
         min_coverage=get_min_coverage,
         max_coverage=get_max_coverage,

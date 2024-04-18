@@ -3,7 +3,8 @@ rule popoolation__plot__merge_values__:
     input:
         lambda w: [
             POP1_VS
-            / f"{w.population}.{chromosome}.{w.analysis}.w{w.window}-s{w.step}.tsv.gz"
+            / w.population
+            / f"{chromosome}.{w.analysis}.w{w.window}-s{w.step}.tsv.gz"
             for chromosome in CHROMOSOMES
         ],
     output:
@@ -27,7 +28,8 @@ rule popoolation__plot__merge_snps__:
     input:
         lambda w: [
             POP1_VS
-            / f"{w.population}.{chromosome}.{w.analysis}.w{w.window}-s{w.step}.snps.gz"
+            / w.population
+            / f"{chromosome}.{w.analysis}.w{w.window}-s{w.step}.snps.gz"
             for chromosome in CHROMOSOMES
         ],
     output:
