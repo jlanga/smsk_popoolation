@@ -4,7 +4,7 @@ rule popoolation2__mpileup__join__:
     """
     input:
         mpileups=lambda w: [
-            PRE_MPILEUP / f"{population}.{w.chromosome}.mpileup.gz"
+            PRE_MPILEUP / w.chromosome / f"{population}.mpileup.gz"
             for population in POPULATIONS
         ],
     output:

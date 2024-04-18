@@ -3,16 +3,21 @@ rule popoolation__variance_sliding__:
     Run popoolation's Variance sliding script: Tajima's D, Tajima's Theta or Pi
     """
     input:
-        mpileup_gz=POP1_SUB / "{population}.{chromosome}.mpileup.gz",
+        mpileup_gz=POP1_SUB / "{chromosome}" / "{population}.mpileup.gz",
     output:
         snps_gz=POP1_VS
-        / "{population}.{chromosome}.{analysis}.w{window}-s{step}.snps.gz",
-        vs_gz=POP1_VS / "{population}.{chromosome}.{analysis}.w{window}-s{step}.tsv.gz",
+        / "{chromosome}"
+        / "{population}.{analysis}.w{window}-s{step}.snps.gz",
+        vs_gz=POP1_VS
+        / "{chromosome}"
+        / "{population}.{analysis}.w{window}-s{step}.tsv.gz",
     params:
         snps=lambda w: POP1_VS
-        / f"{w.population}.{w.chromosome}.{w.analysis}.w{w.window}-s{w.step}.snps",
+        / w.chromosome
+        / f"{w.population}.{w.analysis}.w{w.window}-s{w.step}.snps",
         vs=lambda w: POP1_VS
-        / f"{w.population}.{w.chromosome}.{w.analysis}.w{w.window}-s{w.step}.tsv",
+        / w.chromosome
+        / f"{w.population}.{w.analysis}.w{w.window}-s{w.step}.tsv",
         measure=lambda w: w.analysis,
         min_count=POP1_VS_MIN_COUNT,
         min_coverage=POP1_VS_MIN_COVERAGE,
@@ -22,7 +27,7 @@ rule popoolation__variance_sliding__:
         step=lambda w: w.step,
         window=lambda w: w.window,
     log:
-        POP1_VS / "{population}.{chromosome}.{analysis}.w{window}-s{step}.log",
+        POP1_VS / "{chromosome}" / "{population}.{analysis}.w{window}-s{step}.log",
     conda:
         "__environment__.yml"
     shell:
@@ -50,7 +55,8 @@ rule popoolation__variance_sliding:
     input:
         [
             POP1_VS
-            / f"{population}.{chromosome}.{analysis}.w{window}-s{step}.{extension}.gz"
+            / chromosome
+            / f"{population}.{analysis}.w{window}-s{step}.{extension}.gz"
             for population in POPULATIONS
             for chromosome in CHROMOSOMES
             for analysis in POP1_ANALYSES
