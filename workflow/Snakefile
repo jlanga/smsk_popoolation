@@ -5,6 +5,8 @@ import yaml
 
 from snakemake.utils import min_version
 
+import humanfriendly
+
 min_version("5.0")
 
 shell.prefix("set -euo pipefail;")

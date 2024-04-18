@@ -58,7 +58,7 @@ rule preprocess__map__rmdup__:
             --REMOVE_DUPLICATES true \
             --QUIET true \
             --VERBOSITY ERROR \
-        2> {log}
+        2> {log} 1>&2
         """
 
 
@@ -89,7 +89,7 @@ rule preprocess__map__filter__:
             --uncompressed \
             --output {output.bam} \
             {input.bam} \
-        2> {log}
+        2> {log} 1>&2
         """
 
 

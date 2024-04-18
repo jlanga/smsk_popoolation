@@ -24,8 +24,8 @@ rule popoolation__variance_sliding__:
         max_coverage=get_vs_max_coverage,
         min_covered_fraction=POP1_VS_MIN_COVERED_FRACTION,
         pool_size=get_vs_pool_size,
-        step=lambda w: w.step,
-        window=lambda w: w.window,
+        step=lambda w: humanfriendly.parse_size(w.step),
+        window=lambda w: humanfriendly.parse_size(w.window),
     log:
         POP1_VS / "{population}" / "{chromosome}.{analysis}.w{window}-s{step}.log",
     conda:
