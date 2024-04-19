@@ -15,7 +15,7 @@ rule preprocess__coverage__compute_hist__:
     shell:
         """
         ( gzip -dc {input.mpileups} \
-        | awk
+        | awk \
             '{{hist[$4]++}} END {{for (i in hist) print "{params.population}" "\\t" i "\\t" hist[i]}}' \
         | sort -n -k2,2 \
         > {output.hist} \
