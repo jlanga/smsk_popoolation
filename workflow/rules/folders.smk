@@ -16,6 +16,7 @@ PRE_RMDUP = PRE / "rmdup"
 PRE_FILT = PRE / "filtered"
 PRE_SPLIT = PRE / "split"
 PRE_MPILEUP = PRE / "mpileup"
+PRE_COV = PRE / "coverage"
 
 # popoolation - sample-wise
 POP1 = RESULTS / "popoolation1"

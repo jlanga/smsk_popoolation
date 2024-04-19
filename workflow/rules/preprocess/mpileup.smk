@@ -7,7 +7,7 @@ rule preprocess__mpileup__:
     - bcftools mpileup produces VCF format
     """
     input:
-        cram=get_library_files_from_sample,
+        bams=get_library_files_from_sample,
         fa=REFERENCE / f"{REFERENCE_NAME}.fa.gz",
         fai=REFERENCE / f"{REFERENCE_NAME}.fa.gz.fai",
     output:
@@ -22,7 +22,7 @@ rule preprocess__mpileup__:
             -u \
             --reference {input.fa} \
             - \
-            {input.cram} \
+            {input.bams} \
         | samtools mpileup \
             -a \
             --no-BAQ \
