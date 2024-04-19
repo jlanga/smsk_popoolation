@@ -45,9 +45,11 @@ rule preprocess__map__rmdup__:
         PRE_RMDUP / "{population}.{library}.log",
     conda:
         "__environment__.yml"
+    resources:
+        memory_gb=params["preprocess"]["markduplicates"]["memory_gb"],
     shell:
         """
-        gatk MarkDuplicates \
+        gatk --java-options "-Xmx{resources.memory_gb}g" MarkDuplicates \
             --INPUT {input.cram} \
             --OUTPUT {output.bam} \
             --METRICS_FILE {output.dupstats} \
@@ -75,8 +77,6 @@ rule preprocess__map__filter__:
         bam=temp(PRE_FILT / "{population}.{library}.bam"),
     log:
         PRE_FILT / "{population}.{library}.log",
-    resources:
-        memory_gb=params["picard_markduplicates"]["memory_gb"],
     conda:
         "__environment__.yml"
     shell:
@@ -102,7 +102,7 @@ rule preprocess__map__split__:
         reference=REFERENCE / f"{REFERENCE_NAME}.fa.gz",
         fai=REFERENCE / f"{REFERENCE_NAME}.fa.gz.fai",
     output:
-        cram=PRE_SPLIT / "{population}.{library}" / "{chromosome}.cram",
+        bam=temp(PRE_SPLIT / "{population}.{library}" / "{chromosome}.bam"),
     params:
         chromosome=lambda w: w.chromosome,
     log:
@@ -114,7 +114,7 @@ rule preprocess__map__split__:
         samtools view \
             --uncompressed \
             --reference {input.reference} \
-            --output {output.cram} \
+            --output {output.bam} \
             {input.bam} \
             {params.chromosome} \
         2> {log}
@@ -124,7 +124,7 @@ rule preprocess__map__split__:
 rule preprocess__map:
     input:
         [
-            PRE_SPLIT / f"{population}.{library}" / f"{chromosome}.cram"
+            PRE_SPLIT / f"{population}.{library}" / f"{chromosome}.bam"
             for population, library in POPULATION_LIBRARY
             for chromosome in CHROMOSOMES
         ],
