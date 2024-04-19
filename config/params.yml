@@ -3,10 +3,7 @@
 preprocess:
     markduplicates:
         memory_gb: 1
-    # coverage:
-    #     memory: 1G  # Raise this to 10-20G if you have a large genome
-    #     mer_len: 21
-    #     ploidy: 1
+
 
 popoolation:
     find_indels:

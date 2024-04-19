@@ -20,14 +20,3 @@ def get_library_files_from_sample(wildcards):
         for library in libraries
     ]
     return files
-
-
-# coverage
-def get_files_for_jellyfish(wildcards):
-    population = wildcards.population
-    files = [
-        READS / f"{population}.{library}_{end}.fq.gz"
-        for library in samples[samples["population"] == population]["library"]
-        for end in ["1", "2"]
-    ]
-    return files

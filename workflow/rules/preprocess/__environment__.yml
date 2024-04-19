@@ -8,5 +8,3 @@ dependencies:
   - pigz =2.8
   - python =3.12.3
   - samtools =1.20
-  - kmer-jellyfish =2
-  - genomescope2 =2
