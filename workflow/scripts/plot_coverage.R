@@ -10,11 +10,13 @@ frequencies <-
     full.names = TRUE
   ) %>%
   map(
-    function(x) read_tsv(
-      file = x,
-      col_names = c("population", "coverage", "frequency"),
-      col_types = "cii"
-    )
+    function(x) {
+      read_tsv(
+        file = x,
+        col_names = c("population", "coverage", "frequency"),
+        col_types = "cii"
+      )
+    }
   ) %>%
   bind_rows()
 
@@ -22,10 +24,15 @@ frequencies <-
 coverages <- frequencies %>%
   filter(coverage > 0) %>%
   ggplot(aes(x = coverage, y = frequency)) +
-  geom_ma(ma_fun = SMA, linetype="solid", color = "black") +
+  geom_ma(ma_fun = SMA, linetype = "solid", color = "black") +
   scale_y_log10() +
   facet_wrap(~population)
-ggsave("results/preprocess/coverage/coverage.pdf", width = 297, height = 210, units = "mm")
+
+ggsave(
+  filename = "results/preprocess/coverage/coverage.pdf",
+  plot = coverages,
+  width = 297, height = 210, units = "mm"
+)
 
 
 
