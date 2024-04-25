@@ -1,6 +1,6 @@
 # smsk_popoolation: A Snakemake pipeline for population genomics
 
-[![Build Status](https://travis-ci.org/jlanga/smsk_popoolation.svg?branch=master)](https://travis-ci.org/jlanga/smsk_popoolation)
+![Build Status](https://github.com/jlanga/smsk_popoolation/actions/workflows/main/badge.svg)
 [![DOI](https://zenodo.org/badge/76841262.svg)](https://zenodo.org/badge/latestdoi/76841262)
 
 ## 1. Description
