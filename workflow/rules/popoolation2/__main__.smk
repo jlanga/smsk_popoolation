@@ -7,6 +7,4 @@ include: "plot.smk"
 
 rule popoolation2:
     input:
-        rules.popoolation2__sync.input,
-        rules.popoolation2__fst_sliding.input,
         rules.popoolation2__plot.input,
