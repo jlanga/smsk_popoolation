@@ -17,8 +17,6 @@ This is a repo that contains installers and snakemake scripts to execute the pip
 
 ## 2. First steps
 
-Follow the contents of the `.travis.yml` file:
-
 1. Install ([ana](https://www.continuum.io/downloads)|[mini](http://conda.pydata.org/miniconda.html))conda
 
 2. Clone and install the software
