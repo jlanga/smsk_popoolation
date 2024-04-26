@@ -10,15 +10,15 @@ jobs:
   weekly-cache:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4.1.4
       - name: Set up cache
-        uses: actions/cache@v2
+        uses: actions/cache@v4.0.2
         with:
           path: .snakemake/conda
           key: snakemake-conda
         id: cache
       - name: Download environments
-        uses: snakemake/snakemake-github-action@v1.24.0
+        uses: snakemake/snakemake-github-action@v1.25.1
         with:
           directory: .
           snakefile: workflow/Snakefile

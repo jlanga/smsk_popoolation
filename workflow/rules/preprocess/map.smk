@@ -3,24 +3,32 @@ rule preprocess__map__bwamem2__:
     input:
         forward_=READS / "{population}.{library}_1.fq.gz",
         reverse_=READS / "{population}.{library}_2.fq.gz",
-        index=PRE_INDEX / f"{REFERENCE_NAME}",
+        buckets=multiext(
+            str(PRE_INDEX / f"{REFERENCE_NAME}."),
+            "0123",
+            "amb",
+            "ann",
+            "bwt.2bit.64",
+            "pac",
+        ),
         reference=REFERENCE / f"{REFERENCE_NAME}.fa.gz",
     output:
         cram=PRE_MAP / "{population}.{library}.cram",
-    params:
-        rg_tag=compose_rg_tag,
     threads: 24
     log:
         PRE_MAP / "{population}.{library}.bwa_mem.log",
     conda:
         "__environment__.yml"
+    params:
+        rg_tag=compose_rg_tag,
+        prefix=PRE_INDEX / f"{REFERENCE_NAME}",
     shell:
         """
         ( bwa-mem2 mem \
             -M \
             -R '{params.rg_tag}' \
             -t {threads} \
-            {input.index} \
+            {params.prefix} \
             {input.forward_} \
             {input.reverse_} \
         | samtools sort \

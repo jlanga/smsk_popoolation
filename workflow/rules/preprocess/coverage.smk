@@ -23,6 +23,23 @@ rule preprocess__coverage__compute_hist__:
         """
 
 
-rule preprocess__coverage:
+rule preprocess_coverage__plot__:
     input:
         [PRE_COV / f"{population}.hist" for population in POPULATIONS],
+    output:
+        pdf=PRE_COV / "coverage.pdf",
+        coverage=PRE_COV / "coverage.tsv",
+    log:
+        PRE_COV / "coverage.log",
+    conda:
+        "__environment__.yml"
+    shell:
+        """
+        Rscript workflow/scripts/plot_coverage.R 2> {log} 1>&2
+        """
+
+
+rule preprocess__coverage:
+    input:
+        hist=PRE_COV / "coverage.pdf",
+        coverage=PRE_COV / "coverage.tsv",

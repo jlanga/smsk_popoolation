@@ -4,20 +4,20 @@ name: Tests
 
 on:  # yamllint disable-line rule:truthy
   push:
-    branches: [main, devel]
+    branches: [master, devel]
   pull_request:
-    branches: [main, devel]
+    branches: [master, devel]
 
 jobs:
 
   Pre-Commit:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4.1.4
         with:
           lfs: 'true'
       - name: Run pre-commit on all files
-        uses: pre-commit/action@v3.0.0
+        uses: pre-commit/action@v3.0.1
         with:
           extra_args: --all-files
 
@@ -26,18 +26,18 @@ jobs:
     needs:
       - Pre-Commit
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4.1.4
         with:
           lfs: 'true'
 
       - name: Cache
-        uses: actions/cache@v3
+        uses: actions/cache@v4.0.2
         with:
           path: .snakemake/conda
           key: snakemake-conda
 
       - name: Download environments
-        uses: snakemake/snakemake-github-action@v1.24.0
+        uses: snakemake/snakemake-github-action@v1.25.1
         with:
           directory: .
           snakefile: workflow/Snakefile
@@ -48,7 +48,7 @@ jobs:
             --cores 1
 
       - name: Test workflow
-        uses: snakemake/snakemake-github-action@v1.24.0
+        uses: snakemake/snakemake-github-action@v1.25.1
         with:
           directory: .
           snakefile: workflow/Snakefile
@@ -57,4 +57,3 @@ jobs:
             --show-failed-logs
             --cores 3
             --conda-cleanup-pkgs cache
-            --all-temp

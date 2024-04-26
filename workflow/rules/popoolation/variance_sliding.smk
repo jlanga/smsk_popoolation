@@ -47,7 +47,7 @@ rule popoolation__variance_sliding__:
             --snp-output {params.snps} \
         2> {log} 1>&2
 
-        gzip --keep {params.snps} {params.vs} 2>> {log} 1>&2
+        gzip {params.snps} {params.vs} 2>> {log} 1>&2
         """
 
 

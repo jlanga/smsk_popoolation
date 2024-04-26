@@ -1,6 +1,6 @@
 # smsk_popoolation: A Snakemake pipeline for population genomics
 
-[![Build Status](https://travis-ci.org/jlanga/smsk_popoolation.svg?branch=master)](https://travis-ci.org/jlanga/smsk_popoolation)
+![Build Status](https://github.com/jlanga/smsk_popoolation/actions/workflows/main.yml/badge.svg)
 [![DOI](https://zenodo.org/badge/76841262.svg)](https://zenodo.org/badge/latestdoi/76841262)
 
 ## 1. Description
@@ -16,8 +16,6 @@ This is a repo that contains installers and snakemake scripts to execute the pip
 - Pairwise comparisons between populations with `popoolation2`
 
 ## 2. First steps
-
-Follow the contents of the `.travis.yml` file:
 
 1. Install ([ana](https://www.continuum.io/downloads)|[mini](http://conda.pydata.org/miniconda.html))conda
 
