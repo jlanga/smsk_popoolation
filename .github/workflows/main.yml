@@ -17,7 +17,7 @@ jobs:
         with:
           lfs: 'true'
       - name: Run pre-commit on all files
-        uses: pre-commit/action@v3.0.0
+        uses: pre-commit/action@v3.0.1
         with:
           extra_args: --all-files
 
